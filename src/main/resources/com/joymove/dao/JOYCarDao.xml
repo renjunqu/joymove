@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYCarDao">
+	<!--
+	<resultMap type="JOYCar" id="joycar">
+		<constructor>
+			<idArg column="id" javaType="Integer"/>
+			<arg column="positionX" javaType="java.math.BigDecimal"/>
+			<arg column="positionY" javaType="java.math.BigDecimal"/>
+			<arg column="state" javaType="Integer"/>
+			<arg column="desp" javaType="String"/>
+			<arg column="mobileNo" javaType="String"/>
+		</constructor>
+	</resultMap>
+	
+	<sql id="userColumn">
+			u.id,
+			u.positionX,
+			u.positionY,
+			u.state,
+			u.desp,
+			u.mobileNo
+	</sql>
+	-->
+	<sql id="userColumn"> * </sql>
+	<select id="getCarByScope" resultType="JOYCar" parameterType="map">
+		select <include refid="userColumn"/>
+		from JOY_Car  u 
+			<where>
+				    GetDistance1(#{userPositionY},u.positionY,#{userPositionX},u.positionX) &lt; #{scope}  
+	                     and    state=#{state}        
+           </where>
+	</select>
+	
+	<select id="getCarById" resultType="JOYCar" parameterType="map">
+		select <include refid="userColumn"/>
+		from JOY_Car  u 
+			<where>
+				   id=#{id}        
+           </where>
+	</select>
+	
+	
+	<!-- 必须用这种带条件的更新，否则无法阻止并发 -->
+	<update id="setCarReserve" parameterType="JOYCar">
+	            update JOY_Car set state = 2, mobileNo = #{mobileNo}
+	            <where>
+	                   mobileNo is NULL and state = 0 and id = #{id}
+	            </where>
+	</update>
+	
+	<update id="setCarBusy" parameterType="JOYCar">
+	            update JOY_Car set state = 1, mobileNo = #{mobileNo} 
+	            <where>
+	                   mobileNo is NULL and state = 0 and id = #{id}
+	            </where>
+	</update>
+	
+	<update id="setCarFree" parameterType="JOYCar">
+	            update JOY_Car set state = 0, mobileNo = NULL 
+	            <where>
+	                   id = #{id}
+	            </where>
+	</update>
+	
+	<update id="clearReserve" parameterType="JOYCar">
+	            update JOY_Car set state = 0, mobileNo = NULL 
+	            <where>
+	                   id = #{id}  and mobileNo = #{mobileNo} and state = 2
+	            </where>
+	</update>
+	
+	
+	
+	
+</mapper>	

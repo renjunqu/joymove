@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joymove.dao.JOYInterPOIDao">
+
+	<!--
+	<resultMap type="JOYInterPOI" id="joyinterpoi">
+		<constructor>
+			<idArg column="id" javaType="Integer" />
+			<arg column="title" javaType="String"/>
+			<arg column="name" javaType="String"/>
+			<arg column="latitude" javaType="java.math.BigDecimal"/>
+			<arg column="longitude" javaType="java.math.BigDecimal"/>
+		</constructor>
+	</resultMap>
+	
+	<sql id="sqlColumn">
+					u.id,
+					u.title,
+					u.name,
+					u.latitude,
+					u.longitude
+	</sql>
+	-->
+	<sql id="sqlColumn"> * </sql>
+
+	<select id="getAllPOI" resultType="JOYInterPOI" parameterType="map">
+			select  <include refid="sqlColumn"/> from JOY_InterPOI u;
+	</select>
+</mapper>	

@@ -1,0 +1,9 @@
+target/*
+.project
+.mymetadata
+.classpath
+src/main/webapp/WEB-INF/lib
+*.class
+**.class
+*.jar
+**.jar

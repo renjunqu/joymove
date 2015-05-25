@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joymove.dao.JOYDynamicPwsDao">
+	<!--
+	<resultMap type="JOYDynamicPws" id="joydynamicpws">
+		
+		<constructor>	
+			<idArg column="codeid" javaType="Integer" />
+			<arg column="mobileNo" javaType="String" />
+			<arg column="code" javaType="String" />
+			<arg column="createTime" javaType="java.util.Date" />
+		</constructor>
+		
+	</resultMap>
+	
+	<sql id="dynamicpwsColumn">u.codeid, u.mobileNo, u.Code, u.CreateTime</sql>
+	-->
+	<sql id="dynamicpwsColumn"> * </sql>
+	<sql id="likeCondition"> like </sql>
+	
+	<insert id="insertDynamicPws" parameterType="JOYDynamicPws" useGeneratedKeys="false">
+		insert into JOY_DynamicPws(mobileNo,code,createTime) values(#{mobileNo},#{code},#{createTime});
+	</insert>
+	
+	
+	<select id="getDynamicPws" resultType="JOYDynamicPws" parameterType="map">
+		select <include refid="dynamicpwsColumn"/>
+		from JOY_DynamicPws u where u.mobileNo=#{mobileNo} order by u.codeid desc limit 1
+	</select>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joymove.dao.JOYIntegrationDao">
+	<!--
+	<resultMap type="JOYIntegration" id="joyintegration">
+		<constructor>
+			<idArg column="JifenID" javaType="Integer" />
+			<arg column="MobileNo" javaType="String"/>
+			<arg column="Jifen" javaType="Integer"/>
+			<arg column="JifenDesc" javaType="String"/>
+			<arg column="StatusMark" javaType="Integer"/>
+			<arg column="JifenDate" javaType="java.util.Date"/>
+		</constructor>
+
+	</resultMap>
+	
+	<sql id="CreditColumn">
+					u.JifenID,
+					u.MobileNo,
+					u.Jifen,
+					u.JifenDesc,
+					u.StatusMark,
+					u.JifenDate
+	</sql>
+	-->
+	<sql id="CreditColumn"> * </sql>
+	<select id="getJOYIntegration" resultType="JOYIntegration" parameterType="map">
+			select<include refid="CreditColumn"/>
+		from JOY_Integration u where u.mobileNo=#{mobileNo};
+	</select>
+	
+	<insert id="insertJOYIntegration" parameterType="JOYIntegration" useGeneratedKeys="false">
+		insert into JOY_Integration(MobileNo,Jifen,JifenDesc,StatusMark) values(#{mobileNo},#{jiFen},#{jifenDesc},#{statusMark});
+	</insert>
+	
+</mapper>	

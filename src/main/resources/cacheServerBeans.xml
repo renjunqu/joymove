@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.0.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+    
+    
+    <bean id="Chinese" class="com.futuremove.cacheServer.test.Chinese">
+        <property name="myFood" ref="Food"/>
+    </bean>
+    
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesMode" value="3"/>
+        <property name='properties'>
+            <props>
+            	<prop key="ttt">no-override</prop>
+            </props>
+        </property>	
+    </bean>
+    
+    
+    
+    
+    <bean id="Food" class="com.futuremove.cacheServer.test.Food">
+    	<property name="name" value="${ttt}"></property>
+    </bean>
+    
+    <aop:aspectj-autoproxy/>
+    
+    <bean  id="adviceTest" class="com.futuremove.cacheServer.test.aop.AdviceTest1"/>
+    <bean  id="adviceTest2" class="com.futuremove.cacheServer.test.aop.AdviceTest2"/>
+    <bean  id="cutterTarget" class="com.futuremove.cacheServer.test.aop.cutter.CutterTarget"/>
+          <!-- mongoDB的配置对象 -->
+ 
+  <!-- factory beans   ***************************************************  -->
+    <bean id="mongoClient" class="com.futuremove.cacheServer.beans.MongoClientFactoryBean">
+           <property name="readSecondary" value="false" />
+           <property name="writeConcern" value="SAFE" />
+           <property name="serverStrings">
+               <array>
+                   <value>123.57.151.176:27017</value>
+               </array>
+           </property>
+    </bean>
+    
+    
+    <bean id="morphia" class="com.futuremove.cacheServer.beans.MorphiaFactoryBean">
+          <property name="mapPackages">
+             <array>
+                  <value>com.futuremove.cacheServer.entity</value>
+                  <value>com.futuremove.cacheServer.entity.event</value>
+             </array>
+          </property>
+    </bean>
+    
+    
+    <bean id="datastore" class="com.futuremove.cacheServer.beans.DatastoreFactoryBean">
+          <property name="morphia" ref="morphia" />
+          <property name="mongo" ref="mongoClient" />
+          <property name="dbName" value="${mongo.db}" />
+           <property name="toEnsureIndexes" value="true"/>
+          <property name="toEnsureCaps" value="true"/>
+    </bean>
+    
+    
+    
+    
+    
+     <!-- handler  ***************************************************  -->
+    
+    <bean id="registerHandler" class="com.joymove.amqp.handler.impl.RegisterHandler">
+    </bean>
+    
+    <bean id="reportClearCodeHandler" class="com.joymove.amqp.handler.impl.ReportClearCodeHandler">
+    </bean>
+    
+    <bean id="reportSendCodeHandler" class="com.joymove.amqp.handler.impl.ReportSendCodeHandler">
+    		<property name="carService" ref="carService"/>  
+    </bean>
+    
+    <bean id="reportSendKeyHandler" class="com.joymove.amqp.handler.impl.ReportSendKeyHandler">
+    </bean>
+    
+    <bean id="updateStatusHandler" class="com.joymove.amqp.handler.impl.UpdateStatusHandler">
+            <property name="carService" ref="carService"/>  
+    </bean>
+    
+    <!-- service  ***************************************************  -->
+    <bean id="carService" class="com.futuremove.cacheServer.service.impl.CarServiceImpl"> 
+            <property name="carDao" ref="carDao"/>
+            <property name="dynamicMatDao" ref="dynamicMatDao"/>
+            <property name="staticMatDao" ref="staticMatDao"/>
+    </bean>
+    
+     <!-- dao  ***************************************************  -->
+     <bean id="carDao" class="com.futuremove.cacheServer.dao.CarDao" >
+           <property name="datastore" ref="datastore"/>
+     </bean>
+     <bean id="dynamicMatDao" class="com.futuremove.cacheServer.dao.DynamicMatDao" >
+      		<property name="datastore" ref="datastore"/>
+     </bean>
+     <bean id="staticMatDao" class="com.futuremove.cacheServer.dao.StaticMatDao" >
+      		<property name="datastore" ref="datastore"/>
+     </bean>
+     <!-- test spring retry  -->
+     
+     <aop:config proxy-target-class="false">
+		    <aop:pointcut id="retry_test"
+		                  expression="execution(* com.futuremove.cacheServer.test.aop.service.impl.*.test*(..))" />
+		                  
+		   <aop:pointcut id="retry_car_service"
+		                  expression="execution(* com.futuremove.cacheServer.service.impl.*.*(..))" />
+		  
+		  
+		                 
+		                 <aop:pointcut id="retry_car_update_state"
+		            expression="execution(* com.futuremove.cacheServer.service.impl.CarServiceImpl.updateCarState*(..))" />
+		<aop:advisor pointcut-ref="retry_car_update_state"
+		                 advice-ref="retryAdvice"/> 
+	  
+	</aop:config>
+
+     
+     <bean id="retryAdvice"
+      class="org.springframework.retry.interceptor.RetryOperationsInterceptor">
+		    <property name="retryOperations">
+		        <bean class="org.springframework.retry.support.RetryTemplate">
+		            <property name="retryPolicy">
+		                <bean class="org.springframework.retry.policy.SimpleRetryPolicy">
+		                   <property name="MaxAttempts" value="4"/>
+		                </bean>
+		            </property>
+		            <property name="backOffPolicy">
+		                <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
+		                    <property name="initialInterval" value="50"/>
+		                    <property name="maxInterval" value="800"/>
+		                    <property name="multiplier" value="1.5"/>
+		                </bean>
+		            </property>
+		        </bean>
+		    </property>
+  </bean>
+  
+  <bean id="test" class="com.futuremove.cacheServer.test.aop.service.impl.test" />
+
+</beans>
+
+
+    
+    

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYReserveOrderDao">
+ <!--
+	<resultMap type="JOYReserveOrder" id="joyreserveorder">
+		<constructor>
+			<idArg column="id" javaType="Integer"/>
+			<arg column="mobileNo" javaType="String"/>
+			<arg column="startTime" javaType="Date"/>
+			<arg column="carId" javaType="Integer"/>
+			<arg column="delFlag" javaType="Integer"/>
+			<arg column="carVinNum" javaType="String"/>
+		</constructor>
+	</resultMap>
+	
+	<sql id="userColumn">
+			u.id,
+			u.mobileNo,
+			u.startTime,
+			u.carId,
+			u.delFlag,
+			u.carVinNum
+	</sql>
+	-->
+	<sql id="userColumn">
+		*
+	</sql>
+	<update id="updateReserveOrderDelFlag"  parameterType="JOYReserveOrder">
+	     update JOY_ReserveOrder u set delFlag=1
+	     <where> 
+	     	u.mobileNo=#{mobileNo}
+	     </where>
+	</update>
+	
+	
+	<insert id="insertReserveOrder" parameterType="JOYReserveOrder">
+	        
+	        insert into JOY_ReserveOrder (mobileNo,carId) values (#{mobileNo},#{carId}); 
+	</insert>
+	
+	
+	<insert id="insertNReserveOrder" parameterType="JOYReserveOrder">
+	        insert into JOY_ReserveOrder (mobileNo,carVinNum) values (#{mobileNo},#{carVinNum}); 
+	</insert>
+	
+	
+	
+	<select id="getNeededReserveOrder" resultType="JOYReserveOrder" parameterType="map">
+	       select <include refid="userColumn"/>
+					from JOY_ReserveOrder  u 
+		   <trim suffixOverrides="and">
+				<where>
+                	   <if test="carId!=null">
+                	          carId=#{carId} and 
+                	   </if>
+                	   <if test="carVinNum!=null">
+                	          carVinNum=#{carVinNum} and 
+                	   </if>
+                	   <if test="mobileNo!=null">
+                	          mobileNo=#{mobileNo} and
+                	   </if>
+                	   <if test="delFlag!=null">
+                	          delFlag=#{delFlag} and
+                	   </if>
+                	   <if test="expSeconds!=null">
+                	          timediff(NOW(),startTime)  &lt; #{expSeconds} and
+                	   </if>
+                	   
+                </where>  
+			</trim>
+			   order by u.id desc
+	</select>
+	
+	
+	
+</mapper>	

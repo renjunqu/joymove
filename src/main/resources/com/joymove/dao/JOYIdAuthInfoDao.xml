@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYIdAuthInfoDao">
+	<!--
+	<resultMap type="JOYIdAuthInfo" id="joyidauthinfo">
+		<constructor>
+			<idArg column="mobileNo" javaType="String"/>
+			<arg column="idAuthInfo" javaType="_byte[]"/>
+			<arg column="idAuthInfo_back" javaType="_byte[]"/>
+			<arg column="idName" javaType="String"/>
+			<arg column="idNo" javaType="String"/>
+		</constructor>
+	
+	</resultMap>
+	
+	<sql id="idAuthInfoColumn">
+		u.mobileNo,
+		u.idAuthInfo,
+		u.idAuthInfo_back,
+		u.idName,
+		u.idNo
+	</sql>
+-->
+	<sql id="idAuthInfoColumn"> * </sql>
+	<insert id="insertIdAuthInfo" parameterType="JOYIdAuthInfo">
+		insert into JOY_IdAuthInfo(mobileNo,idAuthInfo,idAuthInfo_back,idName,idNo) values(#{mobileNo},#{idAuthInfo},#{idAuthInfo_back},#{idName},#{idNo})
+	</insert>
+	
+	
+	<update id="updateIdAuthInfo" parameterType="JOYIdAuthInfo">
+		update JOY_IdAuthInfo set idAuthInfo=#{idAuthInfo}, idAuthInfo_back=#{idAuthInfo_back},
+		       idName=#{idName},idNo=#{idNo} where mobileNo=#{mobileNo}
+	</update>
+	
+	
+	
+	
+	<select id="getNeededIdAuthInfo" resultType="JOYIdAuthInfo" parameterType="map">
+		select <include refid="idAuthInfoColumn"/>
+		from JOY_IdAuthInfo  u 
+		<where>u.mobileNo=#{mobileNo}</where>
+	</select>
+</mapper>	

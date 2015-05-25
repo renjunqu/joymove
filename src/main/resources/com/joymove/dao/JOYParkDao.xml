@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYParkDao">
+
+	<sql id="userColumn">
+		*
+	</sql>
+	<select id="getParkByScope" resultType="JOYPark" parameterType="Map">
+		select <include refid="userColumn"/>
+		from JOY_Park  u 
+			<where>
+				    GetDistance1(#{userPositionY},u.positionY,#{userPositionX},u.positionX) &lt; #{scope}  
+           </where>
+	</select>
+
+
+	
+	
+	
+</mapper>	

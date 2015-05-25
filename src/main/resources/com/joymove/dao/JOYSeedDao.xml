@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joymove.dao.JOYSeedDao">
+    <!--
+    <resultMap type="JOYSeed" id="joyseed">
+        <constructor>
+            <idArg column="id" javaType="Integer"/>
+            <arg column="mobileNo" javaType="String"/>
+            <arg column="code" javaType="String"/>
+            <arg column="balance" javaType="java.math.BigDecimal"/>
+            <arg column="createTime" javaType="java.util.Date"/>
+            <arg column="status" javaType="Integer"/>
+            <arg column="type" javaType="Integer"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="userColumn">
+        u.id,
+        u.mobileNo,
+        u.code,
+        u.balance,
+        u.createTime,
+        u.status,
+        u.type
+    </sql>
+    -->
+    <sql id="userColumn">
+        *
+    </sql>
+    <sql id="likeCondition"> like </sql>
+
+    <select id="getNeededSeed" resultType="JOYSeed" parameterType="map">
+        select <include refid="userColumn"/>
+        from JOY_Seed  u
+        <where>
+            <trim suffixOverrides="and">
+                <if test="code!=null">code=#{code} and </if>
+                <if test="status!=null">status=#{status} and </if>
+                <if test="type!=null">type=#{type} and </if>
+                <if test="mobileNo!=null">mobileNo=#{mobileNo} and </if>
+            </trim>
+        </where>
+    </select>
+
+    <update id="deleteSeed" parameterType="JOYSeed">
+        update JOY_Seed set status = 1 where code=#{code}
+    </update>
+
+
+    <insert id="createSeed" parameterType="JOYSeed" useGeneratedKeys="false">
+        insert into JOY_Seed(mobileNo,code,balance,type) values(#{mobileNo},#{code},#{balance},#{type})
+    </insert>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

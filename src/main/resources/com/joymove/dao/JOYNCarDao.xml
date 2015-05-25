@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYNCarDao">
+	<!--
+	<resultMap type="JOYNCar" id="joyncar">
+		<constructor>
+			<idArg column="vinNum" javaType="String"/>
+			<arg column="registerTime" javaType="java.util.Date"/>
+			<arg column="RSAPubKey" javaType="String"/>
+			<arg column="RSAPriKey" javaType="String"/>
+			<arg column="registerState" javaType="Integer"/>
+			<arg column="licensenum" javaType="String"/>
+		</constructor>
+	</resultMap>
+	
+	<sql id="userColumn">
+			u.vinNum,
+			u.registerTime,
+			u.RSAPubKey,
+			u.RSAPriKey,
+			u.registerState,
+			u.licensenum
+	</sql>
+	-->
+	<sql id="userColumn">
+		*
+	</sql>
+	
+	<insert id="insertCar" parameterType="JOYNCar">
+	     insert into JOY_NCar (vinNum,RSAPubKey,RSAPriKey,registerState) values (#{vinNum},#{RSAPubKey},#{RSAPriKey},#{registerState}); 
+	</insert>
+	
+	
+	<update id="updateCarRegisterState" parameterType="JOYNCar">
+	     update JOY_NCar set registerState=#{registerState} 
+	        <where>
+	               vinNum = #{vinNum}
+	        </where>
+	</update>
+	
+	
+	<select id="getNeededCar" resultType="JOYNCar" parameterType="map">
+	     select  <include refid="userColumn"/> from
+	     JOY_NCar u  
+	     <trim suffixOverrides="and">
+	          <where>
+	                    <if test="vinNum!=null">vinNum=#{vinNum}  and  </if>
+	           </where>
+         </trim>
+	</select>
+	
+	
+	
+	
+	
+
+	
+</mapper>	

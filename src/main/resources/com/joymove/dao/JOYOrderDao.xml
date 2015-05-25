@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYOrderDao">
+	<!--
+	<resultMap type="JOYOrder" id="joyorder">
+		<constructor>
+			<idArg column="id" javaType="Integer"/>
+			<arg column="mobileNo" javaType="String"/>
+			<arg column="carId" javaType="Integer"/>
+			<arg column="startTime" javaType="java.util.Date"/>
+			<arg column="stopTime" javaType="java.util.Date"/>
+			<arg column="delMark" javaType="Integer"/>
+			<arg column="rentStatus" javaType="Integer"/>
+			<arg column="type" javaType="Integer"/>
+			<arg column="batonMode" javaType="Integer"/>
+			<arg column="destination" javaType="String"/>
+			<arg column="state" javaType="Integer"/>
+			<arg column="carVinNum" javaType="String"/>
+		</constructor>
+	</resultMap>
+
+	
+	<sql id="userColumn">
+			u.id,
+			u.mobileNo,
+			u.carId,
+			u.startTime,
+			u.stopTime,
+			u.delMark,
+			u.rentStatus,
+			u.type,
+			u.batonMode,
+			u.destination,
+			u.state,
+			u.carVinNum
+	</sql>
+	-->
+	<sql id="userColumn"> *</sql>
+	<insert id="insertOrder" parameterType="JOYOrder">
+	     insert into JOY_Order (mobileNo,carId,delMark,type) values (#{mobileNo},#{carId},0,0); 
+	</insert>
+	
+	<insert id="insertNOrder" parameterType="JOYOrder">
+	     insert into JOY_Order (mobileNo,carVinNum,delMark,type) values (#{mobileNo},#{carVinNum},0,0); 
+	</insert>
+	
+	<update id="deleteOrder" parameterType="JOYOrder">
+	     update JOY_Order set delMark=#{delMark}, state=#{state}
+	        <where>
+	               mobileNo = #{mobileNo}  
+	                	<if test="carId!=null">
+                	        and   carId=#{carId}  
+                	   	</if>
+                	   	<if test="carVinNum!=null">
+                	        and   carVinNum=#{carVinNum}  
+                	   	</if>
+	        </where>
+	</update>
+	
+	<update id="updateOrderStop" parameterType="JOYOrder">
+	     update JOY_Order set state=#{state},stopTime = #{stopTime}
+	        <where>
+	               mobileNo = #{mobileNo} and carId = #{carId} and delMark=#{delMark}
+	        </where>
+	</update>
+	
+	
+	
+	<update id="updateNOrderStop" parameterType="JOYOrder">
+	     update JOY_Order set state=#{state},stopTime = #{stopTime}
+	        <where>
+	               mobileNo = #{mobileNo} and carVinNum = #{carVinNum} and delMark=#{delMark}
+	        </where>
+	</update>
+	
+	
+	
+	<select id="getNeededOrder" resultType="JOYOrder" parameterType="map">
+	       select <include refid="userColumn"/>
+					from JOY_Order  u 
+		   <trim suffixOverrides="and">
+				<where>
+                	   <if test="carId!=null">
+                	          carId=#{carId} and 
+                	   </if>
+                	   <if test="mobileNo!=null">
+                	          mobileNo=#{mobileNo} and
+                	   </if>
+                	   <if test="delMark!=null">
+                	          delMark=#{delMark} and
+                	   </if>
+                	    <if test="state!=null">
+                	          state=#{state} and
+                	   </if>   
+                	    <if test="startId!=null">
+                	          id  &lt; #{startId}
+                	   </if>   
+                </where>  
+			</trim>
+			   order by u.id desc limit 20
+	</select>
+	
+	<update id="changeBatonMode" parameterType="JOYOrder">
+	       update JOY_Order u   set batonMode = #{batonMode}
+		   <trim suffixOverrides="and">
+				<where>
+                	   <if test="carId!=null">
+                	          carId=#{carId} and 
+                	   </if>
+                	   <if test="mobileNo!=null">
+                	          mobileNo=#{mobileNo} and
+                	   </if>
+                	   <if test="delMark!=null">
+                	          delMark=#{delMark} and
+                	   </if>
+                	   
+                </where>  
+			</trim>
+	</update>
+	
+	<update id="changeNBatonMode" parameterType="JOYOrder">
+	       update JOY_Order u   set batonMode = #{batonMode}
+		   <trim suffixOverrides="and">
+				<where>
+                	   <if test="carVinNum!=null">
+                	          carVinNum=#{carVinNum} and 
+                	   </if>
+                	   <if test="mobileNo!=null">
+                	          mobileNo=#{mobileNo} and
+                	   </if>
+                	   <if test="delMark!=null">
+                	          delMark=#{delMark} and
+                	   </if>
+                	   
+                </where>  
+			</trim>
+	</update>
+	
+	
+	
+	<update id="updateDestination" parameterType="JOYOrder">
+	       update JOY_Order u   set destination = #{destination}
+		   <trim suffixOverrides="and">
+				<where>
+                	   <if test="carId!=null">
+                	          carId=#{carId} and 
+                	   </if>
+                	   <if test="mobileNo!=null">
+                	          mobileNo=#{mobileNo} and
+                	   </if>
+                	   <if test="delMark!=null">
+                	          delMark=#{delMark} and
+                	   </if>
+                </where>  
+			</trim>
+	</update>
+	
+	
+	<update id="updateNDestination" parameterType="JOYOrder">
+	       update JOY_Order u   set destination = #{destination}
+		   <trim suffixOverrides="and">
+				<where>
+                	   <if test="carVinNum!=null">
+                	          carVinNum=#{carVinNum} and 
+                	   </if>
+                	   <if test="mobileNo!=null">
+                	          mobileNo=#{mobileNo} and
+                	   </if>
+                	   <if test="delMark!=null">
+                	          delMark=#{delMark} and
+                	   </if>
+                </where>  
+			</trim>
+	</update>
+	
+	
+	
+	
+	<select id="getJOYOrderById" resultType="JOYOrder" parameterType="map">
+	       select <include refid="userColumn"/>
+					from JOY_Order  u  where u.id = #{id};
+	</select>
+	
+	
+	
+	
+</mapper>	

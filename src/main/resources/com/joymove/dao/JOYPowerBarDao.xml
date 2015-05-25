@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.joymove.dao.JOYPowerBarDao">
+	<!--
+	<resultMap type="JOYPowerBar" id="joypowerbar">
+		<constructor>
+			<idArg column="id" javaType="Integer"/>
+			<arg column="positionX" javaType="java.math.BigDecimal"/>
+			<arg column="positionY" javaType="java.math.BigDecimal"/>
+			<arg column="desp" javaType="String"/>
+		</constructor>
+	</resultMap>
+	
+	<sql id="userColumn">
+			u.id,
+			u.positionX,
+			u.positionY,
+			u.desp
+	</sql>
+	-->
+	<sql id="userColumn"> * </sql>
+	<select id="getPowerBarByScope" resultType="JOYPowerBar" parameterType="map">
+		select <include refid="userColumn"/>
+		from JOY_PowerBar  u 
+			<where>
+				    GetDistance1(#{userPositionY},u.positionY,#{userPositionX},u.positionX) &lt; #{scope}  
+           </where>
+	</select>
+</mapper>	

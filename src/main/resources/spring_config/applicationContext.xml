@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+						http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+						 http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring 
+						 http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd"
+	default-autowire="byType">
+
+
+
+  <!--
+	
+	<ehcache:annotation-driven  cache-manager="cacheManager" />
+    
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"
+        p:config-location="classpath:/ehcache-test.xml" p:shared="true"
+    />
+   -->
+    
+	<import resource="applicationContext-bean.xml"/>
+	
+	
+	
+
+    
+	
+	<bean name="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:mysql://123.57.151.176:3306/${joy_db.name}</value>
+		</property>
+		<property name="username">
+			<value>root</value>
+		</property>
+		<property name="password">
+			<value>Qrj12345</value>
+		</property>
+		
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis_config.xml"></property>
+	</bean>
+    
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="basePackage" value="com.joymove.dao" />
+	</bean>
+	
+	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">   
+    	<property name="dataSource" ref="dataSource"></property>
+ 	</bean>   
+	
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="delete*" propagation="REQUIRED" read-only="false" 
+			           rollback-for="java.lang.Exception"/>
+			<tx:method name="insert*" propagation="REQUIRED" read-only="false" 
+			           rollback-for="java.lang.Exception" />
+			<tx:method name="update*" propagation="REQUIRED" read-only="false" 
+			           rollback-for="java.lang.Exception" />
+			
+			<tx:method name="find*" propagation="SUPPORTS"/>
+			<tx:method name="get*" propagation="SUPPORTS"/>
+			<tx:method name="select*" propagation="SUPPORTS"/>
+		</tx:attributes>
+	</tx:advice>
+	 <bean id="retryAdvice"
+     			 class="org.springframework.retry.interceptor.RetryOperationsInterceptor">
+		    <property name="retryOperations">
+		        <bean class="org.springframework.retry.support.RetryTemplate">
+		            <property name="retryPolicy">
+		                <bean class="org.springframework.retry.policy.SimpleRetryPolicy">
+		                   <property name="MaxAttempts" value="4"/>
+		                </bean>
+		            </property>
+		            <property name="backOffPolicy">
+		                <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
+		                    <property name="initialInterval" value="50"/>
+		                    <property name="maxInterval" value="800"/>
+		                    <property name="multiplier" value="1.5"/>
+		                </bean>
+		            </property>
+		        </bean>
+		    </property>
+  		</bean>
+	  
+  
+	
+	<aop:config>
+	    <aop:pointcut id="retry_car_update_state"
+		            expression="execution(* com.futuremove.cacheServer.service.impl.CarServiceImpl.updateCarState*(..))" />
+		<aop:pointcut id="retry_car_clear_reserve"
+		            expression="execution(* com.futuremove.cacheServer.service.impl.CarServiceImpl.clearExpireReserve(..))" />
+		<aop:pointcut id="pc" expression="execution(* com.joymove.service.impl.*.*(..))" />
+		<aop:advisor pointcut-ref="pc" advice-ref="txAdvice" />        
+   
+		<aop:advisor pointcut-ref="retry_car_update_state"
+		                 advice-ref="retryAdvice"/> 
+		 <aop:advisor pointcut-ref="retry_car_clear_reserve"
+		                 advice-ref="retryAdvice"/> 
+
+	</aop:config>
+	
+	
+	
+	
+</beans>

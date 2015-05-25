@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joymove.dao.JOYCouponDao">
+	<!--
+	<resultMap type="JOYCoupon" id="joycoupon">
+		<constructor>
+			<idArg column="couponId" javaType="Integer" />
+			<arg column="mobileNo" javaType="String" />
+			<arg column="couponNum" javaType="java.math.BigDecimal"/>
+			<arg column="couponExpDate" javaType="java.util.Date"/>
+			<arg column="overdueTime" javaType="java.util.Date"/>
+			<arg column="delMark" javaType="Integer"/>
+		</constructor>
+	</resultMap>
+
+	<sql id="couponColumn">u.couponId, 
+	                     u.mobileNo, 
+	                     u.couponNum, 
+	                     u.couponExpDate,
+	                     u.overdueTime,
+	                     u.delMark
+	</sql>
+	-->
+	<sql id="couponColumn"> * </sql>
+	<sql id="likeCondition"> like </sql>
+	
+	<insert id="insertJOYCoupon" parameterType="JOYCoupon">
+		insert into JOY_Coupon(mobileNo,couponNum,overdueTime) values(#{mobileNo},#{couponNum},#{overdueTime});
+		
+	</insert>
+	
+	
+	
+	
+	
+	<select id="getJOYCoupon" resultType="JOYCoupon" parameterType="map">
+	select <include refid="couponColumn"/>
+	from JOY_Coupon  u
+	 where u.mobileNo=#{mobileNo} and u.delMark=#{delMark};
+	</select>
+	
+	
+	
+	
+	<select id="getCouponById" resultType="JOYCoupon" parameterType="Long">
+		select <include refid="couponColumn"/>
+		from JOY_Coupon  u
+		 where u.couponId=#{couponId};
+	</select>
+	
+	<update id="deleteCouponById" parameterType="Long">
+	     update JOY_Coupon u set delMark=1
+	        <where>
+	               u.couponId = #{couponId}
+	        </where>
+	</update>
+</mapper>	
