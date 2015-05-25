@@ -41,6 +41,7 @@ import com.joymove.service.JOYNOrderService;
 import com.joymove.service.JOYNReserveOrderService;
 import com.joymove.service.JOYOrderService;
 import com.joymove.service.JOYUserService;
+import com.joymove.redis.RedisCmd;
 
 @Scope("prototype")
 @Controller("JOYNCarController")
@@ -58,6 +59,10 @@ public class JOYNCarController {
 	private JOYOrderService joyOrderService;
 	@Resource(name = "JOYUserService")
 	private JOYUserService joyUserService;
+
+	@Resource(name = "RedisCmd")
+	private RedisCmd redisCmd;
+
 
 	
 	

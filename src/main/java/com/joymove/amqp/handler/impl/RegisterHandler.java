@@ -19,6 +19,8 @@ import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.test.slf4j.testSlf4J;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.WebApplicationContext;
 
 public class RegisterHandler  implements EventHandler {
 
@@ -29,8 +31,9 @@ public class RegisterHandler  implements EventHandler {
 		try {
 			
 			    logger.info("register handler called !!");
-			    
-				String postUrl = ConfigUtils.getPropValues("registerAck.url");
+			    //WebApplicationContext context = ContextLoader.getCurrentWebApplicationContext();
+
+			String postUrl = ConfigUtils.getPropValues("registerAck.url");
 				json.put("vinNum", json.get("vin"));
 				HttpPostUtils.post(postUrl, json);
 				logger.info("send data to joymove success");

@@ -119,15 +119,16 @@
 		                  
 		   <aop:pointcut id="retry_car_service"
 		                  expression="execution(* com.futuremove.cacheServer.service.impl.*.*(..))" />
-		  
-		  
-		                 
-		                 <aop:pointcut id="retry_car_update_state"
+
+
+
+         <aop:pointcut id="retry_car_update_state"
 		            expression="execution(* com.futuremove.cacheServer.service.impl.CarServiceImpl.updateCarState*(..))" />
-		<aop:advisor pointcut-ref="retry_car_update_state"
-		                 advice-ref="retryAdvice"/> 
-	  
-	</aop:config>
+		 <aop:advisor pointcut-ref="retry_car_update_state"
+		                 advice-ref="retryAdvice"/>
+
+
+     </aop:config>
 
      
      <bean id="retryAdvice"
