@@ -14,11 +14,18 @@ import org.slf4j.LoggerFactory;
 
 import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.utils.ConfigUtils;
+import org.springframework.stereotype.Component;
 
+@Component("ReportClearCodeHandler")
 public class ReportClearCodeHandler  implements EventHandler {
 
 	final static Logger logger = LoggerFactory.getLogger(ReportClearCodeHandler.class);
-	
+
+
+	public int getEventType() {
+		return 5;
+	}
+
 	@Override
 	public boolean handleData(JSONObject json) {
 		boolean error=false;

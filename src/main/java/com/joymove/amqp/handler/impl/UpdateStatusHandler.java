@@ -16,7 +16,9 @@ import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
+import org.springframework.stereotype.Component;
 
+@Component("UpdateStatusHandler")
 public class UpdateStatusHandler  implements EventHandler {
 
 	final static Logger logger = LoggerFactory.getLogger(UpdateStatusHandler.class);
@@ -30,7 +32,13 @@ public class UpdateStatusHandler  implements EventHandler {
 	public void setCarService(CarService carService) {
 		this.carService = carService;
 	}
-	
+
+
+
+	public int getEventType() {
+		return 3;
+	}
+
 	
 
 	public UpdateStatusHandler(CarService carService) {
@@ -50,7 +58,6 @@ public class UpdateStatusHandler  implements EventHandler {
 		try {
 			
 			logger.info("update car status  handler called !!");
-			 
 			Car car = new Car();
 			car.setLatitude((Double)json.get("latitude"));
 			car.setLongitude((Double)json.get("longitude"));

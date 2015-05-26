@@ -2,6 +2,7 @@ package com.joymove.amqp.consumers;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,27 +22,22 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
+import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component("rabbitmqConsumer")
 public class CMConsumer implements Consumer{
 	
 	public final Logger logger = LoggerFactory.getLogger(CMConsumer.class);
-	 
-	
-	private Hashtable<String,EventHandler> handlersMap = new Hashtable<String,EventHandler>();
-	
-	public CMConsumer() {
-		
-	
-		logger.warn("MQConsumer init  !!!");
-		ApplicationContext context = SpringContextUtils.context;
-		handlersMap.put("1", (RegisterHandler)context.getBean("registerHandler"));
-		handlersMap.put("2", (ReportSendKeyHandler)context.getBean("reportSendKeyHandler"));
-		handlersMap.put("3", (UpdateStatusHandler)context.getBean("updateStatusHandler"));
-		handlersMap.put("4", (ReportSendCodeHandler)context.getBean("reportSendCodeHandler"));
-		handlersMap.put("5", (ReportClearCodeHandler)context.getBean("reportClearCodeHandler"));
-		logger.warn("init amqp consumer over");
-		
-	}
+
+	@Autowired
+	public List<EventHandler> handerList;
+
+
+
+
+
 
 	public void handleCancel(String arg0) throws IOException {}
 
@@ -51,24 +47,23 @@ public class CMConsumer implements Consumer{
 	public void handleConsumeOk(String arg0) {}
 
 	/** Called when new message is available.*/
-	public void handleDelivery(String arg0, Envelope arg1,
-			BasicProperties arg2, byte[] arg3) {
+	public void handleDelivery(String arg0, Envelope arg1, BasicProperties arg2, byte[] arg3) {
 		try {
-		    String res = new String(arg3);
-			//System.out.println("data is "+res);
-			
-			
-			logger.warn(res);
-			
-			JSONParser parser=new JSONParser();
+		    	String res = new String(arg3);
+				logger.warn(res);
+				JSONParser parser=new JSONParser();
 			 
 				 Map json = (Map)parser.parse(res);
 				 logger.warn("show the parse result");
 				 logger.warn(json.toString());
-				 EventHandler eventHandler = handlersMap.get(String.valueOf(json.get("type")));
-				 logger.warn("the to called handler is "+eventHandler.toString());
-				 JSONObject json_data = (JSONObject)json.get("data");
-				 eventHandler.handleData(json_data);
+			     Integer eventType = Integer.parseInt(json.get("type").toString());
+			     for(EventHandler handler:handerList) {
+					 if(handler.getEventType() == eventType) {
+						 logger.warn("the to called handler is " + handler.toString());
+						 JSONObject json_data = (JSONObject)json.get("data");
+						 handler.handleData(json_data);
+					 }
+				 }
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

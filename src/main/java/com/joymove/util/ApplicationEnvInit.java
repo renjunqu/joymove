@@ -66,6 +66,7 @@ public class ApplicationEnvInit implements ServletContextListener {
 			    WebApplicationContext context = ContextLoader.getCurrentWebApplicationContext();
 				Connection conn = (Connection)context.getBean("rabbitmqConn");
 				Consumer consumer = (Consumer)context.getBean("rabbitmqConsumer");
+			    System.out.println("======================== "+consumer.toString());
 				ApplicationEnvInit.channel = conn.createChannel();
 				ApplicationEnvInit.channel.basicConsume(queueName, true,"qrjCus1",consumer);
 				CMShutdownListener  listener = new  CMShutdownListener();
@@ -82,6 +83,10 @@ public class ApplicationEnvInit implements ServletContextListener {
 	}
 	
 	public static void main(String[]args){
+        System.out.println("Hello");
+        // ApplicationContext context = new ClassPathXmlApplicationContext("classpath:applicationContext-mvc.xml");
+		// Consumer consumer = (Consumer)context.getBean("rabbitmqConsumer");
+
 
 		
 	}

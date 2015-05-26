@@ -199,26 +199,11 @@ public class JOYNCarController {
 	
 	
 	
-	/*******  receive regiter packet from the cloudmove *************/
-	@RequestMapping(value={"newcar/registerCarAck"}, method=RequestMethod.POST)
-	public  @ResponseBody JSONObject registerCarAck(HttpServletRequest req){
-		 logger.error("registerCarAck method was invoked...");
-		 
-		 Map<String,Object> likeCondition = new HashMap<String, Object>();
-		 JSONObject Reobj=new JSONObject();
-		 
-		 try {
-			 logger.info("qrj: cloudmove tell the car send register packet to him ");
-		 } catch(Exception e){
-			 logger.debug(e.toString());
-		 }
-		 return Reobj;
-	}
-	
+
 	/*****     send key to car failed or success ************/
 	@RequestMapping(value={"newcar/sendKeyReq"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject sendKeyReq(HttpServletRequest req){
-		 logger.error("registerCarAck method was invoked...");
+		 logger.error("sendKeyReq method was invoked...");
 		 Map<String,Object> condition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -245,80 +230,7 @@ public class JOYNCarController {
 		 return Reobj;
 	}
 	
-	
-	
-	 
-	/*****     send key to car failed or success ************/
-	@RequestMapping(value={"newcar/sendKeyAck"}, method=RequestMethod.POST)
-	public  @ResponseBody JSONObject sendKeyAck(HttpServletRequest req){
-		 logger.error("registerCarAck method was invoked...");
-		 Map<String,Object> likeCondition = new HashMap<String, Object>();
-		 JSONObject Reobj=new JSONObject();
-		 
-		 try {
-			 logger.debug("get the send key report from clouemove");
-			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 JOYNCar car =new JOYNCar();
-			 car.registerState = (1);
-			 car.vinNum = ((String)jsonObj.get("vinNum"));
-			 logger.debug("update car's register state ");
-			 joyNCarService.updateCarRegisterState(car);
-			 //add a new car entity to mongo 
-			 logger.debug("now ,save the new car info into mongo");
-			 Car cacheCar = cacheCarService.getByVinNum(car.vinNum);
-			 if(cacheCar==null) {
-				 cacheCar = new Car();
-				 cacheCar.setVinNum(car.vinNum);
-				 cacheCar.setLongitude(0.0);
-				 cacheCar.setLatitude(0.0);
-				 cacheCar.setState(Car.state_free);
-				 cacheCarService.save(cacheCar);
-				 logger.debug("now , register car ack ok");
-			 }
-		 } catch(Exception e){
-			 logger.error(e.toString());
-			 
-		 }
-	
-		 return Reobj;
-	}
-	
-	/***********  send code to car success or failed  *******************/
-	//this method called by amqp
-	@RequestMapping(value={"newcar/sendCodeAck"}, method=RequestMethod.POST)
-	public   @ResponseBody JSONObject  sendCodeAck(HttpServletRequest req){
-		 logger.error("sendCodeAck method was invoked...");
-		 Map<String,Object> likeCondition = new HashMap<String, Object>();
-		 JSONObject Reobj = new JSONObject();
-		 Reobj.put("result", "10001");
-		 
-		 try {
-			 logger.debug("get the send code report from clouemove");
-			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 String vinNum = (String)jsonObj.get("vinNum");
-			 Car car = new Car();
-			 car.setVinNum(vinNum);
-			 car = cacheCarService.getByVinNum(vinNum);
-			 if(car.getState()==Car.state_wait_code) {
-				 
-				 JOYOrder order = new JOYOrder();
-	    	     order.mobileNo = (car.getOwner());
-	    	     order.carVinNum = (car.getVinNum());
-	    	     joyNOrderService.insertNOrder(order);
-	    	     //if exception happens, the car will be state in wait_code stage,wait the user's cancel
-	    	     cacheCarService.updateCarStateBusy(car);
-			 }
-			 
-			 Reobj.put("result", "10000");
-			 logger.debug("now , send car ack ok");
-		 } catch(Exception e){
-			 logger.error(e.toString());
-			 
-		 }
-	
-		 return Reobj;
-	}
-	
+
 	/*****     remote lock闂侀潧妫旈懣鍣塴ock闂侀潧妫旂粻宄歡e blow ************/
 	@RequestMapping(value={"newcar/lock","newcar/unlock","newcar/blow","newcar/vague"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject carOperations(HttpServletRequest req){
@@ -643,13 +555,4 @@ public class JOYNCarController {
 		 }
 		 return Reobj;
 	}
-	
-
-
-	
-	
-	
-	
-	
-
 }

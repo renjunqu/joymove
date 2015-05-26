@@ -48,27 +48,9 @@
            <property name="ip" value="${amqp.ip}" />
            <property name="port" value="5672" />
     </bean>
-    
+
+    <!--
      <bean id="rabbitmqConsumer" class="com.joymove.amqp.consumers.CMConsumer">
     </bean>
-    
-    
-    
-     <!-- cache service  ***************************************************  -->
-    <bean id="carService" class="com.futuremove.cacheServer.service.impl.CarServiceImpl"> 
-            <property name="carDao" ref="carDao"/>
-            <property name="dynamicMatDao" ref="dynamicMatDao"/>
-            <property name="staticMatDao" ref="staticMatDao"/>
-    </bean>
-    
-     <!-- cache dao  ***************************************************  -->
-     <bean id="carDao" class="com.futuremove.cacheServer.dao.CarDao">
-           <property name="datastore" ref="datastore"/>
-     </bean>
-     <bean id="dynamicMatDao" class="com.futuremove.cacheServer.dao.DynamicMatDao">
-      		<property name="datastore" ref="datastore"/>
-     </bean>
-     <bean id="staticMatDao" class="com.futuremove.cacheServer.dao.StaticMatDao">
-      		<property name="datastore" ref="datastore"/>
-     </bean>
+    -->
 </beans>
