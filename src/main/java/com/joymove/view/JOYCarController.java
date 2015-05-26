@@ -1,5 +1,4 @@
 package com.joymove.view;
-import java.math.BigDecimal;
 import java.util.HashMap;
 
 import java.util.ArrayList;
@@ -340,6 +339,7 @@ public class JOYCarController {
 		    	   Reobj.put("batonMode", cOrder.batonMode);
 		    	   Reobj.put("state",cOrder.state);
 		    	   Reobj.put("destination",cOrder.destination);
+				   Reobj.put("authCode", "123456");
 		    	   if(cOrder.state == JOYOrder.state_wait_pay) {
 		    		   Reobj.put("stopTime", cOrder.stopTime.getTime());
 		    	   }

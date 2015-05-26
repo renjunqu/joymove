@@ -17,6 +17,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.mongodb.morphia.Datastore;
 import org.quartz.Scheduler;
+import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -43,6 +44,7 @@ import com.joymove.service.JOYOrderService;
 import com.joymove.service.JOYUserService;
 import com.joymove.redis.RedisCmd;
 
+
 @Scope("prototype")
 @Controller("JOYNCarController")
 public class JOYNCarController {
@@ -60,8 +62,6 @@ public class JOYNCarController {
 	@Resource(name = "JOYUserService")
 	private JOYUserService joyUserService;
 
-	@Resource(name = "RedisCmd")
-	private RedisCmd redisCmd;
 
 
 	
@@ -329,30 +329,68 @@ public class JOYNCarController {
 		 try {
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");;
 			 String vinNum = (String)jsonObj.get("carId");
+			 JOYNCar car = new JOYNCar();
+			 car.vinNum = vinNum;
 			 String URI = req.getRequestURI();
 			 String url = null;
 			 String data = null; 
 			 String timeStr = String.valueOf(System.currentTimeMillis());
+			 String operation = "";
+			 String result="";
+			 JSONParser parser = new JSONParser();
+			 Integer opResult = 0;
 			 if(URI.contains("unlock")) {
+				 operation  = "unlock";
 				 url = ConfigUtils.getPropValues("cloudmove.unlock");
 				 data = "vin="+vinNum+"&time="+timeStr;
+				 result = HttpPostUtils.post(url, data);
+				 JSONObject cmObj = (JSONObject)parser.parse(result);
+				 opResult = (Integer)cmObj.get("result");
+				 if(opResult==1) {
+					 Reobj.put("result","10000");
+					 car.lockState = 0;
+					 joyNCarService.updateCarLockState(car);
+				 }
+
 			 } else if(URI.contains("lock")) {
+				 operation  = "lock";
 				 url = ConfigUtils.getPropValues("cloudmove.lock");
 				 data = "vin="+vinNum+"&time="+timeStr;
+				 result = HttpPostUtils.post(url, data);
+				 JSONObject cmObj = (JSONObject)parser.parse(result);
+				 opResult = (Integer)cmObj.get("result");
+				 if(opResult==1) {
+					 Reobj.put("result","10000");
+					 car.lockState = 1;
+					 joyNCarService.updateCarLockState(car);
+				 }
 			 } else if(URI.contains("blow")) {
+				 operation  = "blow";
 				 url = ConfigUtils.getPropValues("cloudmove.blow");
 				 data = "vin="+vinNum+"&time="+timeStr +"&duration=10&interval=1";
-				 
+				 result = HttpPostUtils.post(url, data);
+				 JSONObject cmObj = (JSONObject)parser.parse(result);
+				 opResult = (Integer)cmObj.get("result");
+				 if(opResult==1) {
+					 Reobj.put("result","10000");
+
+				 }
 			 } else if(URI.contains("vague")) {
+				 operation  = "vague";
 				 url = ConfigUtils.getPropValues("cloudmove.vague");
 				 data = "vin="+vinNum+"&time=" + timeStr + "&duration=10&interval=1";
+				 result = HttpPostUtils.post(url, data);
+				 JSONObject cmObj = (JSONObject)parser.parse(result);
+				 opResult = (Integer)cmObj.get("result");
+				 if(opResult==1) {
+					 Reobj.put("result","10000");
+
+				 }
 			 }
-			 String result = HttpPostUtils.post(url, data);
-			 logger.info("qrj: send data to cloudmove  success,data is ");
-			 logger.info(data);
-			 logger.info("qrj: now show the results");
-			 logger.info(result);
-			 Reobj.put("result", "10000");
+
+
+
+			// Reobj.put("result", "10000");
 		 } catch(Exception e){
 			 logger.error("qrj:" + e.toString());
 		 }
@@ -363,99 +401,7 @@ public class JOYNCarController {
 	
 	
 	
-	
-	@RequestMapping(value={"newcar/rentCarReq"}, method=RequestMethod.POST)
-	public  @ResponseBody JSONObject rentCarReq(HttpServletRequest req){
-		 logger.error("rentCarReq method was invoked...");
-		 Map<String,Object> likeCondition = new HashMap<String, Object>();
-		 JSONObject Reobj=new JSONObject();
-		 Reobj.put("result", "10001");
-		 Car cacheCar = null;
-		 Car car  = null;
-		 try {    
-			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 String vinNum = jsonObj.get("carId").toString();
-			 String mobileNo = jsonObj.get("mobileNo").toString();
-			//first check the user's auth state =======================================================
-			 JOYUser user = new JOYUser();
-			 user.mobileNo = mobileNo; //setMobileNo(mobileNo);
-			 String authStateErrMsg = joyUserService.checkUserState(user);
-			 if(authStateErrMsg!=null) {
-				 Reobj.put("result","10004");
-				 Reobj.put("errMsg", authStateErrMsg);
-				 return Reobj;
-			 }
-			 //then check tue user's rent state
-			 cacheCar = new Car();
-			 cacheCar.setOwner(mobileNo);
-			 cacheCar.setState(Car.state_free);
-			 cacheCar =  cacheCarService.getByOwnerAndNotState(cacheCar);
-			 if(cacheCar!=null && cacheCar.getVinNum().equals(vinNum)) {
-				 car = cacheCar;
-			 } else if(cacheCar==null){
-				 	car  = cacheCarService.getByVinNum(vinNum); 
-			 } else {
-				 Reobj.put("errMsg", "alread rent or reserved");
-				 return Reobj;
-			 }
-			 //check the order state 
-			 likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			 likeCondition.put("delMark", JOYOrder.NON_DEL_MARK);
-			 List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
-			 if(orders.size()>0) {
-			     Reobj.put("errMsg", "has not payed order");
-				 return Reobj;
-				 
-			 }
-			 //then test the car ===================================================================
-			 if(car!=null && ((car.getState() == Car.state_free) || (car.getState()==Car.state_reserved  && car.getOwner().equals(mobileNo)))) {
-				 car.setOwner(mobileNo);
-				 cacheCarService.updateCarStateWaitCode(car);
-				 car  = cacheCarService.getByVinNum(car.getVinNum()); 
-				 //check if update success
-				 if(car.getState()==Car.state_wait_code && car.getOwner().equals(mobileNo)) {
-						 //send auth code to cloudmove  *************************************
-						 String timeStr = String.valueOf(System.currentTimeMillis());
-						 String url = ConfigUtils.getPropValues("cloudmove.sendAuth");
-						 String data = "time="+timeStr+"&vin="+car.getVinNum()+"&auth=123456";
-						 String result = HttpPostUtils.post(url, data);
-						 logger.info("send data to cloudmove  success,data is ");
-						 logger.info(data);
-						 logger.info("now show the results");
-						 logger.info(result);
-						 Reobj.put("result", "10000");  
-				 } else {
-					 Reobj.put("errMsg", "租车失败，该车已经被其他用户占用，请换租其他车辆");
-				 } 
-				 
-			 }  else if (car!=null && car.getState() == Car.state_wait_code  && car.getOwner().equals(mobileNo)){
-				 //trust in cm, this state will be changed
-				 /*
-				 JSONObject json = new JSONObject();
-				 json.put("vin", car.getVinNum());
-				 json.put("auth","123456");
-				 SimpleDateFormat   dateFormatter   =   new   SimpleDateFormat   ("yyyy-MM-dd   HH:mm:ss     ");   
-				 json.put("time", dateFormatter.format(new   Date(System.currentTimeMillis())));
-				 String url = ConfigUtils.getPropValues("cloudmove.sendAuth");
-				 String result = HttpPostUtils.post(url, json);
-				 logger.info("send data to cloudmove  success,data is ");
-				 logger.info(json.toJSONString());
-				 logger.info("now show the results");
-				 logger.info(result);
-				 Reobj.put("result", "10000");
-				 */
-			 } else  {
-				 Reobj.put("errMsg", "Car state not right");
-			 }
-		 } catch(Exception e){
-			 Reobj.put("errMsg", e.toString());
-			 logger.error(e.toString());
-		 }
-	
-		 return Reobj;
-	}
-	
-	
+
 	
 	
 	@RequestMapping(value={"newcar/rentCarAck"}, method=RequestMethod.POST)
@@ -474,7 +420,7 @@ public class JOYNCarController {
 			 if(mobileNo.equals(car.getOwner())) {
 				 if(car.getState() == Car.state_wait_code) {
 					 Reobj.put("result", "10001");
-					 Reobj.put("errMsg","not ready");
+					 Reobj.put("errMsg", "not ready");
 				 } else if (car.getState() == Car.state_busy) {
 					 // the order alreay created, now return the orderId
 					 likeCondition.put("carVinNum", car.getVinNum());
@@ -493,7 +439,7 @@ public class JOYNCarController {
 			 }
 		 } catch(Exception e){
 			 logger.error(e.toString());
-			 Reobj.put("errMsg",e.toString());
+			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
 	}
@@ -532,6 +478,122 @@ public class JOYNCarController {
 		 }
 		 return Reobj;
 	}
+
+	@RequestMapping(value={"newcar/getCarLockState"}, method=RequestMethod.POST)
+	public  @ResponseBody JSONObject getCarLockState(HttpServletRequest req){
+		logger.error("getCarLockState method was invoked...");
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JSONObject Reobj=new JSONObject();
+		Reobj.put("result", "10001");
+
+		try {
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			String vinNum = jsonObj.get("carId").toString();
+			likeCondition.put("vinNum",vinNum);
+			List<JOYNCar> cars = joyNCarService.getNeededCar(likeCondition);
+			JOYNCar car  = cars.get(0);
+			Reobj.put("lockState",car.lockState);
+            Reobj.put("result","10000");
+		} catch(Exception e){
+			Reobj.put("errMsg", e.toString());
+			logger.error(e.toString());
+		}
+
+		return Reobj;
+	}
+
+
+	@RequestMapping(value={"newcar/rentCarReq"}, method=RequestMethod.POST)
+	public  @ResponseBody JSONObject rentCarReq(HttpServletRequest req){
+		logger.error("rentCarReq method was invoked...");
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JSONObject Reobj=new JSONObject();
+		Reobj.put("result", "10001");
+		Car cacheCar = null;
+		Car car  = null;
+		try {
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			String vinNum = jsonObj.get("carId").toString();
+			String mobileNo = jsonObj.get("mobileNo").toString();
+			//first check the user's auth state =======================================================
+			JOYUser user = new JOYUser();
+			user.mobileNo = mobileNo; //setMobileNo(mobileNo);
+			String authStateErrMsg = joyUserService.checkUserState(user);
+			if(authStateErrMsg!=null) {
+				Reobj.put("result","10004");
+				Reobj.put("errMsg", authStateErrMsg);
+				return Reobj;
+			}
+			//then check tue user's rent state
+			cacheCar = new Car();
+			cacheCar.setOwner(mobileNo);
+			cacheCar.setState(Car.state_free);
+			cacheCar =  cacheCarService.getByOwnerAndNotState(cacheCar);
+			if(cacheCar!=null && cacheCar.getVinNum().equals(vinNum)) {
+				car = cacheCar;
+			} else if(cacheCar==null){
+				car  = cacheCarService.getByVinNum(vinNum);
+			} else {
+				Reobj.put("errMsg", "alread rent or reserved");
+				return Reobj;
+			}
+			//check the order state
+			likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
+			likeCondition.put("delMark", JOYOrder.NON_DEL_MARK);
+			List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
+			if(orders.size()>0) {
+				Reobj.put("errMsg", "has not payed order");
+				return Reobj;
+
+			}
+			//then test the car ===================================================================
+			if(car!=null && ((car.getState() == Car.state_free) || (car.getState()==Car.state_reserved  && car.getOwner().equals(mobileNo)))) {
+				car.setOwner(mobileNo);
+				cacheCarService.updateCarStateWaitCode(car);
+				car  = cacheCarService.getByVinNum(car.getVinNum());
+				//check if update success
+				if(car.getState()==Car.state_wait_code && car.getOwner().equals(mobileNo)) {
+					//send auth code to cloudmove  *************************************
+					String timeStr = String.valueOf(System.currentTimeMillis());
+					String url = ConfigUtils.getPropValues("cloudmove.sendAuth");
+					String data = "time="+timeStr+"&vin="+car.getVinNum()+"&auth=123456";
+					String result = HttpPostUtils.post(url, data);
+					logger.info("send data to cloudmove  success,data is ");
+					logger.info(data);
+					logger.info("now show the results");
+					logger.info(result);
+					Reobj.put("result", "10000");
+				} else {
+					Reobj.put("errMsg", "租车失败，该车已经被其他用户占用，请换租其他车辆");
+				}
+
+			}  else if (car!=null && car.getState() == Car.state_wait_code  && car.getOwner().equals(mobileNo)){
+				//trust in cm, this state will be changed
+				 /*
+				 JSONObject json = new JSONObject();
+				 json.put("vin", car.getVinNum());
+				 json.put("auth","123456");
+				 SimpleDateFormat   dateFormatter   =   new   SimpleDateFormat   ("yyyy-MM-dd   HH:mm:ss     ");
+				 json.put("time", dateFormatter.format(new   Date(System.currentTimeMillis())));
+				 String url = ConfigUtils.getPropValues("cloudmove.sendAuth");
+				 String result = HttpPostUtils.post(url, json);
+				 logger.info("send data to cloudmove  success,data is ");
+				 logger.info(json.toJSONString());
+				 logger.info("now show the results");
+				 logger.info(result);
+				 Reobj.put("result", "10000");
+				 */
+			} else  {
+				Reobj.put("errMsg", "Car state not right");
+			}
+		} catch(Exception e){
+			Reobj.put("errMsg", e.toString());
+			logger.error(e.toString());
+		}
+
+		return Reobj;
+	}
+
 	
 	
 	@RequestMapping(value="newcar/changeBatonMode", method=RequestMethod.POST)
