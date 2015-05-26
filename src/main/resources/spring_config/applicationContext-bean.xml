@@ -18,7 +18,7 @@
                </array>
            </property>
     </bean>
-    
+
     
     <bean id="morphia" class="com.futuremove.cacheServer.beans.MorphiaFactoryBean">
           <property name="mapPackages">
@@ -38,7 +38,7 @@
           <property name="toEnsureCaps" value="true"/>
     </bean>
     
-     <bean id="scheduler" class="com.joymove.beans.QuartzSchedulerFactoryBean">
+     <bean id="scheduler" class="com.futuremove.cacheServer.beans.QuartzSchedulerFactoryBean">
     </bean>
     
     <bean id="rabbitmqConn" class="com.joymove.beans.MQConnFactoryBean">

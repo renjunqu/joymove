@@ -345,7 +345,7 @@ public class JOYNCarController {
 				 data = "vin="+vinNum+"&time="+timeStr;
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
-				 opResult = (Integer)cmObj.get("result");
+				 opResult = Integer.parseInt(cmObj.get("result").toString());
 				 if(opResult==1) {
 					 Reobj.put("result","10000");
 					 car.lockState = 0;
@@ -358,7 +358,7 @@ public class JOYNCarController {
 				 data = "vin="+vinNum+"&time="+timeStr;
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
-				 opResult = (Integer)cmObj.get("result");
+				 opResult = Integer.parseInt(cmObj.get("result").toString());
 				 if(opResult==1) {
 					 Reobj.put("result","10000");
 					 car.lockState = 1;
@@ -370,7 +370,7 @@ public class JOYNCarController {
 				 data = "vin="+vinNum+"&time="+timeStr +"&duration=10&interval=1";
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
-				 opResult = (Integer)cmObj.get("result");
+				 opResult = Integer.parseInt(cmObj.get("result").toString());
 				 if(opResult==1) {
 					 Reobj.put("result","10000");
 
@@ -381,7 +381,7 @@ public class JOYNCarController {
 				 data = "vin="+vinNum+"&time=" + timeStr + "&duration=10&interval=1";
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
-				 opResult = (Integer)cmObj.get("result");
+				 opResult = Integer.parseInt(cmObj.get("result").toString());
 				 if(opResult==1) {
 					 Reobj.put("result","10000");
 
