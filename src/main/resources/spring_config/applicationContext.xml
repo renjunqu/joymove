@@ -24,12 +24,29 @@
    -->
     
 	<import resource="applicationContext-bean.xml"/>
-	
-	
-	
 
-    
-	
+
+
+
+
+
+	<bean id="dataSource" class="org.apache.ibatis.datasource.pooled.PooledDataSource">
+		<property name="driver" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://123.57.151.176:3306/${joy_db.name}" />
+		<property name="username" value="root" />
+		<property name="password" value="Qrj12345" />
+		<property name="poolMaximumIdleConnections" value="10" />
+		<property name="poolMaximumActiveConnections" value="30" />
+	</bean>
+
+
+
+
+
+
+
+
+	<!--
 	<bean name="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName">
@@ -46,7 +63,8 @@
 		</property>
 		
 	</bean>
-	
+   -->
+
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="configLocation" value="classpath:mybatis_config.xml"></property>

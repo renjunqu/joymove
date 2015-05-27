@@ -101,7 +101,7 @@ public class JOYZhifubaoController {
 				System.out.println("deposit is "+deposit);
 				JOYUser user = new JOYUser();
 				user.mobileNo = mobileNo;  //setMobileNo(mobileNo);
-				List<JOYUser> users = joyUserService.getJOYUserByMobileNo(user);
+				List<JOYUser> users = joyUserService.getNeededUser(user);
 				 
 			    if(users.size()==1) {
 			          BigDecimal currDepo = users.get(0).deposit; //.getDeposit();

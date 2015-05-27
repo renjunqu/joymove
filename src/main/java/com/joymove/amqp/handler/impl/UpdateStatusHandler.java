@@ -18,21 +18,16 @@ import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 @Component("UpdateStatusHandler")
 public class UpdateStatusHandler  implements EventHandler {
 
 	final static Logger logger = LoggerFactory.getLogger(UpdateStatusHandler.class);
-	
+
+	@Resource(name = "carService")
 	private  CarService carService;
 	
-	public CarService getCarService() {
-		return carService;
-	}
-
-	public void setCarService(CarService carService) {
-		this.carService = carService;
-	}
-
 
 
 	public int getEventType() {
@@ -41,10 +36,7 @@ public class UpdateStatusHandler  implements EventHandler {
 
 	
 
-	public UpdateStatusHandler(CarService carService) {
-		super();
-		this.carService = carService;
-	}
+
 	
 
 	public UpdateStatusHandler() {
@@ -59,15 +51,16 @@ public class UpdateStatusHandler  implements EventHandler {
 			
 			logger.info("update car status  handler called !!");
 			Car car = new Car();
-			car.setLatitude((Double)json.get("latitude"));
-			car.setLongitude((Double)json.get("longitude"));
-			car.setVinNum((String)json.get("vin"));
+			car.setLatitude(Double.parseDouble(String.valueOf(json.get("latitude"))));
+			car.setLongitude(Double.parseDouble(String.valueOf(json.get("longitude"))));
+			car.setVinNum(String.valueOf(json.get("vin")));
 			logger.info("call carservice to update car loc info !!");
 			carService.updateCarPosition(car);
 			
 			
 		} catch(Exception e){
 			error = true;
+			logger.error(e.toString());
 		}
 		return error;
 	}

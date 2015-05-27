@@ -46,6 +46,11 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>c3p0</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.1.2</version>
+		</dependency>
 
 
 		<dependency>
@@ -166,6 +171,13 @@
 			<artifactId>mybatis</artifactId>
 			<version>3.2.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-guice</artifactId>
+			<version>3.2</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.aspectj</groupId>

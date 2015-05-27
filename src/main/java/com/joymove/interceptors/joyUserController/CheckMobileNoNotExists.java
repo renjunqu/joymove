@@ -45,7 +45,7 @@ public class CheckMobileNoNotExists  extends  HandlerInterceptorAdapter{
 			
 		  JOYUser user = new JOYUser();
 		  user.mobileNo = (String)jsonObj.get("mobileNo"); //setMobileNo((String)jsonObj.get("mobileNo"));
-		  List<JOYUser> users = joyUserService.getJOYUserByMobileNo(user);
+		  List<JOYUser> users = joyUserService.getNeededUser(user);
 		  
 		 
 	      if(users.size()==1) {

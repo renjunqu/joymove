@@ -86,11 +86,11 @@ public class CheckAuthToken extends HandlerInterceptorAdapter {
 		  String authToken = String.valueOf(jsonObj.get("authToken"));
 		  
 		  if(jsonObj !=null && authToken!=null && authToken.length() > 0) {
-		    
-		     Map<String,Object> likeCondition = new HashMap<String, Object>();
-			 likeCondition.put("authToken",authToken);
+
 			 try {
-					 List<JOYUser> users = joyUserService.getJOyUserNeeded(likeCondition);
+				     JOYUser toAuthUser = new JOYUser();
+				     toAuthUser.authToken = authToken;
+					 List<JOYUser> users = joyUserService.getNeededUser(toAuthUser);
 					 
 					 if(users.size() > 0) {
 						 JOYUser cUser = users.get(0);

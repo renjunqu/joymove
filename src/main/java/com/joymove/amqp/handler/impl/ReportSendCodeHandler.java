@@ -48,7 +48,7 @@ public class ReportSendCodeHandler implements EventHandler {
 		try {
 			logger.debug("get the send code report from clouemove");
 
-			String vinNum = (String)json.get("vin");
+			String vinNum = String.valueOf(json.get("vin"));
 			Car car = new Car();
 			car.setVinNum(vinNum);
 			car = cacheCarService.getByVinNum(vinNum);

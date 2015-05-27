@@ -49,11 +49,11 @@ public class ReportSendKeyHandler  implements EventHandler {
 		try {
 				
 				logger.info("report send key   handler called !!");
-		 		Long result = (Long)json.get("result");
+		 		Long result = Long.parseLong(String.valueOf(json.get("result")));
 		 		if(result > 0 ) {
 		 			JOYNCar car =new JOYNCar();
 					car.registerState = (1);
-					car.vinNum = json.get("vin").toString();
+					car.vinNum = String.valueOf(json.get("vin"));
 					logger.debug("update car's register state ");
 					joyNCarService.updateCarRegisterState(car);
 					//add a new car entity to mongo

@@ -70,7 +70,7 @@ public class JOYWeChatController {
 
                         JOYUser user = new JOYUser();
                         user.mobileNo = payInfo.mobileNo; //setMobileNo(payInfo.getMobileNo());
-                        List<JOYUser> users = joyUserService.getJOYUserByMobileNo(user);
+                        List<JOYUser> users = joyUserService.getNeededUser(user);
 
                         if (users.size() == 1) {
                             BigDecimal currDepo = users.get(0).deposit;  // getDeposit();

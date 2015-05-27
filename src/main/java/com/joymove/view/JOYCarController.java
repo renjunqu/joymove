@@ -347,7 +347,7 @@ public class JOYCarController {
 		    	   Reobj.put("mile", cOrder.getTotalFee() *3.1415);
 		      }else if (cacheCar!=null){
 		    	  //if there is a ncar in wait_code state, and the owner is me
-		    	  Reobj.put("state", -1);
+		    	  Reobj.put("state", -2);
 		    	  Reobj.put("result","10000");
 		    	  Reobj.put("carId", cacheCar.getVinNum());
 		      } else {

@@ -43,10 +43,12 @@ public class CheckUserNameExists  extends  HandlerInterceptorAdapter{
 		  JSONObject reObj = new JSONObject();
 		  reObj.put("result", 2);
 			
-		  Map<String,Object> likeCond = new HashMap<String,Object>();
+
 		  if(jsonObj.get("username")!=null) {
-			  likeCond.put("username",jsonObj.get("username"));
-			  List<JOYUser> users = joyUserService.getJOyUserNeeded(likeCond);
+
+			  JOYUser toTest = new JOYUser();
+			  toTest.username = jsonObj.get("username").toString();
+			  List<JOYUser> users = joyUserService.getNeededUser(toTest);
 		
 		      if(users.size()==0)
 		    	  return true;

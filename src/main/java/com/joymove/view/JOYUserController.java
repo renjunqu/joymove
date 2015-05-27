@@ -142,7 +142,7 @@ public class JOYUserController{
 				 String password = (String)jsonObj.get("password");
 				 JOYUser user = new JOYUser();
 				 user.mobileNo = mobileNo; //setMobileNo(mobileNo);
-				 List<JOYUser> joyUsers = joyUserService.getJOYUserByMobileNo(user);
+				 List<JOYUser> joyUsers = joyUserService.getNeededUser(user);
 				 if (joyUsers.size() > 0) {
 					for (JOYUser joyUser : joyUsers) {
 						String userpwd = joyUser.userpwd; //getUserpwd();
