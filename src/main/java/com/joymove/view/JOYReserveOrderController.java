@@ -62,6 +62,7 @@ public class JOYReserveOrderController {
 					      JOYReserveOrder reorder = new   JOYReserveOrder();
 					      reorder.carId = (((Long)jsonObj.get("carId")).intValue());
 					      reorder.mobileNo = ((String)jsonObj.get("mobileNo"));
+						  reorder.ifBlueTeeth  = car.ifBlueTeeth;
 					      boolean result = joyReserveOrderService.insertReserveOrder(reorder);
 					      if(result){
 					    	  Reobj.put("result","10000");

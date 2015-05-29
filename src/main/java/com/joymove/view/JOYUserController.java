@@ -281,7 +281,7 @@ public class JOYUserController{
 					 jsonObject.put("id5AuthState",joyUser.authenticateId);
 					 jsonObject.put("driverLicAuthState",joyUser.authenticateDriver);
 					 BigDecimal deposit = joyUser.deposit;
-					 if(deposit!=null && deposit.compareTo(BigDecimal.ONE)>=0) {
+					 if(deposit!=null && deposit.compareTo(new BigDecimal(0.01))>=0) {
 						 jsonObject.put("depositState",1);
 					 } else {
 						 jsonObject.put("depositState",0);

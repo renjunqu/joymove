@@ -10,6 +10,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.futuremove.cacheServer.entity.Car;
+import com.futuremove.cacheServer.service.CarService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.context.annotation.Scope;
@@ -34,6 +36,10 @@ public class JOYOrderController {
 
 	@Resource(name = "JOYCarService")
 	private JOYCarService joyCarService;
+
+	@Resource(name = "carService")
+	private CarService cacheCarService;
+
 	
 	
 
@@ -66,11 +72,8 @@ public class JOYOrderController {
 				 orderJSON.put("fee", order.getTotalFee());
 				 orderJSON.put("miles", order.getTotalFee()*3.1314);
 				 orderJSON.put("destinations", order.destination);
-				 likeCondition.put("id", order.carId);
-				 List<JOYCar> cars = joyCarService.getCarById(likeCondition);
-				 JOYCar currCar = cars.get(0);
-				 orderJSON.put("startLongitude", currCar.positionX);
-				 orderJSON.put("startLatitude", currCar.positionX);
+				 orderJSON.put("startLongitude", order.startLongitude);
+				 orderJSON.put("startLatitude", order.startLatitude);
 				 orderArray.add(orderJSON);
 			 }
 			 Reobj.put("result", "10000");

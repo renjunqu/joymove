@@ -3,6 +3,7 @@ package com.joymove.amqp.handler.impl;
 import java.util.Hashtable;
 import java.util.Map;
 
+import com.joymove.entity.JOYCar;
 import com.joymove.entity.JOYOrder;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
@@ -57,6 +58,9 @@ public class ReportSendCodeHandler implements EventHandler {
 				JOYOrder order = new JOYOrder();
 				order.mobileNo = (car.getOwner());
 				order.carVinNum = (car.getVinNum());
+				order.startLongitude = car.getLatitude();
+				order.startLatitude = car.getLongitude();
+				order.ifBlueTeeth = JOYCar.HAS_BT;
 				joyNOrderService.insertNOrder(order);
 				cacheCarService.updateCarStateBusy(car);
 			}

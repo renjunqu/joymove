@@ -54,22 +54,6 @@ public class JOYCarController {
 
 
 
-	
-	public JOYCarController(JOYCarService joyCarService,
-			JOYCouponService joyCouponService, JOYOrderService joyOrderService,
-			JOYReserveOrderService joyReserveOrderService) {
-		super();
-		this.joyCarService = joyCarService;
-		this.joyCouponService = joyCouponService;
-		this.joyOrderService = joyOrderService;
-		this.joyReserveOrderService = joyReserveOrderService;
-	}
-
-	public JOYCarController() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
 	/*********   business proc  ******************/
 
 	@RequestMapping(value={"rent/getNearByAvailableCars","rent/getNearByBusyCars"}, method=RequestMethod.POST)
@@ -102,6 +86,7 @@ public class JOYCarController {
 				 car_json.put("longitude",  car_item.positionX);
 				 car_json.put("latitude",  car_item.positionY);
 				 car_json.put("desp",  car_item.desp);
+				 car_json.put("ifBlueTeeth",car_item.ifBlueTeeth);
 				 if(URI.contains("getNearByAvailableCars")) {
 					 
 				 } else {
@@ -150,6 +135,8 @@ public class JOYCarController {
 						 carJson.put("latitude", cacheCar.getLatitude());
 						 carJson.put("desp","dsfdsf");
 						 carJson.put("startTime", cOrder.startTime);
+						 carJson.put("ifBlueTeeth", cOrder.ifBlueTeeth);
+
 					 }
 				 } else {
 					 // it is a old style reserve order
@@ -166,6 +153,7 @@ public class JOYCarController {
 						 carJson.put("latitude", car.positionY);
 						 carJson.put("desp",car.desp);
 						 carJson.put("startTime", cOrder.startTime);
+						 carJson.put("ifBlueTeeth",cOrder.ifBlueTeeth);
 					 } 
 				 }
 			 } 
@@ -247,12 +235,17 @@ public class JOYCarController {
 		    	      JOYOrder order = new JOYOrder();
 		    	      order.mobileNo = ((String)jsonObj.get("mobileNo"));
 		    	      order.carId = (carId);
-		    	      joyOrderService.insertOrder(order);
+				      order.ifBlueTeeth = cCar.ifBlueTeeth;
+				      order.startLongitude = cCar.positionX.doubleValue();
+				      order.startLatitude = cCar.positionY.doubleValue();
+				      joyOrderService.insertOrder(order);
 		    	      orders = joyOrderService.getNeededOrder(likeCondition);
 		    	      order = orders.get(0);
 		    	      Reobj.put("result", "10000");
+
 		    	      Reobj.put("orderId", order.id);
 		    	      Reobj.put("carId", order.carId);
+				      Reobj.put("ifBlueTeeth", JOYCar.NON_BT);
 		    	      Reobj.put("startTime", order.startTime.getTime());
 		    	      Reobj.put("authCode", "123456");
 		    	      
@@ -287,7 +280,14 @@ public class JOYCarController {
 			order.delMark = (JOYOrder.NON_DEL_MARK);
 			order.state = (JOYOrder.state_wait_pay);
 			order.stopTime = (new Date(System.currentTimeMillis()));
+			order.stopLatitude = order.startLatitude;
+			order.stopLongitude = order.startLongitude;
 			joyOrderService.updateOrderStop(order);
+			 //update car's state
+			 JOYCar car = new JOYCar();
+			 car.id = (order.carId);
+			 car.state = (JOYCar.STATE_FREE);
+			 joyCarService.setCarFree(car);
 			Reobj.put("result","10000");
 		 } catch(Exception e){
 			 e.printStackTrace();
@@ -340,6 +340,7 @@ public class JOYCarController {
 		    	   Reobj.put("state",cOrder.state);
 		    	   Reobj.put("destination",cOrder.destination);
 				   Reobj.put("authCode", "123456");
+				   Reobj.put("ifBlueTeeth", cOrder.ifBlueTeeth);
 		    	   if(cOrder.state == JOYOrder.state_wait_pay) {
 		    		   Reobj.put("stopTime", cOrder.stopTime.getTime());
 		    	   }
@@ -364,9 +365,8 @@ public class JOYCarController {
 	
 	
 	
-	    //payReq 
-		@RequestMapping(value="rent/payOrderReq", method=RequestMethod.POST)
-		public  @ResponseBody JSONObject payOrderReq(HttpServletRequest req){
+	@RequestMapping(value="rent/payOrderReq", method=RequestMethod.POST)
+	public  @ResponseBody JSONObject payOrderReq(HttpServletRequest req){
 			 System.out.println("payOrderReq method was invoked...");
 			 Map<String,Object> likeCondition = new HashMap<String, Object>();
 			 JSONObject Reobj=new JSONObject();
@@ -565,18 +565,5 @@ public class JOYCarController {
 		 }
 		 return Reobj;
 	}
-	
 
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	
-    
 }
