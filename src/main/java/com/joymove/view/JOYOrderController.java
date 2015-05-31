@@ -68,7 +68,11 @@ public class JOYOrderController {
 				 orderJSON.put("orderId",order.id);
 				 orderJSON.put("startTime", order.startTime);
 				 orderJSON.put("stopTime", order.stopTime);
-				 orderJSON.put("carId", order.carId);
+				 if(order.carId==null) {
+					 orderJSON.put("carId", order.carVinNum);
+				 } else {
+					 orderJSON.put("carId", order.carId);
+				 }
 				 orderJSON.put("fee", order.getTotalFee());
 				 orderJSON.put("miles", order.getTotalFee()*3.1314);
 				 orderJSON.put("destinations", order.destination);
