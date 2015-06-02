@@ -2,7 +2,9 @@ package com.joymove.amqp.handler.impl;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
+import com.joymove.concurrent.CarOpLock;
 import com.joymove.entity.JOYCar;
 import com.joymove.entity.JOYOrder;
 import com.joymove.service.JOYNCarService;
@@ -22,11 +24,12 @@ import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 @Component("ReportSendCodeHandler")
-public class ReportSendCodeHandler implements EventHandler {
+public class SendCodeHandler implements EventHandler {
 
 	@Resource(name = "carService")
 	private CarService      cacheCarService;
@@ -38,7 +41,7 @@ public class ReportSendCodeHandler implements EventHandler {
 	}
 
 
-	final static Logger logger = LoggerFactory.getLogger(ReportSendCodeHandler.class);
+	final static Logger logger = LoggerFactory.getLogger(SendCodeHandler.class);
 
 
 	/********* busi proc *******/
@@ -46,27 +49,38 @@ public class ReportSendCodeHandler implements EventHandler {
 	@Override
 	public boolean handleData(JSONObject json) {
 		boolean error=true;
+		ReentrantLock opLock = null;
+		int tryTimes = 0;
 		try {
 			logger.debug("get the send code report from clouemove");
-
 			String vinNum = String.valueOf(json.get("vin"));
+			opLock = CarOpLock.getCarLock(vinNum);
+			opLock.lock();//>>============================
 			Car car = new Car();
 			car.setVinNum(vinNum);
 			car = cacheCarService.getByVinNum(vinNum);
-			if(car.getState()==Car.state_wait_code) {
+			Long result = Long.parseLong(String.valueOf(json.get("result")));
+				if (car.getState() == Car.state_wait_sendcode) {
+					if(result==1) {
+						cacheCarService.updateCarStateWaitPowerOn(car);
+						while (cacheCarService.sendPowerOn(car.getVinNum()) == false) {
+							Thread.sleep(tryTimes * 20);
+						}
+					} else {
+						Thread.sleep(20);
+						//重发下发授权码
+						while (cacheCarService.sendAuthCode(car.getVinNum()) == false) {
+							Thread.sleep(tryTimes++ * 20);
+						}
+					}
+				}
+				error = false;
 
-				JOYOrder order = new JOYOrder();
-				order.mobileNo = (car.getOwner());
-				order.carVinNum = (car.getVinNum());
-				order.startLongitude = car.getLongitude();
-				order.startLatitude = car.getLatitude();
-				order.ifBlueTeeth = JOYCar.HAS_BT;
-				joyNOrderService.insertNOrder(order);
-				cacheCarService.updateCarStateBusy(car);
-			}
-			return false;
 		} catch(Exception e){
 			error = true;
+		} finally {
+			if(opLock!=null && opLock.getHoldCount()>0)
+				opLock.unlock();
 		}
 		return error;
 	}

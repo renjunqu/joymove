@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
+import com.joymove.concurrent.CarOpLock;
 import com.joymove.entity.JOYNCar;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
@@ -22,14 +23,15 @@ import org.slf4j.LoggerFactory;
 import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
 @Component("ReportSendKeyHandler")
-public class ReportSendKeyHandler  implements EventHandler {
+public class SendKeyHandler  implements EventHandler {
 
-	final static Logger logger = LoggerFactory.getLogger(ReportSendKeyHandler.class);
+	final static Logger logger = LoggerFactory.getLogger(SendKeyHandler.class);
 	public static int eventType = 2;
 
 	public int getEventType() {
@@ -40,6 +42,7 @@ public class ReportSendKeyHandler  implements EventHandler {
 	private CarService cacheCarService;
 	@Resource(name = "JOYNCarService")
 	private JOYNCarService joyNCarService;
+
 
 
 

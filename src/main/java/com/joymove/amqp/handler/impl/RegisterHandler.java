@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import com.joymove.concurrent.CarOpLock;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -20,13 +21,13 @@ import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.test.slf4j.testSlf4J;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 
 @Component("RegisterHandler")
 public class RegisterHandler  implements EventHandler {
-
 	final static Logger logger = LoggerFactory.getLogger(RegisterHandler.class);
 
 	public int getEventType() {

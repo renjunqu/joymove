@@ -2,6 +2,7 @@ package com.joymove.amqp.handler.impl;
 
 import java.util.Map;
 
+import com.joymove.concurrent.CarOpLock;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -16,6 +17,7 @@ import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

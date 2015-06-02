@@ -9,10 +9,13 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.futuremove.cacheServer.dao.DynamicMatDao;
+import com.joymove.concurrent.CarOpLock;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.mongodb.morphia.Datastore;
@@ -20,6 +23,7 @@ import org.quartz.Scheduler;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -61,11 +65,6 @@ public class JOYNCarController {
 	private JOYOrderService joyOrderService;
 	@Resource(name = "JOYUserService")
 	private JOYUserService joyUserService;
-
-
-
-	
-
 
 	/*   ============business proc =================*/
 	
@@ -219,7 +218,7 @@ public class JOYNCarController {
 	}
 	
 
-	/*****     remote lock闂侀潧妫旈懣鍣塴ock闂侀潧妫旂粻宄歡e blow ************/
+	/*****     车辆操作 ************/
 	@RequestMapping(value={"newcar/lock","newcar/unlock","newcar/blow","newcar/vague"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject carOperations(HttpServletRequest req){
 		 logger.error("carOperations method was invoked...");
@@ -308,6 +307,7 @@ public class JOYNCarController {
 		Car cacheCar = null;
 		Car car  = null;
 		JOYNCar ncar = null;
+		ReentrantLock optLock = null;
 		try {
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			String vinNum = jsonObj.get("carId").toString();
@@ -331,7 +331,7 @@ public class JOYNCarController {
 			} else if(cacheCar==null){
 				car  = cacheCarService.getByVinNum(vinNum);
 			} else {
-				Reobj.put("errMsg", "alread rent or reserved");
+				Reobj.put("errMsg", "之前还有未支付的订单。");
 				return Reobj;
 			}
 			//check the order state
@@ -339,57 +339,39 @@ public class JOYNCarController {
 			likeCondition.put("delMark", JOYOrder.NON_DEL_MARK);
 			List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
 			if(orders.size()>0) {
-				Reobj.put("errMsg", "has not payed order");
+				Reobj.put("errMsg", "之前还有未支付的订单。");
 				return Reobj;
 
 			}
 			//then test the car ===================================================================
-			if(car!=null && ((car.getState() == Car.state_free) || (car.getState()==Car.state_reserved  && car.getOwner().equals(mobileNo)))) {
-				likeCondition.put("vinNum", car.getVinNum());
-				List<JOYNCar>  ncars = joyNCarService.getNeededCar(likeCondition);
-				ncar = ncars.get(0);
-				car.setOwner(mobileNo);
-
-				String postUrl="";
-				Integer targetState;
-				String timeStr = String.valueOf(System.currentTimeMillis());
-				String postData = "";
-				if(ncar.ifBlueTeeth ==JOYCar.HAS_BT) {
-					postUrl = ConfigUtils.getPropValues("cloudmove.sendAuth");
-					targetState = Car.state_wait_code;
-					postData = "time=" + timeStr + "&vin=" + car.getVinNum() + "&auth=abcdef";
-					cacheCarService.updateCarStateWaitCode(car);
-				} else {
-					postUrl = ConfigUtils.getPropValues("cloudmove.poweron");
-					targetState = Car.state_wait_power;
-					postData = "time=" + timeStr + "&vin=" + car.getVinNum();
-					cacheCarService.updateCarStatePowerOn(car);
-				}
-				car  = cacheCarService.getByVinNum(car.getVinNum());
-				if(car.getState()==targetState) {
-					String result = HttpPostUtils.post(postUrl, postData);
-					JSONObject cmObj = (JSONObject)(new JSONParser().parse(result));
-					int opResult = Integer.parseInt(cmObj.get("result").toString());
-					logger.info("send data to cloudmove  success,data is ");
-					logger.info(postData);
-					logger.info("now show the results");
-					logger.info(result);
-					if(opResult==1) {
-						//cloudmove 已经成功下发授权码 或者 成功 开火
-						Reobj.put("result","10000");
+			optLock = CarOpLock.getCarLock(vinNum);
+			//start lock //锁锁锁  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+			if(optLock.tryLock()) {
+				//获取到锁之后必须重新获取一次车的状态
+				car = cacheCarService.getByVinNum(vinNum);
+				if (car != null && ((car.getState() == Car.state_free) || (car.getState() == Car.state_reserved && car.getOwner().equals(mobileNo)))) {
+					car.setOwner(mobileNo);
+					//因为有了锁，可以认为肯定成功
+					cacheCarService.updateCarStateWaitSendCode(car);
+					if (cacheCarService.sendAuthCode(car.getVinNum())) {
+						//cloudmove 已经成功接收到下发授权码的命令
+						Reobj.put("result", "10000");
 					} else {
 						//偷偷取消奥,cm 下发失败了
 						car.setState(null);
-						car.setOwner(null);
+						car.setOwner("");
 						cacheCarService.updateCarStateFree(car);
 					}
 				} else {
-					Reobj.put("errMsg", "租车失败，该车已经被其他用户占用，请换租其他车辆");
+					Reobj.put("errMsg", "车辆不是空闲状态");
 				}
-			} else  {
-				Reobj.put("errMsg", "车辆不是空闲状态");
+				optLock.unlock();
 			}
 		} catch(Exception e){
+			if(optLock!=null && optLock.getHoldCount() > 0) {
+				    cacheCarService.updateCarStateFree(car);
+                    optLock.unlock();
+			}
 			Reobj.put("errMsg", e.toString());
 			logger.error(e.toString());
 		}
@@ -414,7 +396,7 @@ public class JOYNCarController {
 			 String mobileNo = (String)jsonObj.get("mobileNo");
 			 Car car = cacheCarService.getByVinNum(vinNum);
 			 if(mobileNo.equals(car.getOwner())) {
-				 if(car.getState() == Car.state_wait_code||car.getState()==Car.state_wait_power) {
+				 if(car.getState() == Car.state_wait_sendcode||car.getState()==Car.state_wait_poweron) {
 					 Reobj.put("result", "10001");
 					 Reobj.put("errMsg", "车辆还没准备好");
 				 } else if (car.getState() == Car.state_busy) {
@@ -447,44 +429,38 @@ public class JOYNCarController {
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
-		 
+		ReentrantLock optLock = null;
 		 try {
 			//check if the car in state_wait_code or state_busy, and the owner equals the mobileNo
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			 String vinNum = (String)jsonObj.get("carId");
 			 String mobileNo = (String)jsonObj.get("mobileNo");
+			 optLock = CarOpLock.getCarLock(vinNum);
+			 optLock.lock(); //先 获取锁,再取得状态>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			 Car car = cacheCarService.getByVinNum(vinNum);
-			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_power
-					 || car.getState()==Car.state_wait_code|| car.getState()==Car.state_busy) ) {
+			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
+					 || car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy) ) {
 				     cacheCarService.updateCarStateWaitLock(car);
-				     int terminateSteps=0;
-				     while(terminateSteps<3) {
-						 if(terminateSteps==0 && cacheCarService.sendPowerOff(car.getVinNum())) {
-							 terminateSteps++;
-						 } else if(terminateSteps==1 && cacheCarService.sendClearCode(car.getVinNum())) {
-							 terminateSteps++;
-						 } else if(terminateSteps==2 &&  cacheCarService.sendLock(car.getVinNum())) {
-							 terminateSteps++;
-						 } else {
-							 Thread.sleep(10);
-						 }
+				     Long tryTimes = 0L;
+				     car.setState(null);
+				     car.setOwner("");
 
+					 cacheCarService.updateCarStateWaitClearCode(car);
+					 while(cacheCarService.sendClearCode(car.getVinNum())==false) {
+						 Thread.sleep(tryTimes++ * 20);
 					 }
-
-
-					 if (car.getState() == Car.state_wait_code || car.getState()==Car.state_wait_power) {
-						 Reobj.put("result", "10000");
-					 } else if (car.getState() == Car.state_busy) {
-						 joyNOrderService.updateOrderTermiate(car);
-						 Reobj.put("result", "10000");
-
-					 }
+					 Reobj.put("result", "10000");
 
 			 } else {
 				 	Reobj.put("errMsg","目前无订单");
 			 }
+			 //锁锁锁
+			 optLock.unlock(); //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			
 		 } catch(Exception e){
+			 if(optLock!=null && optLock.getHoldCount()>0) {
+				 optLock.unlock();
+			 }
 			 logger.error(e.toString());
 			 Reobj.put("errMsg", e.toString());
 		 }

@@ -247,7 +247,7 @@ public class JOYCarController {
 		    	      Reobj.put("carId", order.carId);
 				      Reobj.put("ifBlueTeeth", JOYCar.NON_BT);
 		    	      Reobj.put("startTime", order.startTime.getTime());
-		    	      Reobj.put("authCode", "123456");
+		    	      Reobj.put("authCode", "abcdef");
 		    	      
 		      } else {
 		    	  Reobj.put("errMsg", "car not in free state");
@@ -339,7 +339,7 @@ public class JOYCarController {
 		    	   Reobj.put("batonMode", cOrder.batonMode);
 		    	   Reobj.put("state",cOrder.state);
 		    	   Reobj.put("destination",cOrder.destination);
-				   Reobj.put("authCode", "123456");
+				   Reobj.put("authCode", "abcdef");
 				   Reobj.put("ifBlueTeeth", cOrder.ifBlueTeeth);
 		    	   if(cOrder.state == JOYOrder.state_wait_pay) {
 		    		   Reobj.put("stopTime", cOrder.stopTime.getTime());
