@@ -345,68 +345,49 @@ public class JOYNCarController {
 			}
 			//then test the car ===================================================================
 			if(car!=null && ((car.getState() == Car.state_free) || (car.getState()==Car.state_reserved  && car.getOwner().equals(mobileNo)))) {
+				likeCondition.put("vinNum", car.getVinNum());
+				List<JOYNCar>  ncars = joyNCarService.getNeededCar(likeCondition);
+				ncar = ncars.get(0);
 				car.setOwner(mobileNo);
-				cacheCarService.updateCarStateWaitCode(car);
+
+				String postUrl="";
+				Integer targetState;
+				String timeStr = String.valueOf(System.currentTimeMillis());
+				String postData = "";
+				if(ncar.ifBlueTeeth ==JOYCar.HAS_BT) {
+					postUrl = ConfigUtils.getPropValues("cloudmove.sendAuth");
+					targetState = Car.state_wait_code;
+					postData = "time=" + timeStr + "&vin=" + car.getVinNum() + "&auth=abcdef";
+					cacheCarService.updateCarStateWaitCode(car);
+				} else {
+					postUrl = ConfigUtils.getPropValues("cloudmove.poweron");
+					targetState = Car.state_wait_power;
+					postData = "time=" + timeStr + "&vin=" + car.getVinNum();
+					cacheCarService.updateCarStatePowerOn(car);
+				}
 				car  = cacheCarService.getByVinNum(car.getVinNum());
-				//check if update success
-				if(car.getState()==Car.state_wait_code && car.getOwner().equals(mobileNo)) {
-					likeCondition.put("vinNum", car.getVinNum());
-					List<JOYNCar>  ncars = joyNCarService.getNeededCar(likeCondition);
-					ncar = ncars.get(0);
-					if(ncar.ifBlueTeeth==JOYCar.HAS_BT) {
-						//有蓝牙车辆
-						//send auth code to cloudmove  *************************************
-						String timeStr = String.valueOf(System.currentTimeMillis());
-						String url = ConfigUtils.getPropValues("cloudmove.sendAuth");
-						String data = "time=" + timeStr + "&vin=" + car.getVinNum() + "&auth=123456";
-						String result = HttpPostUtils.post(url, data);
-						JSONObject cmObj = (JSONObject)(new JSONParser().parse(result));
-						int opResult = Integer.parseInt(cmObj.get("result").toString());
-						logger.info("send data to cloudmove  success,data is ");
-						logger.info(data);
-						logger.info("now show the results");
-						logger.info(result);
-						if(opResult==1) {
-							//cloudmove 已经成功下发授权码
-							Reobj.put("result","10000");
-						} else {
-							//偷偷取消奥,cm 下发失败了
-							joyNOrderService.updateOrderCancel(car);
-						}
+				if(car.getState()==targetState) {
+					String result = HttpPostUtils.post(postUrl, postData);
+					JSONObject cmObj = (JSONObject)(new JSONParser().parse(result));
+					int opResult = Integer.parseInt(cmObj.get("result").toString());
+					logger.info("send data to cloudmove  success,data is ");
+					logger.info(postData);
+					logger.info("now show the results");
+					logger.info(result);
+					if(opResult==1) {
+						//cloudmove 已经成功下发授权码 或者 成功 开火
+						Reobj.put("result","10000");
 					} else {
-						//无蓝牙车辆
-						JOYOrder order = new JOYOrder();
-						order.mobileNo = (car.getOwner());
-						order.carVinNum = (car.getVinNum());
-						order.ifBlueTeeth = JOYCar.HAS_BT;
-						order.startLongitude = car.getLatitude();
-						order.startLatitude = car.getLongitude();
-						joyNOrderService.insertNOrder(order);
-						cacheCarService.updateCarStateBusy(car);
-						Reobj.put("result", "10000");
+						//偷偷取消奥,cm 下发失败了
+						car.setState(null);
+						car.setOwner(null);
+						cacheCarService.updateCarStateFree(car);
 					}
 				} else {
 					Reobj.put("errMsg", "租车失败，该车已经被其他用户占用，请换租其他车辆");
 				}
-
-			}  else if (car!=null && car.getState() == Car.state_wait_code  && car.getOwner().equals(mobileNo)){
-				//trust in cm, this state will be changed
-				 /*
-				 JSONObject json = new JSONObject();
-				 json.put("vin", car.getVinNum());
-				 json.put("auth","123456");
-				 SimpleDateFormat   dateFormatter   =   new   SimpleDateFormat   ("yyyy-MM-dd   HH:mm:ss     ");
-				 json.put("time", dateFormatter.format(new   Date(System.currentTimeMillis())));
-				 String url = ConfigUtils.getPropValues("cloudmove.sendAuth");
-				 String result = HttpPostUtils.post(url, json);
-				 logger.info("send data to cloudmove  success,data is ");
-				 logger.info(json.toJSONString());
-				 logger.info("now show the results");
-				 logger.info(result);
-				 Reobj.put("result", "10000");
-				 */
 			} else  {
-				Reobj.put("errMsg", "Car state not right");
+				Reobj.put("errMsg", "车辆不是空闲状态");
 			}
 		} catch(Exception e){
 			Reobj.put("errMsg", e.toString());
@@ -433,9 +414,9 @@ public class JOYNCarController {
 			 String mobileNo = (String)jsonObj.get("mobileNo");
 			 Car car = cacheCarService.getByVinNum(vinNum);
 			 if(mobileNo.equals(car.getOwner())) {
-				 if(car.getState() == Car.state_wait_code) {
+				 if(car.getState() == Car.state_wait_code||car.getState()==Car.state_wait_power) {
 					 Reobj.put("result", "10001");
-					 Reobj.put("errMsg", "not ready");
+					 Reobj.put("errMsg", "车辆还没准备好");
 				 } else if (car.getState() == Car.state_busy) {
 					 // the order alreay created, now return the orderId
 					 likeCondition.put("carVinNum", car.getVinNum());
@@ -447,11 +428,11 @@ public class JOYNCarController {
 		    	     Reobj.put("carId", cOrder.carVinNum);
 		    	     Reobj.put("startTime", cOrder.startTime.getTime());
 					 Reobj.put("ifBlueTeeth",cOrder.ifBlueTeeth);
-		    	     Reobj.put("authCode", "123456");
+		    	     Reobj.put("authCode", "abcdef");
 					 Reobj.put("result", "10000");
 				 }
 			 } else {
-				 Reobj.put("errMsg", "wrong state");
+				 Reobj.put("errMsg", "出现内部错误");
 			 }
 		 } catch(Exception e){
 			 logger.error(e.toString());
@@ -473,19 +454,34 @@ public class JOYNCarController {
 			 String vinNum = (String)jsonObj.get("carId");
 			 String mobileNo = (String)jsonObj.get("mobileNo");
 			 Car car = cacheCarService.getByVinNum(vinNum);
-			 if(mobileNo.equals(car.getOwner()) ) {
-				 	
-				     if(car.getState() == Car.state_wait_code ){
-				    	 boolean result = joyNOrderService.updateOrderCancel(car);
-				    	 if(result) {
-				    		 Reobj.put("result", "10000");
-				    	 }
-				     } else if(car.getState() == Car.state_busy){
-				    	 joyNOrderService.updateOrderTermiate(car);
-				    	 Reobj.put("result", "10000");
-				     }
+			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_power
+					 || car.getState()==Car.state_wait_code|| car.getState()==Car.state_busy) ) {
+				     cacheCarService.updateCarStateWaitLock(car);
+				     int terminateSteps=0;
+				     while(terminateSteps<3) {
+						 if(terminateSteps==0 && cacheCarService.sendPowerOff(car.getVinNum())) {
+							 terminateSteps++;
+						 } else if(terminateSteps==1 && cacheCarService.sendClearCode(car.getVinNum())) {
+							 terminateSteps++;
+						 } else if(terminateSteps==2 &&  cacheCarService.sendLock(car.getVinNum())) {
+							 terminateSteps++;
+						 } else {
+							 Thread.sleep(10);
+						 }
+
+					 }
+
+
+					 if (car.getState() == Car.state_wait_code || car.getState()==Car.state_wait_power) {
+						 Reobj.put("result", "10000");
+					 } else if (car.getState() == Car.state_busy) {
+						 joyNOrderService.updateOrderTermiate(car);
+						 Reobj.put("result", "10000");
+
+					 }
+
 			 } else {
-				 	Reobj.put("errMsg","not ordered");		 
+				 	Reobj.put("errMsg","目前无订单");
 			 }
 			
 		 } catch(Exception e){

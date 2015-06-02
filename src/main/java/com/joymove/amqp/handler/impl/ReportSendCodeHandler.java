@@ -58,8 +58,8 @@ public class ReportSendCodeHandler implements EventHandler {
 				JOYOrder order = new JOYOrder();
 				order.mobileNo = (car.getOwner());
 				order.carVinNum = (car.getVinNum());
-				order.startLongitude = car.getLatitude();
-				order.startLatitude = car.getLongitude();
+				order.startLongitude = car.getLongitude();
+				order.startLatitude = car.getLatitude();
 				order.ifBlueTeeth = JOYCar.HAS_BT;
 				joyNOrderService.insertNOrder(order);
 				cacheCarService.updateCarStateBusy(car);

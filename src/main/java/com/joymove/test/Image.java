@@ -3,6 +3,7 @@ package com.joymove.test;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 
@@ -13,26 +14,10 @@ import com.mysql.jdbc.Statement;
 
 public class Image {
 	public static void main(String[] args) throws Exception {
-		
-		 Class.forName("com.mysql.jdbc.Driver");
-		 String url="jdbc:mysql://123.56.106.52:3306/mbkdb?user=root&password=123456";
-		 Connection con = (Connection) DriverManager.getConnection(url);
-		 Statement stmt = (Statement) con.createStatement();
-		 String query = "select * from MBK_Image where userId='2706'";
-		 ResultSet rs=stmt.executeQuery(query);
-//		 byte[] bytes = new byte[9999];
-		 int i = 0;
-		 while(rs.next())
-		 {
-			 
-//			bytes = rs.getBytes("tupian");
-			 InputStream binaryStream = rs.getBinaryStream("image");
-			 OutputStream os = new FileOutputStream("C:\\Users\\Public\\tupin"+ ++i + ".png");
-			 FileCopyUtils.copy(binaryStream, os);
-			 os.close();
-			 binaryStream.close();
-		 }	
-		 
+
+		BigDecimal q = new BigDecimal("0.0100000");
+		BigDecimal q1 = new BigDecimal(0.01);
+		System.out.println(q.doubleValue() >= q1.doubleValue());
 		 //PrintWriter printWriter = new PrintWriter(fileOutputStream);
 	}
 }

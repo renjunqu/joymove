@@ -236,8 +236,8 @@ public class JOYCarController {
 		    	      order.mobileNo = ((String)jsonObj.get("mobileNo"));
 		    	      order.carId = (carId);
 				      order.ifBlueTeeth = cCar.ifBlueTeeth;
-				      order.startLongitude = cCar.positionX.doubleValue();
-				      order.startLatitude = cCar.positionY.doubleValue();
+				      order.startLongitude = cCar.positionY.doubleValue();
+				      order.startLatitude = cCar.positionX.doubleValue();
 				      joyOrderService.insertOrder(order);
 		    	      orders = joyOrderService.getNeededOrder(likeCondition);
 		    	      order = orders.get(0);

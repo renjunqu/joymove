@@ -434,7 +434,7 @@
                <server.ip>123.57.151.176</server.ip>
                <server.port>8082</server.port>
                <upload.dir>tomcat7_qrj</upload.dir>
-               <cloudmove.prefix>http://123.56.106.52:8088/cloudmove</cloudmove.prefix>
+               <cloudmove.prefix>http://123.57.151.176:8088/cloudmove</cloudmove.prefix>
                <amqp.ip>123.57.151.176</amqp.ip>
                <amqp.exchange.name>cloudmove</amqp.exchange.name>
                <amqp.queue.name>joymove</amqp.queue.name>

@@ -78,6 +78,8 @@ public class JOYOrderController {
 				 orderJSON.put("destinations", order.destination);
 				 orderJSON.put("startLongitude", order.startLongitude);
 				 orderJSON.put("startLatitude", order.startLatitude);
+				 orderJSON.put("stopLatitude", order.stopLatitude);
+				 orderJSON.put("stopLongitude", order.stopLongitude);
 				 orderArray.add(orderJSON);
 			 }
 			 Reobj.put("result", "10000");
