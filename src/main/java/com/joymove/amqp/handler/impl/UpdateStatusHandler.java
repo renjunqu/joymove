@@ -1,6 +1,7 @@
 package com.joymove.amqp.handler.impl;
 
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.joymove.concurrent.CarOpLock;
 import org.apache.http.HttpEntity;
@@ -49,20 +50,36 @@ public class UpdateStatusHandler  implements EventHandler {
 	@Override
 	public boolean handleData(JSONObject json) {
 		boolean error=true;
+		ReentrantLock opLock = null;
+
 		try {
-			
 			logger.info("update car status  handler called !!");
 			Car car = new Car();
 			car.setLatitude(Double.parseDouble(String.valueOf(json.get("latitude"))));
 			car.setLongitude(Double.parseDouble(String.valueOf(json.get("longitude"))));
 			car.setVinNum(String.valueOf(json.get("vin")));
+			opLock = CarOpLock.getCarLock(car.getVinNum());
+			opLock.lock();//>>============================
+			Car cacheCar = carService.getByVinNum(car.getVinNum());
 			logger.info("call carservice to update car loc info !!");
+
+			if(cacheCar.getState()==Car.state_wait_clearcode) {
+				logger.info("car inside wait cCCCCClear code state, send the cmd again");
+                carService.sendClearCode(car.getVinNum());
+			} else if(cacheCar.getState()==Car.state_wait_poweroff) {
+				logger.info("car inside wait pPPPPPower off code state, send the cmd again");
+				carService.sendPowerOff(car.getVinNum());
+			} else if(cacheCar.getState()==Car.state_wait_lock) {
+				logger.info("car inside wait LLLLock state, send the cmd again");
+				carService.sendLock(car.getVinNum());
+			}
 			carService.updateCarPosition(car);
-			
-			
 		} catch(Exception e){
 			error = true;
 			logger.error(e.toString());
+		} finally {
+			if(opLock!=null && opLock.getHoldCount()>0)
+				opLock.unlock();
 		}
 		return error;
 	}

@@ -24,10 +24,12 @@ import sun.misc.BASE64Decoder;
 import com.joymove.entity.JOYIdAuthInfo;
 import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYIdAuthInfoService;
+import sun.misc.BASE64Encoder;
+
 import java.io.ByteArrayInputStream;
 
 
-@Scope("prototype")
+
 @Controller("JOYIdAuthInfoController")
 public class JOYIdAuthInfoController {
 
@@ -38,9 +40,9 @@ public class JOYIdAuthInfoController {
 
 	@RequestMapping(value="usermgr/updateIdAuthInfo",method=RequestMethod.POST)
 	public @ResponseBody JSONObject updateIdAuthInfo(HttpServletRequest req){
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("result","10001");
-		JOYIdAuthInfo authInfo = new JOYIdAuthInfo();;
+		JSONObject Reobj = new JSONObject();
+		Reobj.put("result", "10001");
+		JOYIdAuthInfo authInfo = new JOYIdAuthInfo();
 			try{
 				 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				 
@@ -79,13 +81,43 @@ public class JOYIdAuthInfoController {
 						
 					jsonObject.put("result",0);
 				*/
-				 jsonObject.put("result","10000");
+				 Reobj.put("result", "10000");
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-			return jsonObject;
+			return Reobj;
 		
 	}
+
+	@RequestMapping(value="usermgr/getIdAuthInfo",method=RequestMethod.POST)
+	public @ResponseBody JSONObject getIdAuthInfo(HttpServletRequest req){
+		JSONObject Reobj = new JSONObject();
+		Reobj.put("result", "10001");
+
+		try{
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			String mobileNo = (String)jsonObj.get("mobileNo");
+			Map<String,Object> likeCondition = new HashMap<String, Object>();
+			likeCondition.put("mobileNo",mobileNo);
+			List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededIdAuthInfo(likeCondition);
+			if(infos.size()==0) {
+				Reobj.put("result","10002");
+			} else {
+				JOYIdAuthInfo authInfo = infos.get(0);
+				BASE64Encoder encoder = new BASE64Encoder();
+				Reobj.put("idName",authInfo.idAuthInfo);
+				Reobj.put("idNo",authInfo.idNo);
+				Reobj.put("idAuthInfo",encoder.encode(authInfo.idAuthInfo));
+				Reobj.put("idAuthInfo_back",encoder.encode(authInfo.idAuthInfo_back));
+				Reobj.put("result", "10000");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return Reobj;
+
+	}
+
 
 	
 

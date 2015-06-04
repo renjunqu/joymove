@@ -25,7 +25,7 @@ import com.joymove.service.JOYDynamicPwsService;
 import com.joymove.util.JsonHashUtils;
 import com.joymove.util.SmsUtils;
 
-@Scope("prototype")
+
 @Controller("JOYDynamicPwsController")
 public class JOYDynamicPwsController {
 

@@ -21,7 +21,7 @@ import com.joymove.entity.*;
 import com.joymove.service.JOYPowerBarService;
 
 
-@Scope("prototype")
+
 @Controller("JOYPowerBarController")
 public class JOYPowerBarController {
 	@Resource(name = "JOYPowerBarService")

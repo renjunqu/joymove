@@ -21,7 +21,7 @@ import com.joymove.entity.JOYCoupon;
 import com.joymove.service.JOYCouponService;
 
 
-@Scope("prototype")
+
 @Controller("JOYCouponController")
 public class JOYCouponController {
 

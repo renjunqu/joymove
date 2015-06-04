@@ -30,7 +30,7 @@ import java.util.TimerTask;
 
 
 
-@Scope("prototype")
+
 @Controller("JOYReserveOrderController")
 public class JOYReserveOrderController {
 	@Resource(name = "JOYReserveOrderService")

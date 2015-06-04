@@ -5,7 +5,9 @@ import com.futuremove.cacheServer.service.CarService;
 import com.joymove.amqp.handler.EventHandler;
 import com.joymove.concurrent.CarOpLock;
 import com.joymove.entity.JOYCar;
+import com.joymove.entity.JOYNCar;
 import com.joymove.entity.JOYOrder;
+import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -14,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -27,7 +32,8 @@ public class PowerOnHandler  implements EventHandler {
     private CarService cacheCarService;
     @Resource(name = "JOYNOrderService")
     private JOYNOrderService joyNOrderService;
-
+    @Resource(name = "JOYNCarService")
+    private JOYNCarService joynCarService;
     final static Logger logger = LoggerFactory.getLogger(PowerOnHandler.class);
 
     public int getEventType() {
@@ -37,12 +43,12 @@ public class PowerOnHandler  implements EventHandler {
     public boolean handleData(JSONObject json) {
         boolean error=true;
         ReentrantLock opLock = null;
-        int tryTimes = 0;
         try {
             logger.debug("get the send code report from clouemove");
 
             String vinNum = String.valueOf(json.get("vin"));
             opLock = CarOpLock.getCarLock(vinNum);
+            Map<String,Object> likeCondition = new HashMap<String,Object>();
             opLock.lock();//>>============================
             Car car = new Car();
             car.setVinNum(vinNum);
@@ -55,14 +61,15 @@ public class PowerOnHandler  implements EventHandler {
                     order.carVinNum = (car.getVinNum());
                     order.startLongitude = car.getLongitude();
                     order.startLatitude = car.getLatitude();
-                    order.ifBlueTeeth = JOYCar.HAS_BT;
+                    likeCondition.put("vinNum", car.getVinNum());
+                    List<JOYNCar> ncars = joynCarService.getNeededCar(likeCondition);
+                    JOYNCar ncar = ncars.get(0);
+                     order.ifBlueTeeth = ncar.ifBlueTeeth;
                     joyNOrderService.insertNOrder(order);
                     cacheCarService.updateCarStateBusy(car);
                 } else {
-                    Thread.sleep(20);
-                    while (cacheCarService.sendPowerOn(car.getVinNum()) == false) {
-                        Thread.sleep(tryTimes++ * 20);
-                    }
+                    //try again
+                    cacheCarService.sendPowerOn(car.getVinNum());
                 }
             }
             error = false;

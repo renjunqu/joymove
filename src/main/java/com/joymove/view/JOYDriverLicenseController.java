@@ -27,9 +27,9 @@ import com.joymove.entity.JOYDriverLicense;
 import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYDriverLicenseService;
 import com.joymove.service.JOYUserService;
+import sun.misc.BASE64Encoder;
 
 
-@Scope("prototype")
 @Controller("JOYDriverLicenseController")
 public class JOYDriverLicenseController {
 
@@ -42,68 +42,64 @@ public class JOYDriverLicenseController {
 	
 
 	/********       business proc ********************/
-	
-	
-	@RequestMapping(value="userImage/getDriverAuthInfo",method=RequestMethod.GET)
-	public void getDriverAuthInfo(HttpServletRequest req,HttpServletResponse res){
-	
+
+
+	@RequestMapping(value="usermgr/getDriverAuthInfo",method=RequestMethod.POST)
+	public @ResponseBody JSONObject getDriverAuthInfo(HttpServletRequest req,HttpServletResponse res){
+			JSONObject Reobj = new JSONObject();
+			Reobj.put("result", "10001");
 			try{
-				 
-				 String mobileNo = req.getParameter("moblieNo");
+
+				Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+				String mobileNo = (String)jsonObj.get("mobileNo");
 				 Map<String,Object> likeCondition = new HashMap<String, Object>();
-				 likeCondition.put("mobileNo",mobileNo);
-				 List<JOYDriverLicense> driAuthInfos = joyDriverLicenseService.getDriverAuthInfo(likeCondition);
-				 byte[] bt = null;
-				 if (driAuthInfos.size() > 0) {
-					for (JOYDriverLicense driAuthInfo : driAuthInfos) {
-						InputStream inputStream = new  ByteArrayInputStream(driAuthInfo.driverAuthInfo);
-						bt = FileCopyUtils.copyToByteArray(inputStream);
-						res.setContentType("image/jpg");
-						OutputStream os = res.getOutputStream();
-						os.write(bt);
-						os.flush();
-						os.close();
-						
-						}
-					}
+				 likeCondition.put("mobileNo", mobileNo);
+				 List<JOYDriverLicense> driveAuthInfos = joyDriverLicenseService.getDriverAuthInfo(likeCondition);
+				 if(driveAuthInfos.size()>0) {
+					 BASE64Encoder encoder = new BASE64Encoder();
+					 JOYDriverLicense driverLicense = driveAuthInfos.get(0);
+					 Reobj.put("driverLicenseNumber",driverLicense.driverLicenseNumber);
+					 Reobj.put("expireTime",driverLicense.expireTime);
+					 Reobj.put("driverAuthInfo",encoder.encode(driverLicense.driverAuthInfo));
+					 Reobj.put("result", "10000");
+				 } else {
+					 Reobj.put("result","10002");
+				 }
 				
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-		
+		return Reobj;
 	}
 	
 	@RequestMapping(value="usermgr/updateDriverAuthInfo",method=RequestMethod.POST)
 	public @ResponseBody JSONObject updateDriverAuthInfo(HttpServletRequest req){
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("result","10001");
+		JSONObject Reobj = new JSONObject();
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		Reobj.put("result", "10001");
 			try{
 				 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				 String mobileNo = (String)jsonObj.get("mobileNo");
 				 String image = (String) jsonObj.get("image");
-				 String driverNumber = (String) jsonObj.get("driverNumber");
+				 String driverNumber = String.valueOf(jsonObj.get("driverNumber"));
 				 Date expireTime = new Date(Long.parseLong(jsonObj.get("expireTime").toString()));
 				 BASE64Decoder decode = new BASE64Decoder();
 				 byte[] byteImage = decode.decodeBuffer(image);
-				 Map<String,Object> likeCondition = new HashMap<String, Object>();
 				 likeCondition.put("mobileNo",mobileNo);
 				 List<JOYDriverLicense> drivers = joyDriverLicenseService.getDriverAuthInfo(likeCondition);
 				 JOYDriverLicense  driverLicense = new JOYDriverLicense();
-				 JOYUser  joyUser = new JOYUser();
+				 driverLicense.mobileNo = (mobileNo);
+				 driverLicense.driverAuthInfo = (byteImage);
+				 driverLicense.driverLicenseNumber = (driverNumber);
+				 driverLicense.expireTime = (expireTime);
+
 				 if (drivers.size() == 0) {
-					 driverLicense.mobileNo = (mobileNo);
-					 driverLicense.driverAuthInfo = (byteImage);
-					 driverLicense.driverLicenseNumber = (driverNumber);
-					 driverLicense.expireTime = (expireTime);
 					 joyDriverLicenseService.insertDriverAuthInfo(driverLicense);
-					 jsonObject.put("result","10000");
-				}else{
+					 Reobj.put("result", "10000");
+				 } else {
 					for (JOYDriverLicense driver : drivers) {
-						 driver.driverAuthInfo = (byteImage);
-						 driver.mobileNo = (mobileNo);
-						 driver.driverLicenseNumber = (driverNumber);
 						 joyDriverLicenseService.updateJOYDriverLicense(driver);
-						 jsonObject.put("result","10000");
+						 Reobj.put("result", "10000");
 					}
 				}
 				 
@@ -112,7 +108,7 @@ public class JOYDriverLicenseController {
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-			return jsonObject;
+			return Reobj;
 		
 	}
 

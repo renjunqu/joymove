@@ -19,7 +19,7 @@ import com.joymove.entity.JOYSeed;
  * Created by figoxu on 15/5/5.
  */
 
-@Scope("prototype")
+
 @Controller("JOYSeedController")
 public class JOYSeedController {
     @Resource(name = "JOYSeedService")

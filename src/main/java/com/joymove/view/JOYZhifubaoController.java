@@ -32,7 +32,7 @@ import com.joymove.service.JOYUserService;
 
 
 
-@Scope("prototype")
+
 @Controller("JOYZhifubaoController")
 public class JOYZhifubaoController {
 	public static JedisPool pool = new JedisPool(new JedisPoolConfig(), "123.57.151.176");

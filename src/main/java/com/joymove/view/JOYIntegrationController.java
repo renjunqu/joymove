@@ -23,7 +23,7 @@ import com.joymove.util.JsonHashUtils;
 
 
 
-@Scope("prototype")
+
 @Controller("JOYIntegrationController")
 public class JOYIntegrationController {
 	@Resource(name = "JOYIntegrationService")

@@ -49,7 +49,7 @@ import com.joymove.service.JOYUserService;
 import com.joymove.redis.RedisCmd;
 
 
-@Scope("prototype")
+
 @Controller("JOYNCarController")
 public class JOYNCarController {
 	
@@ -439,23 +439,16 @@ public class JOYNCarController {
 			 optLock.lock(); //先 获取锁,再取得状态>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			 Car car = cacheCarService.getByVinNum(vinNum);
 			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
-					 || car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy) ) {
+					 || car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy)  ) {
 
 				     if(car.getState()==car.state_busy) {
 						 //首先停止订单
 						 joyNOrderService.updateOrderTermiate(car);
 					 }
-
-				     cacheCarService.updateCarStateWaitLock(car);
-				     Long tryTimes = 0L;
 				     car.setState(null);
 				     car.setOwner("");
-
+				     //这个过程的发起在car update status 来做
 					 cacheCarService.updateCarStateWaitClearCode(car);
-					 while(cacheCarService.sendClearCode(car.getVinNum())==false) {
-						 Thread.sleep(tryTimes++ * 20);
-					 }
-
 					 Reobj.put("result", "10000");
 
 			 } else {

@@ -39,7 +39,6 @@ public class LockHandler implements EventHandler {
     public boolean handleData(JSONObject json) {
         boolean error=true;
         ReentrantLock opLock = null;
-        int tryTimes = 0;
         try {
             logger.debug("get the send code report from clouemove");
             String vinNum = String.valueOf(json.get("vin"));
@@ -51,17 +50,12 @@ public class LockHandler implements EventHandler {
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if (car.getState() == Car.state_wait_lock) {
                 if(result==1) {
+                    car.setOwner("");
                     cacheCarService.updateCarStateFree(car);
                     JOYNCar ncar = new JOYNCar();
                     ncar.vinNum = vinNum;
                     ncar.lockState = 1;
                     joyNCarService.updateCarLockState(ncar);
-                } else {
-                    //重发下发解除授权码命令
-                    Thread.sleep(20);
-                    while (cacheCarService.sendLock(car.getVinNum()) == false) {
-                        Thread.sleep(tryTimes++ * 20);
-                    }
                 }
             }
             error = false;

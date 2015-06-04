@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.joymove.entity.JOYMessage;
 import com.joymove.service.JOYMessageService;
 
-@Scope("prototype")
+
 @Controller("JOYMessageController")
 public class JOYMessageController {
 

@@ -23,7 +23,7 @@ import com.joymove.service.*;
 
 
 
-@Scope("prototype")
+
 @Controller("JOYNReserveOrderController")
 public class JOYNReserveOrderController {
 	@Resource(name = "carService")

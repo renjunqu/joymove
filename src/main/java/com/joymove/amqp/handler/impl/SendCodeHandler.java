@@ -50,7 +50,7 @@ public class SendCodeHandler implements EventHandler {
 	public boolean handleData(JSONObject json) {
 		boolean error=true;
 		ReentrantLock opLock = null;
-		int tryTimes = 0;
+
 		try {
 			logger.debug("get the send code report from clouemove");
 			String vinNum = String.valueOf(json.get("vin"));
@@ -63,15 +63,10 @@ public class SendCodeHandler implements EventHandler {
 				if (car.getState() == Car.state_wait_sendcode) {
 					if(result==1) {
 						cacheCarService.updateCarStateWaitPowerOn(car);
-						while (cacheCarService.sendPowerOn(car.getVinNum()) == false) {
-							Thread.sleep(tryTimes * 20);
-						}
+						cacheCarService.sendPowerOn(car.getVinNum());
 					} else {
-						Thread.sleep(20);
-						//重发下发授权码
-						while (cacheCarService.sendAuthCode(car.getVinNum()) == false) {
-							Thread.sleep(tryTimes++ * 20);
-						}
+						//try again
+						cacheCarService.sendAuthCode(car.getVinNum());
 					}
 				}
 				error = false;

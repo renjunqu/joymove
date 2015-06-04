@@ -25,7 +25,7 @@ import com.joymove.service.JOYWXPayInfoService;
 /**
  * Created by qurj on 15/5/12.
  */
-@Scope("prototype")
+
 @Controller("JOYWeChatController")
 public class JOYWeChatController {
 

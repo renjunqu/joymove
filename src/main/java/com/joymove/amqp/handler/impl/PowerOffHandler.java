@@ -33,7 +33,7 @@ public class PowerOffHandler implements EventHandler {
     public boolean handleData(JSONObject json) {
         boolean error=true;
         ReentrantLock opLock = null;
-        int tryTimes = 0;
+
         try {
             logger.debug("get the send code report from clouemove");
             String vinNum = String.valueOf(json.get("vin"));
@@ -45,17 +45,9 @@ public class PowerOffHandler implements EventHandler {
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if (car.getState() == Car.state_wait_poweroff) {
                 if(result==1) {
-                    cacheCarService.updateCarStateWaitLock(car);
-                    while (cacheCarService.sendLock(car.getVinNum()) == false) {
-                        Thread.sleep(tryTimes * 20);
+                        cacheCarService.updateCarStateWaitLock(car);
+                        cacheCarService.sendLock(car.getVinNum());
                     }
-                } else {
-                    //重发下发关火命令
-                    Thread.sleep(20);
-                    while (cacheCarService.sendPowerOff(car.getVinNum()) == false) {
-                        Thread.sleep(tryTimes++ * 20);
-                    }
-                }
             }
             error = false;
 

@@ -26,7 +26,7 @@ import com.joymove.service.JOYCarService;
 import com.joymove.service.JOYOrderService;
 
 
-@Scope("prototype")
+
 @Controller("JOYOrderController")
 @RequestMapping("/ordermgr")
 public class JOYOrderController {

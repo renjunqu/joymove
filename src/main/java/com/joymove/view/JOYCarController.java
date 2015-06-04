@@ -29,7 +29,7 @@ import com.joymove.service.*;
 import com.joymove.util.zhifubao.ZhifubaoUtils;
 import com.joymove.entity.*;
 
-@Scope("prototype")
+
 @Controller("JOYCarController")
 public class JOYCarController {
 	
@@ -43,6 +43,8 @@ public class JOYCarController {
 	private CarService cacheCarService;
 	@Resource(name = "JOYOrderService")
 	private JOYOrderService joyOrderService;
+	@Resource(name = "JOYNOrderService")
+	private JOYNOrderService joynOrderService;
 	@Resource(name = "JOYReserveOrderService")
 	private JOYReserveOrderService joyReserveOrderService;
 	@Resource(name = "JOYInterPOIService")
@@ -82,7 +84,7 @@ public class JOYCarController {
 			 while(iter.hasNext()){
 				 JOYCar car_item  = (JOYCar)iter.next();
 				 JSONObject car_json = new JSONObject();
-				 car_json.put("carId", car_item.id);
+				 car_json.put("carId", String.valueOf(car_item.id));
 				 car_json.put("longitude",  car_item.positionX);
 				 car_json.put("latitude",  car_item.positionY);
 				 car_json.put("desp",  car_item.desp);
@@ -148,7 +150,7 @@ public class JOYCarController {
 						 JSONObject carJson = new JSONObject();
 						 Reobj.put("cars", carJson);
 						 
-						 carJson.put("carId", cOrder.carId);
+						 carJson.put("carId", String.valueOf(cOrder.carId));
 						 carJson.put("longitude", car.positionX);
 						 carJson.put("latitude", car.positionY);
 						 carJson.put("desp",car.desp);
@@ -236,15 +238,15 @@ public class JOYCarController {
 		    	      order.mobileNo = ((String)jsonObj.get("mobileNo"));
 		    	      order.carId = (carId);
 				      order.ifBlueTeeth = cCar.ifBlueTeeth;
-				      order.startLongitude = cCar.positionY.doubleValue();
-				      order.startLatitude = cCar.positionX.doubleValue();
+				      order.startLongitude = cCar.positionX.doubleValue();
+				      order.startLatitude = cCar.positionY.doubleValue();
 				      joyOrderService.insertOrder(order);
 		    	      orders = joyOrderService.getNeededOrder(likeCondition);
 		    	      order = orders.get(0);
 		    	      Reobj.put("result", "10000");
 
 		    	      Reobj.put("orderId", order.id);
-		    	      Reobj.put("carId", order.carId);
+		    	      Reobj.put("carId", String.valueOf(order.carId));
 				      Reobj.put("ifBlueTeeth", JOYCar.NON_BT);
 		    	      Reobj.put("startTime", order.startTime.getTime());
 		    	      Reobj.put("authCode", "abcdef");
@@ -329,7 +331,7 @@ public class JOYCarController {
 		    	   Reobj.put("orderId", cOrder.id);
 		    	   if(cOrder.carId!=null) {
 		    		   // it is a old order
-		    		   Reobj.put("carId", cOrder.carId);
+		    		   Reobj.put("carId", String.valueOf(cOrder.carId));
 		    	   } else {
 		    		   // it is a new order
 		    		   Reobj.put("carId",cOrder.carVinNum);

@@ -20,7 +20,7 @@ import com.joymove.service.JOYParkService;
 import com.joymove.entity.JOYPark;
 
 
-@Scope("prototype")
+
 @Controller("JOYParkController")
 public class JOYParkController {
 	@Resource(name = "JOYParkService")

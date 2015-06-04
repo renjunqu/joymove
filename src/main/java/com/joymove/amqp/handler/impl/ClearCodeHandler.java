@@ -40,7 +40,6 @@ public class ClearCodeHandler  implements EventHandler {
 	public boolean handleData(JSONObject json) {
 		boolean error=true;
 		ReentrantLock opLock = null;
-		int tryTimes = 0;
 		try {
 			logger.debug("get the send code report from clouemove");
 			String vinNum = String.valueOf(json.get("vin"));
@@ -53,15 +52,7 @@ public class ClearCodeHandler  implements EventHandler {
 			if (car.getState() == Car.state_wait_clearcode) {
 				if(result==1) {
 					cacheCarService.updateCarStateWaitPowerOff(car);
-					while (cacheCarService.sendPowerOff(car.getVinNum()) == false) {
-						Thread.sleep(tryTimes * 20);
-					}
-				} else {
-					//重发下发解除授权码命令
-					Thread.sleep(20);
-					while (cacheCarService.sendClearCode(car.getVinNum()) == false) {
-						Thread.sleep(tryTimes++ * 20);
-					}
+					cacheCarService.sendPowerOff(car.getVinNum());
 				}
 			}
 			error = false;

@@ -48,7 +48,7 @@ import org.json.simple.parser.JSONParser;
 
 
 
-@Scope("prototype")
+
 @Controller("JOYUserController")
 public class JOYUserController{
 	@Resource(name = "JOYUserService")
@@ -248,20 +248,20 @@ public class JOYUserController{
 	
 	@RequestMapping(value={"usermgr/viewBaseInfo","usermgr/getCommonDestination","usermgr/checkUserState","usermgr/getBioLogicalInfo"},method=RequestMethod.POST)
 	public @ResponseBody JSONObject userInfo(HttpServletRequest req){
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("result","10001");
+		JSONObject Reobj = new JSONObject();
+		Reobj.put("result", "10001");
 			try{
 				 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				 String mobileNo = (String)jsonObj.get("mobileNo");
 				 JOYUser joyUser = (JOYUser)req.getAttribute("cUser");	
 				 String URI = req.getRequestURI();
 				 if(URI.contains("viewBaseInfo")) {
-					 jsonObject.put("username",joyUser.username);
-					 jsonObject.put("gender",joyUser.gender);
-					 jsonObject.put("mobileNo",joyUser.mobileNo);
-					 jsonObject.put("driverlicenseCertification", joyUser.authenticateDriver);
-					 jsonObject.put("deposit",joyUser.deposit);
-					 jsonObject.put("result","10000");
+					 Reobj.put("username", joyUser.username);
+					 Reobj.put("gender", joyUser.gender);
+					 Reobj.put("mobileNo", joyUser.mobileNo);
+					 Reobj.put("driverlicenseCertification", joyUser.authenticateDriver);
+					 Reobj.put("deposit", joyUser.deposit);
+					 Reobj.put("result", "10000");
 				 } else if (URI.contains("getCommonDestination")){
 					 JSONObject homeAddr = new JSONObject();
 					 JSONObject corpAddr = new JSONObject();
@@ -272,31 +272,32 @@ public class JOYUserController{
 					 corpAddr.put("name", joyUser.corpAddr);
 					 corpAddr.put("latitude", joyUser.corpLatitude);
 					 corpAddr.put("longitude", joyUser.corpLongitude);
-					 jsonObject.put("home", homeAddr);
-					 jsonObject.put("corp", corpAddr);
-					 jsonObject.put("result","10000");
+					 Reobj.put("home", homeAddr);
+					 Reobj.put("corp", corpAddr);
+					 Reobj.put("result", "10000");
 				 } else if (URI.contains("checkUserState")){
 				
-					 jsonObject.put("mobileAuthState",1);
-					 jsonObject.put("id5AuthState",joyUser.authenticateId);
-					 jsonObject.put("driverLicAuthState",joyUser.authenticateDriver);
+					 Reobj.put("mobileAuthState", 1);
+					 Reobj.put("id5PassFlag",joyUser.id5PassFlag);
+					 Reobj.put("id5AuthState", joyUser.authenticateId);
+					 Reobj.put("driverLicAuthState", joyUser.authenticateDriver);
 					 BigDecimal deposit = joyUser.deposit;
 					 if(deposit!=null && deposit.doubleValue() >=0.01) {
-						 jsonObject.put("depositState",1);
+						 Reobj.put("depositState", 1);
 					 } else {
-						 jsonObject.put("depositState",0);
+						 Reobj.put("depositState", 0);
 					 }
-					 jsonObject.put("result","10000");
+					 Reobj.put("result", "10000");
 			     } else if(URI.contains("getBioLogicalInfo")) {
-                     jsonObject.put("face_info",joyUser.face_info);
-					 jsonObject.put("voice_info",joyUser.voice_info);
-					 jsonObject.put("result","10000");
+                     Reobj.put("face_info", joyUser.face_info);
+					 Reobj.put("voice_info", joyUser.voice_info);
+					 Reobj.put("result", "10000");
 				 }
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 		
-		return jsonObject;
+		return Reobj;
 	}
 	
 	
