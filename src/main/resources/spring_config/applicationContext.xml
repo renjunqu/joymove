@@ -118,6 +118,12 @@
 		    </property>
   		</bean>
 
+	<bean id="debugInterceptor"
+		  class="org.springframework.aop.interceptor.DebugInterceptor" />
+
+
+
+
 
 
 	<aop:config>
@@ -129,8 +135,18 @@
 
 		<aop:pointcut id="retry_redis_access"
 					  expression="execution(* com.joymove.redis.*.*(..))" />
+		<aop:pointcut id="ttt"
+					  expression="execution(* com.joymove.test.*.*(..))" />
 
-		<aop:advisor pointcut-ref="pc" advice-ref="txAdvice" />
+		<aop:advisor pointcut-ref="ttt"
+					 advice-ref="debugInterceptor" order="0"/>
+		<aop:advisor pointcut-ref="ttt"
+					 advice-ref="retryAdvice" order="1"/>
+
+		<aop:advisor pointcut-ref="pc" advice-ref="retryAdvice" order="0"/>
+
+		<aop:advisor pointcut-ref="pc" advice-ref="txAdvice" order="1"/>
+
 
 		<aop:advisor pointcut-ref="retry_car_update_state"
 		                 advice-ref="retryAdvice"/>

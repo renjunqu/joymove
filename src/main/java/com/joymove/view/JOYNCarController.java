@@ -397,7 +397,7 @@ public class JOYNCarController {
 			 Car car = cacheCarService.getByVinNum(vinNum);
 			 if(mobileNo.equals(car.getOwner())) {
 				 if(car.getState() == Car.state_wait_sendcode||car.getState()==Car.state_wait_poweron) {
-					 Reobj.put("result", "10001");
+					 Reobj.put("result", "10005");
 					 Reobj.put("errMsg", "车辆还没准备好");
 				 } else if (car.getState() == Car.state_busy) {
 					 // the order alreay created, now return the orderId
@@ -440,6 +440,12 @@ public class JOYNCarController {
 			 Car car = cacheCarService.getByVinNum(vinNum);
 			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
 					 || car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy) ) {
+
+				     if(car.getState()==car.state_busy) {
+						 //首先停止订单
+						 joyNOrderService.updateOrderTermiate(car);
+					 }
+
 				     cacheCarService.updateCarStateWaitLock(car);
 				     Long tryTimes = 0L;
 				     car.setState(null);
@@ -449,6 +455,7 @@ public class JOYNCarController {
 					 while(cacheCarService.sendClearCode(car.getVinNum())==false) {
 						 Thread.sleep(tryTimes++ * 20);
 					 }
+
 					 Reobj.put("result", "10000");
 
 			 } else {
