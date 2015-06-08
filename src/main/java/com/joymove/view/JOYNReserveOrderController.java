@@ -118,6 +118,7 @@ public class JOYNReserveOrderController {
 				 optLock = CarOpLock.getCarLock(cacheCar.getVinNum());
 				 if (optLock.tryLock()) {
 					 joyNReserveOrderService.updateReserveOrderDelFlag((String) jsonObj.get("mobileNo"));
+					 cacheCarService.clearExpireReserve(cacheCar);
 					 Reobj.put("result", "10000");
 					 optLock.unlock();
 				 }
