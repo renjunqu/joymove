@@ -341,7 +341,7 @@ public class JOYCarController {
 		    	   Reobj.put("batonMode", cOrder.batonMode);
 		    	   Reobj.put("state",cOrder.state);
 		    	   Reobj.put("destination",cOrder.destination);
-				   Reobj.put("authCode", "abcdef");
+				   Reobj.put("authCode", "A");
 				   Reobj.put("ifBlueTeeth", cOrder.ifBlueTeeth);
 		    	   if(cOrder.state == JOYOrder.state_wait_pay) {
 		    		   Reobj.put("stopTime", cOrder.stopTime.getTime());

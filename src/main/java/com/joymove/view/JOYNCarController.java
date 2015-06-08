@@ -1,9 +1,5 @@
 package com.joymove.view;
 
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -14,18 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.futuremove.cacheServer.dao.DynamicMatDao;
-import com.joymove.concurrent.CarOpLock;
+import com.futuremove.cacheServer.concurrent.CarOpLock;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.mongodb.morphia.Datastore;
-import org.quartz.Scheduler;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,18 +27,14 @@ import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
-import com.joymove.entity.JOYCar;
 import com.joymove.entity.JOYNCar;
 import com.joymove.entity.JOYOrder;
 import com.joymove.entity.JOYReserveOrder;
 import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
-import com.joymove.service.JOYNReserveOrderService;
 import com.joymove.service.JOYOrderService;
 import com.joymove.service.JOYUserService;
-import com.joymove.redis.RedisCmd;
-
 
 
 @Controller("JOYNCarController")
@@ -410,7 +397,7 @@ public class JOYNCarController {
 		    	     Reobj.put("carId", cOrder.carVinNum);
 		    	     Reobj.put("startTime", cOrder.startTime.getTime());
 					 Reobj.put("ifBlueTeeth",cOrder.ifBlueTeeth);
-		    	     Reobj.put("authCode", "abcdef");
+		    	     Reobj.put("authCode", "ABCDEF");
 					 Reobj.put("result", "10000");
 				 }
 			 } else {
@@ -422,10 +409,57 @@ public class JOYNCarController {
 		 }
 		 return Reobj;
 	}
-	
+
+    //暂时留着，为以前保持兼容
 	@RequestMapping(value={"newcar/rentCarTerminate"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject rentCarTerminate(HttpServletRequest req){
-		 System.out.println("rentCarTerminate method was invoked...");
+		System.out.println("rentCarTerminate method was invoked...");
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JSONObject Reobj=new JSONObject();
+		Reobj.put("result", "10001");
+		ReentrantLock optLock = null;
+		try {
+			//check if the car in state_wait_code or state_busy, and the owner equals the mobileNo
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			String vinNum = (String)jsonObj.get("carId");
+			String mobileNo = (String)jsonObj.get("mobileNo");
+			optLock = CarOpLock.getCarLock(vinNum);
+			optLock.lock(); //先 获取锁,再取得状态>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+			Car car = cacheCarService.getByVinNum(vinNum);
+			if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
+					|| car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy)  ) {
+
+				     if(car.getState()==car.state_busy) {
+						 //首先停止订单
+						 joyNOrderService.updateOrderTermiate(car);
+					 }
+
+				car.setState(null);
+				car.setOwner("");
+				//这个过程的发起在car update status 来做
+				cacheCarService.updateCarStateWaitClearCode(car);
+				Reobj.put("result", "10000");
+			} else {
+				Reobj.put("errMsg","目前无订单");
+			}
+			//锁锁锁
+			optLock.unlock(); //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+		} catch(Exception e){
+			if(optLock!=null && optLock.getHoldCount()>0) {
+				optLock.unlock();
+			}
+			logger.error(e.toString());
+			Reobj.put("errMsg", e.toString());
+		}
+		return Reobj;
+	}
+
+
+	
+	@RequestMapping(value={"newcar/rentCarTerminateReq"}, method=RequestMethod.POST)
+	public  @ResponseBody JSONObject rentCarTerminateReq(HttpServletRequest req){
+		 System.out.println("rentCarTerminateReq method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -440,18 +474,21 @@ public class JOYNCarController {
 			 Car car = cacheCarService.getByVinNum(vinNum);
 			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
 					 || car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy)  ) {
-
+                    /*
 				     if(car.getState()==car.state_busy) {
 						 //首先停止订单
 						 joyNOrderService.updateOrderTermiate(car);
 					 }
+					 */
 				     car.setState(null);
-				     car.setOwner("");
+				    // car.setOwner("");
 				     //这个过程的发起在car update status 来做
 					 cacheCarService.updateCarStateWaitClearCode(car);
 					 Reobj.put("result", "10000");
-
-			 } else {
+			 } else if(car.getState()==Car.state_wait_lock|| car.getState()==Car.state_wait_poweroff||car.getState()==Car.state_wait_clearcode){
+				 //已经处于停止租用的流程了
+				 Reobj.put("result", "10000");
+			 }else {
 				 	Reobj.put("errMsg","目前无订单");
 			 }
 			 //锁锁锁
@@ -466,6 +503,35 @@ public class JOYNCarController {
 		 }
 		 return Reobj;
 	}
+
+	@RequestMapping(value={"newcar/rentCarTerminateAck"}, method=RequestMethod.POST)
+	public  @ResponseBody JSONObject rentCarTerminateAck(HttpServletRequest req){
+		System.out.println("rentCarTerminateAck method was invoked...");
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JSONObject Reobj=new JSONObject();
+		Reobj.put("result", "10001");
+		try {
+
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+
+			likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
+			likeCondition.put("delMark", JOYReserveOrder.NODEL_FLAG);
+			List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
+			if(orders.size()>0) {
+				JOYOrder order = orders.get(0);
+				if(order.state!=JOYOrder.state_busy) {
+					Reobj.put("result","10000");
+				}
+			} else {
+				Reobj.put("result","10000");
+			}
+		} catch(Exception e){
+			logger.error(e.toString());
+			Reobj.put("errMsg", e.toString());
+		}
+		return Reobj;
+	}
+
 
 	@RequestMapping(value={"newcar/getCarLockState"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject getCarLockState(HttpServletRequest req){

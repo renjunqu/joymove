@@ -3,16 +3,14 @@ package com.joymove.amqp.handler.impl;
 import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import com.joymove.amqp.handler.EventHandler;
-import com.joymove.concurrent.CarOpLock;
-import com.joymove.entity.JOYCar;
+import com.futuremove.cacheServer.concurrent.CarOpLock;
 import com.joymove.entity.JOYNCar;
-import com.joymove.entity.JOYOrder;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
+import com.joymove.service.JOYOrderService;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -29,6 +27,9 @@ public class LockHandler implements EventHandler {
     private CarService cacheCarService;
     @Resource(name = "JOYNCarService")
     private JOYNCarService joyNCarService;
+    @Resource(name = "JOYNOrderService")
+    private JOYNOrderService joyNOrderService;
+
 
     final static Logger logger = LoggerFactory.getLogger(LockHandler.class);
 
@@ -50,12 +51,18 @@ public class LockHandler implements EventHandler {
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if (car.getState() == Car.state_wait_lock) {
                 if(result==1) {
+
+                    //首先停止订单
+                    joyNOrderService.updateOrderTermiate(car);
                     car.setOwner("");
-                    cacheCarService.updateCarStateFree(car);
                     JOYNCar ncar = new JOYNCar();
                     ncar.vinNum = vinNum;
                     ncar.lockState = 1;
                     joyNCarService.updateCarLockState(ncar);
+                    cacheCarService.updateCarStateFree(car);
+
+
+
                 }
             }
             error = false;

@@ -1,25 +1,15 @@
 package com.joymove.amqp.handler.impl;
 
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
-import com.joymove.concurrent.CarOpLock;
-import com.joymove.service.JOYNOrderService;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import com.futuremove.cacheServer.concurrent.CarOpLock;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.joymove.amqp.handler.EventHandler;
-import com.futuremove.cacheServer.utils.ConfigUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
