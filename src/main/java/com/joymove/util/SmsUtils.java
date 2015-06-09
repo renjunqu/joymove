@@ -15,10 +15,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.client.methods.*;
 import org.apache.http.protocol.HTTP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class SmsUtils {
-	
+
+	final static Logger logger = LoggerFactory.getLogger(SmsUtils.class);
+
 	public static String sendRegisterCode(String code,String mobileNo) {
 
 		Map<String, String> para = new HashMap<String, String>();
@@ -38,11 +42,15 @@ public class SmsUtils {
         para.put("p2",currDate);
 
 		try {
+			logger.error("start to call wei mi api");
 			InputStream is = HttpClientHelper.get("http://api.weimi.cc/2/sms/send.html",
 					para);
-			return HttpClientHelper.convertStreamToString(
+			String wemiRe =  HttpClientHelper.convertStreamToString(
 					is, "UTF-8");
+			logger.error("call  weimi result is "+wemiRe);
+			return wemiRe;
 		} catch (Exception e) {
+			logger.error("call wemi result exception");
 			e.printStackTrace();
 		}
 		return "{\"error\":1}";

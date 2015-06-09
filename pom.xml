@@ -3,7 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.futuremove</groupId>
 	<artifactId>joymove</artifactId>
+
 	<packaging>war</packaging>
+	<!-- <packaging>jar</packaging> -->
 	<version>0.0.1</version>
 	<name>joymove Maven Webapp</name>
 	<url>http://maven.apache.org</url>
@@ -51,6 +53,13 @@
 			<artifactId>c3p0</artifactId>
 			<version>0.9.1.2</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.sun.xml.ws</groupId>
+			<artifactId>jaxws-rt</artifactId>
+			<version>2.1.4</version>
+		</dependency>
+
 
 
 		<dependency>
@@ -346,7 +355,31 @@
 	<build>
 		<finalName>joymove</finalName>
 		<plugins>
-
+			<!--
+			<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.5.5</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.joymove.util.Id5Utils</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+            -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>

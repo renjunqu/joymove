@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.joymove.entity.JOYWXPayInfo;
 import com.joymove.service.JOYWXPayInfoService;
+import com.joymove.util.Id5Utils;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.json.simple.JSONObject;
@@ -246,7 +247,11 @@ public class JOYUserController{
 	}
 	
 	
-	@RequestMapping(value={"usermgr/viewBaseInfo","usermgr/getCommonDestination","usermgr/checkUserState","usermgr/getBioLogicalInfo"},method=RequestMethod.POST)
+	@RequestMapping(value={"usermgr/viewBaseInfo"
+			,"usermgr/getCommonDestination"
+			,"usermgr/checkUserState"
+			,"usermgr/getBioLogicalInfo"
+			,"usermgr/updateUserIdInfo"},method=RequestMethod.POST)
 	public @ResponseBody JSONObject userInfo(HttpServletRequest req){
 		JSONObject Reobj = new JSONObject();
 		Reobj.put("result", "10001");
@@ -292,6 +297,15 @@ public class JOYUserController{
                      Reobj.put("face_info", joyUser.face_info);
 					 Reobj.put("voice_info", joyUser.voice_info);
 					 Reobj.put("result", "10000");
+				 } else if(URI.contains("updateUserIdInfo")) {
+					 String idNo = String.valueOf(jsonObj.get("idNo"));
+					 String idName = String.valueOf(jsonObj.get("idName"));
+					 if(idNo!=null && idName!=null) {
+						 Map<String,String> id5Info = Id5Utils.Id5Check(idName,idNo);
+						 if(id5Info!=null) {
+							 Reobj.put("result","10000");
+						 }
+					 }
 				 }
 			}catch(Exception e){
 				e.printStackTrace();
