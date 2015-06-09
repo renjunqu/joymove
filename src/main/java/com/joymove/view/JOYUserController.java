@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.joymove.entity.JOYWXPayInfo;
 import com.joymove.service.JOYWXPayInfoService;
-import com.joymove.util.Id5Utils;
+import com.futuremove.cacheServer.utils.Id5Utils;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.json.simple.JSONObject;
@@ -266,6 +266,8 @@ public class JOYUserController{
 					 Reobj.put("mobileNo", joyUser.mobileNo);
 					 Reobj.put("driverlicenseCertification", joyUser.authenticateDriver);
 					 Reobj.put("deposit", joyUser.deposit);
+					 Reobj.put("idNo",joyUser.idNo==null?"":joyUser.idNo);
+					 Reobj.put("idName",joyUser.idName==null?"":joyUser.idName);
 					 Reobj.put("result", "10000");
 				 } else if (URI.contains("getCommonDestination")){
 					 JSONObject homeAddr = new JSONObject();
@@ -302,13 +304,24 @@ public class JOYUserController{
 					 String idName = String.valueOf(jsonObj.get("idName"));
 					 if(idNo!=null && idName!=null) {
 						 Map<String,String> id5Info = Id5Utils.Id5Check(idName,idNo);
+						 JOYUser toModUser = new JOYUser();
+						 toModUser.mobileNo = mobileNo;
 						 if(id5Info!=null) {
+							 toModUser.idNo = idNo;
+							 toModUser.idName = idName;
+							 toModUser.gender = String.valueOf(id5Info.get("sex"));
+							 toModUser.id5PassFlag = JOYUser.auth_state_ok;
 							 Reobj.put("result","10000");
+						 } else {
+							 toModUser.id5PassFlag = JOYUser.auth_state_pending;
 						 }
+						 joyUserService.updateJOYUser(toModUser);
 					 }
 				 }
 			}catch(Exception e){
 				e.printStackTrace();
+				Reobj.put("result","10001");
+				Reobj.put("errMsg","发生未知错误");
 			}
 		
 		return Reobj;
