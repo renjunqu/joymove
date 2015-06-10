@@ -1,0 +1,6 @@
+2015-06-10 16:29:09,496 - ResourceManager : unable to find resource 'helloworld.vm' in any resource loader.
+2015-06-10 16:30:10,739 - ResourceManager : unable to find resource 'com/joymove/helloworld.vm' in any resource loader.
+2015-06-10 16:30:54,662 - ResourceManager : unable to find resource 'helloworld.vm' in any resource loader.
+2015-06-10 16:41:10,754 - ResourceManager : unable to find resource 'helloworld.vm' in any resource loader.
+2015-06-10 16:47:38,325 - ResourceManager : unable to find resource 'helloworld.vm' in any resource loader.
+2015-06-10 16:50:46,578 - ResourceManager : unable to find resource '/helloworld.vm' in any resource loader.

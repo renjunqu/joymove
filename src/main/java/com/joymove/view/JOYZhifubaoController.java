@@ -2,17 +2,14 @@ package com.joymove.view;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,8 +19,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import com.futuremove.cacheServer.service.impl.CarServiceImpl;
-import com.joymove.entity.JOYDynamicPws;
 import com.joymove.entity.JOYOrder;
 import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYOrderService;

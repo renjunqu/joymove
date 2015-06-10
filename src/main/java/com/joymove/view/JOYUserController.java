@@ -27,7 +27,6 @@ import com.futuremove.cacheServer.utils.Id5Utils;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.json.simple.JSONObject;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;

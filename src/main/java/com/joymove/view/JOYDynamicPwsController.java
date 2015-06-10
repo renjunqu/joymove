@@ -1,14 +1,11 @@
 package com.joymove.view;
 
-import java.io.IOException;
-
 import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.joymove.entity.JOYDynamicPws;
 import com.joymove.service.JOYDynamicPwsService;
-import com.joymove.util.JsonHashUtils;
 import com.joymove.util.SmsUtils;
 
 

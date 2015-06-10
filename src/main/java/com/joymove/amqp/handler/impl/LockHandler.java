@@ -50,8 +50,9 @@ public class LockHandler implements EventHandler {
             car = cacheCarService.getByVinNum(vinNum);
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if (car.getState() == Car.state_wait_lock) {
+                logger.debug("get the lock result");
                 if(result==1) {
-
+                    logger.debug("lock success ");
                     //首先停止订单
                     joyNOrderService.updateOrderTermiate(car);
                     car.setOwner("");
@@ -60,9 +61,10 @@ public class LockHandler implements EventHandler {
                     ncar.lockState = 1;
                     joyNCarService.updateCarLockState(ncar);
                     cacheCarService.updateCarStateFree(car);
-
-
-
+                } else {
+                    logger.debug("lock failed ");
+                    //try again
+                    cacheCarService.sendLock(car.getVinNum());
                 }
             }
             error = false;

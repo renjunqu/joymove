@@ -1,6 +1,5 @@
 package com.joymove.view;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -11,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,9 +17,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.joymove.entity.JOYIntegration;
 import com.joymove.service.JOYIntegrationService;
-import com.joymove.util.JsonHashUtils;
-
-
 
 
 @Controller("JOYIntegrationController")

@@ -40,9 +40,15 @@ public class ClearCodeHandler  implements EventHandler {
 			car = cacheCarService.getByVinNum(vinNum);
 			Long result = Long.parseLong(String.valueOf(json.get("result")));
 			if (car.getState() == Car.state_wait_clearcode) {
+				logger.debug("get the clear code result ");
 				if(result==1) {
+					logger.debug("clear code  success ");
 					cacheCarService.updateCarStateWaitPowerOff(car);
 					cacheCarService.sendPowerOff(car.getVinNum());
+				} else {
+					logger.debug("clear code failed ");
+					//try again
+					cacheCarService.sendClearCode(car.getVinNum());
 				}
 			}
 			error = false;

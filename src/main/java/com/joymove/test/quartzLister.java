@@ -1,29 +1,9 @@
 package com.joymove.test;
 
-import java.util.Date;
-
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.futuremove.cacheServer.jobs.ClearExpireReserveJob;
 import com.joymove.service.impl.JOYNReserveOrderServiceImpl;
-
-import static org.quartz.JobBuilder.*;
-import static org.quartz.SimpleScheduleBuilder.*;
-import static org.quartz.CronScheduleBuilder.*;
-import static org.quartz.CalendarIntervalScheduleBuilder.*;
-import static org.quartz.TriggerBuilder.*;
-import static org.quartz.DateBuilder.*;
-import com.futuremove.cacheServer.test.quartz.HelloJob;
-import com.futuremove.cacheServer.jobs.ClearExpireReserveJob;
 
 public class quartzLister {
 	

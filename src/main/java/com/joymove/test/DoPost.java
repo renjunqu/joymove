@@ -1,12 +1,8 @@
 package com.joymove.test;
 
 import com.joymove.entity.JOYNCar;
-import org.json.simple.JSONObject;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;

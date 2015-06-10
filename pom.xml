@@ -34,7 +34,7 @@
     </repository>
     -->
 	</repositories>
-
+<!--
 	<distributionManagement>
 		<repository>
 			<id>deployment</id>
@@ -42,7 +42,7 @@
 			<url>http://123.56.135.176:8081/nexus/content/repositories/releases/</url>
 		</repository>
 	</distributionManagement>
-
+-->
 
 
 
@@ -86,7 +86,7 @@
 		</dependency>
 
 
-
+       <!-- -->
 
 
 

@@ -2,7 +2,6 @@ package com.joymove.view;
 
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -10,17 +9,14 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.joymove.entity.JOYCar;
 import com.joymove.entity.JOYOrder;
 import com.joymove.service.JOYCarService;
 import com.joymove.service.JOYOrderService;

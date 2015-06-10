@@ -1,9 +1,6 @@
 package com.joymove.view;
 
-import com.joymove.entity.JOYPark;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import com.joymove.service.JOYSeedService;
 import org.springframework.web.bind.annotation.RequestMapping;

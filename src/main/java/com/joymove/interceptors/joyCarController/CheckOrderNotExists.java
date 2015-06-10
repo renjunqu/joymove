@@ -5,20 +5,11 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-import org.springframework.web.servlet.ModelAndView;
 import org.json.simple.*;
-import org.json.simple.parser.*;
 
-import com.joymove.util.JsonHashUtils;
 import com.joymove.entity.JOYOrder;
-import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYOrderService;
-import com.joymove.service.JOYUserService;
-
-import java.math.BigDecimal;
-
 
 
 public class CheckOrderNotExists extends HandlerInterceptorAdapter {

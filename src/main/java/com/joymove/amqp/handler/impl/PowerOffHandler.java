@@ -43,10 +43,16 @@ public class PowerOffHandler implements EventHandler {
             car = cacheCarService.getByVinNum(vinNum);
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if (car.getState() == Car.state_wait_poweroff) {
+                logger.debug("get the power off result");
                 if(result==1) {
+                         logger.debug("power off ok");
                         cacheCarService.updateCarStateWaitLock(car);
                         cacheCarService.sendLock(car.getVinNum());
-                    }
+                    } else {
+                    logger.debug("power off failed ,try again");
+                    //try again
+                    cacheCarService.sendPowerOff(car.getVinNum());
+                }
             }
             error = false;
 
