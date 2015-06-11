@@ -5,6 +5,7 @@ import com.futuremove.cacheServer.service.CarService;
 import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.concurrent.CarOpLock;
 import com.joymove.entity.JOYNCar;
+import com.joymove.entity.JOYOrder;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
 import com.joymove.service.JOYOrderService;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -54,12 +56,25 @@ public class LockHandler implements EventHandler {
                 if(result==1) {
                     logger.debug("lock success ");
                     //首先停止订单
-                    joyNOrderService.updateOrderTermiate(car);
+                    JOYOrder orderFilter = new JOYOrder();
+                    JOYOrder orderValue = new JOYOrder();
+
+                    orderFilter.carVinNum = car.getVinNum();
+                    orderFilter.mobileNo = car.getOwner();
+                    orderFilter.state = JOYOrder.state_busy;
+
+
+                    orderValue.state = JOYOrder.state_wait_pay;
+                    orderValue.stopLatitude = car.getLongitude();
+                    orderValue.stopLatitude = car.getLatitude();
+                    orderValue.stopTime = new Date(System.currentTimeMillis());
+                    joyNOrderService.updateRecord(orderValue,orderFilter);
                     car.setOwner("");
-                    JOYNCar ncar = new JOYNCar();
-                    ncar.vinNum = vinNum;
-                    ncar.lockState = 1;
-                    joyNCarService.updateCarLockState(ncar);
+                    JOYNCar ncarFilter = new JOYNCar();
+                    JOYNCar ncarValue = new JOYNCar();
+                    ncarFilter.vinNum = vinNum;
+                    ncarValue.lockState = 1;
+                    joyNCarService.updateRecord(ncarValue, ncarFilter);
                     cacheCarService.updateCarStateFree(car);
                 } else {
                     logger.debug("lock failed ");

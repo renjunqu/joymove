@@ -39,17 +39,18 @@ public class SendKeyHandler  implements EventHandler {
 				logger.info("report send key   handler called !!");
 		 		Long result = Long.parseLong(String.valueOf(json.get("result")));
 		 		if(result > 0 ) {
-		 			JOYNCar car =new JOYNCar();
-					car.registerState = (1);
-					car.vinNum = String.valueOf(json.get("vin"));
+		 			JOYNCar carFilter =new JOYNCar();
+					JOYNCar carNew = new JOYNCar();
+					carNew.registerState = 1;
+					carFilter.vinNum = String.valueOf(json.get("vin"));
 					logger.debug("update car's register state ");
-					joyNCarService.updateCarRegisterState(car);
+					joyNCarService.updateRecord(carNew,carFilter);
 					//add a new car entity to mongo
 					logger.debug("now ,save the new car info into mongo");
-					Car cacheCar = cacheCarService.getByVinNum(car.vinNum);
+					Car cacheCar = cacheCarService.getByVinNum(carFilter.vinNum);
 					if(cacheCar==null) {
 						cacheCar = new Car();
-						cacheCar.setVinNum(car.vinNum);
+						cacheCar.setVinNum(carFilter.vinNum);
 						cacheCar.setLongitude(0.0);
 						cacheCar.setLatitude(0.0);
 						cacheCar.setState(Car.state_free);

@@ -59,9 +59,11 @@ public class JOYWeChatController {
             if(weChatRet.equals("SUCCESS")) {
                 String fee = WeChatPayUtil.getXmlElement("total_fee",jstr);
                 String trade_no = WeChatPayUtil.getXmlElement("out_trade_no", jstr);
-                likeCondition.put("out_trade_no", trade_no);
-                likeCondition.put("payOverFlag",0);
-                List<JOYWXPayInfo> infos = joywxPayInfoService.getNeededPayInfo(likeCondition);
+                JOYWXPayInfo filterObj = new JOYWXPayInfo();
+                filterObj.out_trade_no = trade_no;
+                filterObj.payOverFlag = 0;
+
+                List<JOYWXPayInfo> infos = joywxPayInfoService.getNeededList(filterObj);
                 if(infos.size()==1) {
                     JOYWXPayInfo payInfo = infos.get(0);
 
@@ -69,32 +71,39 @@ public class JOYWeChatController {
 
                         JOYUser user = new JOYUser();
                         user.mobileNo = payInfo.mobileNo; //setMobileNo(payInfo.getMobileNo());
-                        List<JOYUser> users = joyUserService.getNeededUser(user);
+                        List<JOYUser> users = joyUserService.getNeededList(user);
 
                         if (users.size() == 1) {
+                            JOYUser user2 = new JOYUser();
                             BigDecimal currDepo = users.get(0).deposit;  // getDeposit();
                             System.out.println("before recharge: " + currDepo);
                             currDepo = currDepo.add(BigDecimal.valueOf(Double.valueOf(fee) / 100));
-                            user.deposit = currDepo;  //setDeposit(currDepo);
-                            user.mobileNo = payInfo.mobileNo;  //setMobileNo(payInfo.getMobileNo());
+                            user2.deposit = currDepo;  //setDeposit(currDepo);
+                            user2.mobileNo = payInfo.mobileNo;  //setMobileNo(payInfo.getMobileNo());
                             System.out.println("after recharge: " + currDepo);
-                            joyUserService.updateJOYUser(user);
+
+                            joyUserService.updateRecord(user2,user);
                             logger.debug("recharge ok");
                         }
                     } else if (trade_no.contains("rentPay")) {
 
                         logger.debug("it is a rent pay info , mobileNo is " + payInfo.mobileNo);
-                        likeCondition.put("mobileNo", payInfo.mobileNo);
-                        likeCondition.put("delMark", JOYOrder.NON_DEL_MARK);
-                        likeCondition.put("state", JOYOrder.state_wait_pay);
-                        List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
-                        JOYOrder order = orders.get(0);
-                        order.delMark = (JOYOrder.DEL_MARK);
-                        joyOrderService.deleteOrder(order);
+                        JOYOrder order = new JOYOrder();
+                        order.mobileNo = payInfo.mobileNo;
+                        order.delMark = JOYOrder.NON_DEL_MARK;
+                        order.state = JOYOrder.state_wait_pay;
+                        List<JOYOrder> orders = joyOrderService.getNeededList(order);
+                        order = orders.get(0);
+                        JOYOrder valueObj = new JOYOrder();
+                        valueObj.delMark = JOYOrder.DEL_MARK;
+                        valueObj.state = JOYOrder.state_pay_over;
+                        joyOrderService.updateRecord(valueObj,order);
                         logger.debug("rent pay over ");
                     }
                     // mark the pay info
-                    joywxPayInfoService.markPayInfo(payInfo);
+                    JOYWXPayInfo valueInfoObj = new JOYWXPayInfo();
+                    valueInfoObj.payOverFlag = 1;
+                    joywxPayInfoService.updateRecord(valueInfoObj,payInfo); //markPayInfo(payInfo);
                 } else {
                     // no no pay trade
                     return succStr;

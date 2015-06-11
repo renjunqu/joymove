@@ -72,6 +72,7 @@
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="configLocation" value="classpath:mybatis_config.xml"></property>
+		<property name="typeAliases" value="com.joymove.velocity.VelocityDriverDeclare" />
 	</bean>
 
 

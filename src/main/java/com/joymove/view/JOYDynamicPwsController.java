@@ -24,7 +24,7 @@ public class JOYDynamicPwsController {
 	private JOYDynamicPwsService joydynamicpwsService;
 	
 	@RequestMapping(value="/usermgr/dynamicPwsGen", method=RequestMethod.POST)
-	public @ResponseBody JSONObject addMBKRegisterCode(HttpServletRequest req) {
+	public @ResponseBody JSONObject dynamicPwsGen(HttpServletRequest req) {
 		
 		JSONObject Reobj = new JSONObject();
 		Reobj.put("result", "10001");
@@ -47,7 +47,7 @@ public class JOYDynamicPwsController {
 		          dynamicPws.mobileNo = (mobileNo);
 		          dynamicPws.code = sb.toString();
 		          //dynamicPws.setCreateTime(new Date());
-		          joydynamicpwsService.insertDynamicPwse(dynamicPws);
+		          joydynamicpwsService.insertRecord(dynamicPws);
 		          SmsUtils.sendRegisterCode(sb.toString(), String.valueOf(mobileNo));
 			      Reobj.put("result", "10000");
 			      Reobj.put("number", sb.toString());
@@ -60,7 +60,7 @@ public class JOYDynamicPwsController {
 	}
 	
 	@RequestMapping(value="/usermgr/dynamicPwsVeri", method=RequestMethod.POST)
-	public @ResponseBody JSONObject getMBKRegisterCode(HttpServletRequest req) {
+	public @ResponseBody JSONObject dynamicPwsVeri(HttpServletRequest req) {
 		
 		JSONObject Reobj=new JSONObject();
 		Reobj.put("result","10001");
@@ -70,16 +70,14 @@ public class JOYDynamicPwsController {
 		//
 		
 		try {
-			Hashtable<String,Object> hash = (Hashtable<String,Object>)req.getAttribute("jsonArgs");//JsonHashUtils.strToJSONHash(req.getReader());
+			Hashtable<String,Object> jsonObj = (Hashtable<String,Object>)req.getAttribute("jsonArgs");//JsonHashUtils.strToJSONHash(req.getReader());
+				String number = (String)jsonObj.get("number");
 				
-				String number = (String)hash.get("number");
-				
-				String phone = (String) hash.get("phoneNo");
-				Map<String,Object> likeCondition = new HashMap<String, Object>();
-				likeCondition.put("mobileNo", hash.get("phoneNo"));
-				List<JOYDynamicPws>joyDynamicPwsess = joydynamicpwsService.getDynamicPws(likeCondition);
-				
-				
+				String phone = (String) jsonObj.get("phoneNo");
+				JOYDynamicPws dynamicPwsFilter = new JOYDynamicPws();
+			    dynamicPwsFilter.mobileNo = String.valueOf(jsonObj.get("phoneNo"));
+				List<JOYDynamicPws>joyDynamicPwsess = joydynamicpwsService.getNeededList(dynamicPwsFilter,0,1,"DESC");
+
 				if(joyDynamicPwsess.size()==1) {
 				JOYDynamicPws dynamicPws = joyDynamicPwsess.get(0);
 				Date time = dynamicPws.createTime;

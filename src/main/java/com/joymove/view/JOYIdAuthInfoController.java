@@ -8,6 +8,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.joymove.entity.JOYUser;
+import com.joymove.service.JOYUserService;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,10 @@ public class JOYIdAuthInfoController {
 	@Resource(name = "JOYIdAuthInfoService")
 	private JOYIdAuthInfoService joyIdAuthInfoService;
 
+	@Resource(name = "JOYUserService")
+	private JOYUserService joyUserService;
+
+
 	/****** business proc ***********/
 
 	@RequestMapping(value="usermgr/updateIdAuthInfo",method=RequestMethod.POST)
@@ -36,10 +42,9 @@ public class JOYIdAuthInfoController {
 		JOYIdAuthInfo authInfo = new JOYIdAuthInfo();
 			try{
 				 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-				 
+				 JOYIdAuthInfo authInfoFilter = new JOYIdAuthInfo();
 				 String mobileNo = (String)jsonObj.get("mobileNo");
-				 Map<String,Object> likeCondition = new HashMap<String, Object>();
-				 likeCondition.put("mobileNo",mobileNo);
+				 authInfoFilter.mobileNo = mobileNo;
 				 String idNo = (String) jsonObj.get("id_no");
 				 String idName = (String) jsonObj.get("id_name");
 				 String idCard = (String) jsonObj.get("id_card");
@@ -52,14 +57,21 @@ public class JOYIdAuthInfoController {
 				 authInfo.idAuthInfo_back = (decode.decodeBuffer(idCard_back));
 				 
 				 
-				 List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededIdAuthInfo(likeCondition);
+				 List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededList(authInfoFilter);
+				JOYUser userFilter = new JOYUser();
+				JOYUser userValue = new JOYUser();
+				userFilter.mobileNo = mobileNo;
+				userValue.authenticateDriver = JOYUser.auth_state_ing;
+
 				 if(infos.size()>0) {
 					 //update 
-					 joyIdAuthInfoService.updateIdAuthInfo(authInfo);
+					 joyIdAuthInfoService.insertRecord(authInfo);
+					 joyUserService.updateRecord(userValue,userFilter);
 					 
 				 } else {
 					 //insert 
-					 joyIdAuthInfoService.insertIdAuthInfo(authInfo);
+					 joyIdAuthInfoService.updateRecord(authInfo, authInfoFilter);
+					 joyUserService.updateRecord(userValue,userFilter);
 				 }
 				/*
 				 BASE64Decoder decode = new BASE64Decoder();
@@ -87,10 +99,10 @@ public class JOYIdAuthInfoController {
 
 		try{
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			JOYIdAuthInfo authInfoFilter = new JOYIdAuthInfo();
 			String mobileNo = (String)jsonObj.get("mobileNo");
-			Map<String,Object> likeCondition = new HashMap<String, Object>();
-			likeCondition.put("mobileNo",mobileNo);
-			List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededIdAuthInfo(likeCondition);
+			authInfoFilter.mobileNo = mobileNo;
+			List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededList(authInfoFilter);
 			if(infos.size()==0) {
 				Reobj.put("result","10002");
 			} else {

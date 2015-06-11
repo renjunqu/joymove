@@ -34,9 +34,10 @@ public class JOYMessageController {
 				Hashtable<String,Object> jsonObj = (Hashtable<String, Object>) req.getAttribute("jsonArgs");
 				JSONArray  jsonArray = new JSONArray();
 				String  mobileNo = (String) jsonObj.get("mobileNo");
-				Map<String,Object> likeCondition = new HashMap<String,Object>();
-				likeCondition.put("mobileNo",mobileNo);
-				List<JOYMessage> messages = joyMessageService.getJOYMessageById(likeCondition);
+				JOYMessage messageFilter = new JOYMessage();
+				messageFilter.mobileNo = mobileNo;
+
+				List<JOYMessage> messages = joyMessageService.getNeededList(messageFilter);
 				/************  get message by id ***********/
 				if (messages.size() > 0) {
 					for (JOYMessage mess : messages) {
@@ -45,7 +46,8 @@ public class JOYMessageController {
 						
 				}
 				/************  get broad cast message ***********/
-				messages = joyMessageService.getJOYBroadcastMessage();
+			   messageFilter.mobileNo = "*";
+				messages = joyMessageService.getNeededList(messageFilter);
 				if (messages.size() > 0) {
 					for (JOYMessage mess : messages) {
 						jsonArray.add(mess.toJSON());

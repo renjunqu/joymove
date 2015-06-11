@@ -36,14 +36,14 @@ public class JOYCouponController {
 			try{
 				 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				 String mobileNo = (String) jsonObj.get("mobileNo");
-				 Map<String,Object> likeCondition = new HashMap<String, Object>();
-				 likeCondition.put("mobileNo",mobileNo);
-				 likeCondition.put("delMark", JOYCoupon.NON_DELMARK);
-				 List<JOYCoupon> joyCoupons = joycouponService.getJOYCoupon(likeCondition);
+				 JOYCoupon couponFilter = new JOYCoupon();
+				 couponFilter.mobileNo = mobileNo;
+				 couponFilter.delMark = JOYCoupon.NON_DELMARK;
+				 List<JOYCoupon> joyCoupons = joycouponService.getNeededList(couponFilter);
 				 JSONArray jsonArray = new JSONArray();
 				 if (joyCoupons.size() > 0) {
 					 for (JOYCoupon joyCoupon : joyCoupons) {
-						 	jsonArray.add(joyCoupon.toJSON());	
+						 	jsonArray.add(joyCoupon.toMap());
 					}
 					 	jsonObject.put("result","10000");
 						jsonObject.put("Coupons",jsonArray);
@@ -73,7 +73,7 @@ public class JOYCouponController {
 				 JOYCoupon  joyCoupon = new  JOYCoupon();
 				 joyCoupon.mobileNo = (mobileNo);
 				 //joyCoupon.setCouponNum(bigDecimal);
-				 joycouponService.insertJOYCoupon(joyCoupon);
+				 joycouponService.insertRecord(joyCoupon);
 				 jsonObject.put("result","10000");
 			}catch(Exception e){
 				e.printStackTrace();

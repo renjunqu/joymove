@@ -35,10 +35,10 @@ public class JOYIntegrationController {
 		jsonObject.put("result","10001");
 		try {
 			Hashtable<String,Object> hash = (Hashtable<String,Object>)req.getAttribute("jsonArgs");
-			Map<String,Object> likeCondition = new HashMap<String, Object>();
+			JOYIntegration filterObj = new JOYIntegration();
 			String mobileNo = (String) hash.get("mobileNo");
-			likeCondition.put("mobileNo",mobileNo);
-			List<JOYIntegration> joyIntegrations = joyIntegrationService.getJOYIntegration(likeCondition);
+			filterObj.mobileNo = mobileNo;
+			List<JOYIntegration> joyIntegrations = joyIntegrationService.getNeededList(filterObj);
 			JSONArray jsonArray = new JSONArray();
 			if (joyIntegrations.size() > 0 ) {
 				for (JOYIntegration joyIntegration : joyIntegrations) {
@@ -81,7 +81,7 @@ public class JOYIntegrationController {
 				joyintegration.jiFen = (Integer.valueOf(jiFen));
 				joyintegration.jifenDesc = (jiFenDesc);
 				joyintegration.statusMark = (Integer.valueOf(statusMark));
-				joyIntegrationService.insertJOYIntegration(joyintegration);
+				joyIntegrationService.insertRecord(joyintegration);
 			}catch(Exception e){
 				e.printStackTrace();
 			}

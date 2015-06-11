@@ -48,8 +48,7 @@ public class CheckUserNameExists  extends  HandlerInterceptorAdapter{
 
 			  JOYUser toTest = new JOYUser();
 			  toTest.username = jsonObj.get("username").toString();
-			  List<JOYUser> users = joyUserService.getNeededUser(toTest);
-		
+			  List<JOYUser> users = joyUserService.getNeededList(toTest);
 		      if(users.size()==0)
 		    	  return true;
 		  } else {

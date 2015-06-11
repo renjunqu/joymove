@@ -59,27 +59,7 @@ public class JOYUserController{
 	private JOYWXPayInfoService joywxPayInfoService;
 	
 
-	
-	/*********   business proc  *****************/
-	/**
-     * @return
-	 */
-	@RequestMapping(value="cachemgr/triggerUser",method=RequestMethod.GET)
-	public @ResponseBody JSONObject cacheTrigger(HttpServletRequest req){
-		JSONObject  jsonObject = new JSONObject();
-		jsonObject.put("result","10001");
-		try{
-			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 String mobileNo = req.getParameter("mobileNo");
-			 JOYUser user = new JOYUser();
-			 user.mobileNo = mobileNo; //setMobileNo(mobileNo);
-			 joyUserService.triggerUserCache(user);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
 
-		return jsonObject;
-	}
 	
 	
 	
@@ -99,8 +79,9 @@ public class JOYUserController{
 				 //String username = (String)jsonObj.get("username");
 				 String password = (String)jsonObj.get("password");
 				 Map<String,Object> likeCondition = new HashMap<String, Object>();
-				 likeCondition.put("mobileNo",mobileNo);
-				 List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getDynamicPws(likeCondition);
+				 JOYDynamicPws dynamicPwsFilter = new JOYDynamicPws();
+			     dynamicPwsFilter.mobileNo = mobileNo;
+				 List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getNeededList(dynamicPwsFilter);
 				 JOYUser user = new JOYUser();	
 				 if (password.length() <= 5 || password.length() >= 13) {
 					 jsonObject.put("errMsg","密码格式不对");
@@ -112,7 +93,7 @@ public class JOYUserController{
 									user.mobileNo = mobileNo; //setMobileNo(mobileNo);
 									//user.setUserName(username);
 									user.userpwd = password; //setUserpwd(password);
-									joyUserService.insertJOYUser(user);
+									joyUserService.insertRecord(user);
 									jsonObject.put("result","10000");
 							} else {
 								jsonObject.put("errMsg","验证码超时");
@@ -142,7 +123,7 @@ public class JOYUserController{
 				 String password = (String)jsonObj.get("password");
 				 JOYUser user = new JOYUser();
 				 user.mobileNo = mobileNo; //setMobileNo(mobileNo);
-				 List<JOYUser> joyUsers = joyUserService.getNeededUser(user);
+				 List<JOYUser> joyUsers = joyUserService.getNeededList(user);
 				 if (joyUsers.size() > 0) {
 					for (JOYUser joyUser : joyUsers) {
 						String userpwd = joyUser.userpwd; //getUserpwd();
@@ -152,7 +133,7 @@ public class JOYUserController{
 							 joyUser.authToken = authToken; //setAuthToken(authToken);
 							 joyUser.lastActiveTime = new Date(System.currentTimeMillis()); //setLastActiveTime(new Date(System.currentTimeMillis()));
 							 joyUser.mobileNo = mobileNo; //setMobileNo(mobileNo);
-							 joyUserService.updateJOYUser(joyUser);
+							 joyUserService.updateRecord(joyUser, user);
 							 jsonObject.put("result", "10000");
 							 jsonObject.put("authToken", authToken);
 							
@@ -183,17 +164,17 @@ public class JOYUserController{
 				 
 				
 				 if (chPwd.length() <= 5 || chPwd.length() >= 13) {
-					 jsonObject.put("errMsg","瀵嗙爜闀垮害蹇呴』涓�-12浣嶆暟瀛楀拰瀛楁瘝");
+					 jsonObject.put("errMsg","密码长度不能小于5位");
 				}else{
 				
 					JOYUser joyUser = (JOYUser)req.getAttribute("cUser");	
 					 if (passWord.equals(joyUser.userpwd)) {
-						 joyUser.userpwd = chPwd; //setUserpwd(chPwd);
-						 joyUser.mobileNo = mobileNo; //setMobileNo(mobileNo);
-						 joyUserService.updateJOYUser(joyUser);
+						 JOYUser userNew = new JOYUser();
+						 userNew.userpwd = chPwd; //setUserpwd(chPwd);
+						 joyUserService.updateRecord(userNew, joyUser);
 						 jsonObject.put("result","10000");
 					}else{
-						jsonObject.put("errMsg","瀵嗙爜閿欒");
+						jsonObject.put("errMsg","旧密码输入错误");
 					}
 				
 			}
@@ -217,8 +198,9 @@ public class JOYUserController{
 				 String passWord = (String)jsonObj.get("password");
 				 String code = String.valueOf(jsonObj.get("code"));
 				 Map<String,Object> likeCondition = new HashMap<String, Object>();
-				 likeCondition.put("mobileNo",mobileNo);
-				 List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getDynamicPws(likeCondition);
+				JOYDynamicPws dynamicPwsFilter = new JOYDynamicPws();
+				dynamicPwsFilter.mobileNo = mobileNo;
+				 List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getNeededList(dynamicPwsFilter);
 				 JOYDynamicPws joyDynamicPws = dynamicPws.get(0);
 				 
 				
@@ -229,10 +211,11 @@ public class JOYUserController{
 						 jsonObject.put("errMsg","验证码格式错误");
 					}else{
 					
-							 JOYUser joyUser = (JOYUser)req.getAttribute("cUser");	
-							 joyUser.userpwd = passWord; //setUserpwd(passWord);
+							 JOYUser joyUser = (JOYUser)req.getAttribute("cUser");
+						 	 JOYUser userNew = new JOYUser();
+							 userNew.userpwd = passWord; //setUserpwd(passWord);
 							 joyUser.mobileNo = mobileNo; //setMobileNo(mobileNo);
-							 joyUserService.updateJOYUser(joyUser);
+							 joyUserService.updateRecord(userNew, joyUser);
 							 jsonObject.put("result","10000");	
 					}
 				} else {
@@ -314,7 +297,7 @@ public class JOYUserController{
 						 } else {
 							 toModUser.id5PassFlag = JOYUser.auth_state_pending;
 						 }
-						 joyUserService.updateJOYUser(toModUser);
+						 joyUserService.updateRecord(toModUser, joyUser);
 					 }
 				 }
 			}catch(Exception e){
@@ -340,22 +323,24 @@ public class JOYUserController{
 					String face_info = (String) jsonObj.get("face_info");
 					String voice_info = (String) jsonObj.get("voice_info");
 					JOYUser joyUser = (JOYUser) req.getAttribute("cUser");
-					joyUser.face_info = face_info;
-					joyUser.voice_info = voice_info;
+					JOYUser userNew = new JOYUser();
+					userNew.face_info = face_info;
+					userNew.voice_info = voice_info;
 					joyUser.mobileNo = mobileNo;
-					joyUserService.updateJOYUser(joyUser);
+					joyUserService.updateRecord(userNew, joyUser);
 					jsonObject.put("result", "10000");
 				} else if (URI.contains("updateInfo")) {
 						String username = (String) jsonObj.get("username");
 						String gender = (String) jsonObj.get("gender");
 						JOYUser joyUser = (JOYUser) req.getAttribute("cUser");
+					    JOYUser userNew = new JOYUser();
 						String[] settingProps = {"username", "gender"};
 					    if(username!=null)
-							joyUser.username = username;
+							userNew.username = username;
 					    if(gender!=null)
-					    	joyUser.gender = gender;
-						joyUser.mobileNo = mobileNo;
-						joyUserService.updateJOYUser(joyUser);
+							userNew.gender = gender;
+
+						joyUserService.updateRecord(userNew, joyUser);
 						jsonObject.put("result", "10000");
 				}
 
@@ -397,7 +382,7 @@ public class JOYUserController{
 				 wxpayInfo.out_trade_no = (wx_trade_no);
 				 wxpayInfo.totalFee = (Double.valueOf(balance));
 				 String wx_code = WeChatPayUtil.genePayStr(String.valueOf(Double.valueOf(balance*100).longValue()),wx_trade_no);
-				 joywxPayInfoService.insertWXPayInfo(wxpayInfo);
+				 joywxPayInfoService.insertRecord(wxpayInfo);
 				/**generate result **/
 				 Reobj.put("result", "10000");
 				 Reobj.put("zhifubao_code", zhifubao_code);
@@ -474,21 +459,22 @@ public class JOYUserController{
 				
 				Hashtable<String,Object> jsonObj = (Hashtable<String, Object>) req.getAttribute("jsonArgs");
 				JOYUser user = (JOYUser)req.getAttribute("cUser");
+				JOYUser userNew = new JOYUser();
 				JSONObject homeAddr = (JSONObject)jsonObj.get("home");
 				JSONObject corpAddr = (JSONObject)jsonObj.get("corp");
 				if(homeAddr!=null){
-					user.homeAddr = (String)homeAddr.get("name");
-					user.homeLatitude = BigDecimal.valueOf(Double.valueOf(String.valueOf(homeAddr.get("latitude"))));
-					user.homeLongitude = (BigDecimal.valueOf(Double.valueOf(String.valueOf(homeAddr.get("longitude")))));
+					userNew.homeAddr = (String)homeAddr.get("name");
+					userNew.homeLatitude = BigDecimal.valueOf(Double.valueOf(String.valueOf(homeAddr.get("latitude"))));
+					userNew.homeLongitude = (BigDecimal.valueOf(Double.valueOf(String.valueOf(homeAddr.get("longitude")))));
 				}
 				if(corpAddr!=null) {
-					user.corpAddr = ((String)corpAddr.get("name"));
-					user.corpLatitude = (BigDecimal.valueOf(Double.valueOf(String.valueOf(corpAddr.get("latitude")))));
-					user.corpLongitude = (BigDecimal.valueOf(Double.valueOf(String.valueOf(corpAddr.get("longitude")))));
+					userNew.corpAddr = ((String)corpAddr.get("name"));
+					userNew.corpLatitude = (BigDecimal.valueOf(Double.valueOf(String.valueOf(corpAddr.get("latitude")))));
+					userNew.corpLongitude = (BigDecimal.valueOf(Double.valueOf(String.valueOf(corpAddr.get("longitude")))));
 					
 				}
 				
-				joyUserService.updateJOYUser(user);
+				joyUserService.updateRecord(userNew,user);
 				Reobj.put("result","10000");
 			}catch(Exception e){
 				e.printStackTrace();

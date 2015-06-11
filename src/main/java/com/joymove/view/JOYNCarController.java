@@ -1,10 +1,6 @@
 package com.joymove.view;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Resource;
@@ -81,11 +77,14 @@ public class JOYNCarController {
 			 if(cars!=null && cars.size()>0) {
 				 for(Car car:cars) {
 					 JSONObject car_json = new JSONObject();
+
+
 					 car_json.put("carId", car.getVinNum());
 					 car_json.put("longitude", car.getLongitude());
 					 car_json.put("latitude", car.getLatitude());
-					 likeCondition.put("vinNum",car.getVinNum());
-					 List<JOYNCar>  ncars = joyNCarService.getNeededCar(likeCondition);
+					 JOYNCar filterObj = new JOYNCar();
+					 filterObj.vinNum = car.getVinNum();
+					 List<JOYNCar>  ncars = joyNCarService.getNeededList(filterObj);
 					 JOYNCar ncar = ncars.get(0);
 					 
 					 
@@ -154,7 +153,7 @@ public class JOYNCarController {
 			 car.RSAPubKey = (String.valueOf(UUID.randomUUID()));
 			 car.RSAPriKey = (String.valueOf(UUID.randomUUID()));
 			 logger.debug("qrj: try to add a new car with vin Num " + car.vinNum);
-			 joyNCarService.insertCar(car);
+			 joyNCarService.insertRecord(car);
 			 logger.debug("qrj: insert ok, then send the vin number  code the cloudmove");
 			 String timeStr = String.valueOf(System.currentTimeMillis());
 			 String url = ConfigUtils.getPropValues("cloudmove.registerCar");
@@ -185,7 +184,9 @@ public class JOYNCarController {
 			 logger.debug("get the send key report from clouemove");
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			 condition.put("vinNum", jsonObj.get("vinNum"));
-			 List<JOYNCar> cars =  joyNCarService.getNeededCar(condition);
+			 JOYNCar filterObj = new JOYNCar();
+			 filterObj.vinNum = String.valueOf(jsonObj.get("vinNum"));
+			 List<JOYNCar> cars =  joyNCarService.getNeededList(filterObj);
 			 JOYNCar car = cars.get(0);
 			
 			 String url = ConfigUtils.getPropValues("cloudmove.sendKey");
@@ -215,8 +216,8 @@ public class JOYNCarController {
 		 try {
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");;
 			 String vinNum = (String)jsonObj.get("carId");
-			 JOYNCar car = new JOYNCar();
-			 car.vinNum = vinNum;
+			 JOYNCar filterObj = new JOYNCar();
+			 filterObj.vinNum = vinNum;
 			 String URI = req.getRequestURI();
 			 String url = null;
 			 String data = null; 
@@ -234,8 +235,9 @@ public class JOYNCarController {
 				 opResult = Integer.parseInt(cmObj.get("result").toString());
 				 if(opResult==1) {
 					 Reobj.put("result","10000");
-					 car.lockState = 0;
-					 joyNCarService.updateCarLockState(car);
+					 JOYNCar valueObj = new JOYNCar();
+					 valueObj.lockState = 0;
+					 joyNCarService.updateRecord(valueObj,filterObj);
 				 }
 
 			 } else if(URI.contains("lock")) {
@@ -246,9 +248,9 @@ public class JOYNCarController {
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
 				 opResult = Integer.parseInt(cmObj.get("result").toString());
 				 if(opResult==1) {
-					 Reobj.put("result","10000");
-					 car.lockState = 1;
-					 joyNCarService.updateCarLockState(car);
+					 JOYNCar valueObj = new JOYNCar();
+					 valueObj.lockState = 1;
+					 joyNCarService.updateRecord(valueObj,filterObj);
 				 }
 			 } else if(URI.contains("blow")) {
 				 operation  = "blow";
@@ -322,9 +324,10 @@ public class JOYNCarController {
 				return Reobj;
 			}
 			//check the order state
-			likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			likeCondition.put("delMark", JOYOrder.NON_DEL_MARK);
-			List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
+			JOYOrder orderFilter = new JOYOrder();
+			orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+			orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+			List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
 			if(orders.size()>0) {
 				Reobj.put("errMsg", "之前还有未支付的订单。");
 				return Reobj;
@@ -388,10 +391,11 @@ public class JOYNCarController {
 					 Reobj.put("errMsg", "车辆还没准备好");
 				 } else if (car.getState() == Car.state_busy) {
 					 // the order alreay created, now return the orderId
-					 likeCondition.put("carVinNum", car.getVinNum());
-					 likeCondition.put("mobileNo", car.getOwner());
-					 likeCondition.put("delMark", JOYOrder.NON_DEL_MARK);
-					 List<JOYOrder> orders = joyNOrderService.getNeededOrder(likeCondition);
+					 JOYOrder orderFilter = new JOYOrder();
+					 orderFilter.carVinNum = car.getVinNum();
+					 orderFilter.mobileNo = car.getOwner();
+					 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+					 List<JOYOrder> orders = joyNOrderService.getNeededList(orderFilter);
 					 JOYOrder cOrder = orders.get(0);
 					 Reobj.put("orderId", cOrder.id);
 		    	     Reobj.put("carId", cOrder.carVinNum);
@@ -431,7 +435,16 @@ public class JOYNCarController {
 
 				     if(car.getState()==car.state_busy) {
 						 //首先停止订单
-						 joyNOrderService.updateOrderTermiate(car);
+						 JOYOrder orderFilter = new JOYOrder();
+						 JOYOrder orderNewValue = new JOYOrder();
+						 orderFilter.carVinNum = car.getVinNum();
+						 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+						 orderFilter.mobileNo = mobileNo;
+						 orderNewValue.state = JOYOrder.state_wait_pay;
+						 orderNewValue.stopLatitude = car.getLatitude();
+						 orderNewValue.stopLatitude = car.getLongitude();
+						 orderNewValue.stopTime = new Date(System.currentTimeMillis());
+						 joyNOrderService.updateRecord(orderNewValue,orderFilter);
 					 }
 
 				car.setState(null);
@@ -513,10 +526,10 @@ public class JOYNCarController {
 		try {
 
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-
-			likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			likeCondition.put("delMark", JOYReserveOrder.NODEL_FLAG);
-			List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
+            JOYOrder orderFilter = new JOYOrder();
+			orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+			orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+			List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
 			if(orders.size()>0) {
 				JOYOrder order = orders.get(0);
 				if(order.state!=JOYOrder.state_busy) {
@@ -543,8 +556,9 @@ public class JOYNCarController {
 		try {
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			String vinNum = jsonObj.get("carId").toString();
-			likeCondition.put("vinNum",vinNum);
-			List<JOYNCar> cars = joyNCarService.getNeededCar(likeCondition);
+			JOYNCar ncarFilter = new JOYNCar();
+			ncarFilter.vinNum = vinNum;
+			List<JOYNCar> cars = joyNCarService.getNeededList(ncarFilter);
 			JOYNCar car  = cars.get(0);
 			Reobj.put("lockState",car.lockState);
             Reobj.put("result","10000");
@@ -571,12 +585,13 @@ public class JOYNCarController {
 		//       sdfdsfdsf
 		 try{
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			   JOYOrder cOrder = new JOYOrder();
-			   cOrder.mobileNo = ((String)jsonObj.get("mobileNo"));
-			   cOrder.carVinNum = (jsonObj.get("carId").toString());
-	    	   cOrder.delMark = (JOYReserveOrder.NODEL_FLAG);
-	    	   cOrder.batonMode = (((Long)jsonObj.get("batonMode")).intValue());
-	    	   joyNOrderService.changeNBatonMode(cOrder);			 
+			   JOYOrder orderFilter = new JOYOrder();
+			   orderFilter.mobileNo = ((String)jsonObj.get("mobileNo"));
+			   orderFilter.carVinNum = (jsonObj.get("carId").toString());
+	    	   orderFilter.delMark = (JOYReserveOrder.NODEL_FLAG);
+			   JOYOrder orderNewValue = new JOYOrder();
+	    	   orderNewValue.batonMode = (((Long)jsonObj.get("batonMode")).intValue());
+	    	   joyNOrderService.updateRecord(orderNewValue,orderFilter);
 			   Reobj.put("result", "10000");
 		 } catch(Exception e){
 			 Reobj.put("errMsg", e.toString());
@@ -594,14 +609,15 @@ public class JOYNCarController {
 		//       sdfdsfdsf
 		 try{
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 JOYOrder cOrder = new JOYOrder();
-			 cOrder.mobileNo = ((String)jsonObj.get("mobileNo"));
-			 cOrder.carVinNum = (jsonObj.get("carId").toString());
-	    	 cOrder.delMark = (JOYReserveOrder.NODEL_FLAG);
+			 JOYOrder orderFilter = new JOYOrder();
+			 orderFilter.mobileNo = ((String)jsonObj.get("mobileNo"));
+			 orderFilter.carVinNum = (jsonObj.get("carId").toString());
+	    	 orderFilter.delMark = (JOYReserveOrder.NODEL_FLAG);
+			 JOYOrder orderNewValue = new JOYOrder();
 	    	 
 	    	 String destination = jsonObj.get("destination").toString();
-	    	 cOrder.destination = (destination);
-	    	 joyNOrderService.updateNDestination(cOrder);	 
+			 orderNewValue.destination = destination;
+	    	 joyNOrderService.updateRecord(orderNewValue,orderFilter);
 			 Reobj.put("result", "10000");
 		 } catch(Exception e){
 			 Reobj.put("errMsg", e.toString());

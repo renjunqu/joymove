@@ -55,6 +55,8 @@ public class JOYZhifubaoController {
 	public @ResponseBody String resetPwd(HttpServletRequest req){
 		
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JOYOrder orderFilter = new JOYOrder();
+		JOYOrder orderNew = new JOYOrder();
 		try {
 			String subject = req.getParameter("subject");
 			String body    = req.getParameter("body");
@@ -65,14 +67,14 @@ public class JOYZhifubaoController {
 			if(subject.equals("rentPay")) {
 				
 				 String mobileNo = body;
+
 				 logger.debug("it is a rent pay info , mobileNo is "+mobileNo);
-				 likeCondition.put("mobileNo",mobileNo);
-				 likeCondition.put("delMark",JOYOrder.NON_DEL_MARK);
-				 likeCondition.put("state",JOYOrder.state_wait_pay);
-				 List<JOYOrder> orders =  joyOrderService.getNeededOrder(likeCondition);
-				 JOYOrder order = orders.get(0);
-				 order.delMark = (JOYOrder.DEL_MARK);
-				 joyOrderService.deleteOrder(order);
+				orderFilter.mobileNo= mobileNo;
+				orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+				orderFilter.state = JOYOrder.state_wait_pay;
+				orderNew.delMark = JOYOrder.DEL_MARK;
+				orderNew.state = JOYOrder.state_pay_over;
+				 joyOrderService.updateRecord(orderNew,orderFilter);
 				 logger.debug("rent pay over ");
 				 
 			} else if (subject.equals("depositRecharge")){
@@ -96,16 +98,16 @@ public class JOYZhifubaoController {
 				System.out.println("deposit is "+deposit);
 				JOYUser user = new JOYUser();
 				user.mobileNo = mobileNo;  //setMobileNo(mobileNo);
-				List<JOYUser> users = joyUserService.getNeededUser(user);
+				List<JOYUser> users = joyUserService.getNeededList(user);
 				 
 			    if(users.size()==1) {
+					JOYUser userNew = new JOYUser();
 			          BigDecimal currDepo = users.get(0).deposit; //.getDeposit();
 			          System.out.println("before recharge: "+currDepo);
 			          currDepo = currDepo.add(BigDecimal.valueOf(deposit));
-			          user.deposit = currDepo; //setDeposit(currDepo);
-			          user.mobileNo = mobileNo; //setMobileNo(mobileNo);
+					   userNew.deposit = currDepo; //setDeposit(currDepo);
 			          System.out.println("after recharge: "+currDepo);
-			          joyUserService.updateJOYUser(user);
+			          joyUserService.updateRecord(userNew,user);
 			          //record this pay
 			          
 			          logger.debug("recharge ok");

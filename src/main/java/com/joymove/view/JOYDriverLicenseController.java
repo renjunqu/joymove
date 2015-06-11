@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.joymove.entity.JOYUser;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,9 +47,9 @@ public class JOYDriverLicenseController {
 
 				Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				String mobileNo = (String)jsonObj.get("mobileNo");
-				 Map<String,Object> likeCondition = new HashMap<String, Object>();
-				 likeCondition.put("mobileNo", mobileNo);
-				 List<JOYDriverLicense> driveAuthInfos = joyDriverLicenseService.getDriverAuthInfo(likeCondition);
+				JOYDriverLicense driverLicenseFilter = new JOYDriverLicense();
+				driverLicenseFilter.mobileNo = mobileNo;
+				 List<JOYDriverLicense> driveAuthInfos = joyDriverLicenseService.getNeededList(driverLicenseFilter);
 				 if(driveAuthInfos.size()>0) {
 					 BASE64Encoder encoder = new BASE64Encoder();
 					 JOYDriverLicense driverLicense = driveAuthInfos.get(0);
@@ -79,26 +80,29 @@ public class JOYDriverLicenseController {
 				 Date expireTime = new Date(Long.parseLong(jsonObj.get("expireTime").toString()));
 				 BASE64Decoder decode = new BASE64Decoder();
 				 byte[] byteImage = decode.decodeBuffer(image);
-				 likeCondition.put("mobileNo",mobileNo);
-				 List<JOYDriverLicense> drivers = joyDriverLicenseService.getDriverAuthInfo(likeCondition);
+				JOYDriverLicense driverLicenseFilter = new JOYDriverLicense();
+				driverLicenseFilter.mobileNo = mobileNo;
+				 List<JOYDriverLicense> drivers = joyDriverLicenseService.getNeededList(driverLicenseFilter);
 				 JOYDriverLicense  driverLicense = new JOYDriverLicense();
 				 driverLicense.mobileNo = (mobileNo);
 				 driverLicense.driverAuthInfo = (byteImage);
 				 driverLicense.driverLicenseNumber = (driverNumber);
 				 driverLicense.expireTime = (expireTime);
 
+				JOYUser userFilter = new JOYUser();
+				JOYUser userValue = new JOYUser();
+				userFilter.mobileNo = mobileNo;
+				userValue.authenticateDriver = JOYUser.auth_state_ing;
 				 if (drivers.size() == 0) {
-					 joyDriverLicenseService.insertDriverAuthInfo(driverLicense);
+
+					 joyDriverLicenseService.insertRecord(driverLicense);
+					 joyUserService.updateRecord(userValue,userFilter);
 					 Reobj.put("result", "10000");
 				 } else {
-					for (JOYDriverLicense driver : drivers) {
-						 joyDriverLicenseService.updateJOYDriverLicense(driver);
-						 Reobj.put("result", "10000");
-					}
+						 joyDriverLicenseService.updateRecord(driverLicense,driverLicenseFilter);
+					     joyUserService.updateRecord(userValue,userFilter);
+					     Reobj.put("result", "10000");
 				}
-				 
-				 
-			
 			}catch(Exception e){
 				e.printStackTrace();
 			}

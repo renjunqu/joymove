@@ -56,6 +56,7 @@ public class JOYCarController {
 
 
 
+
 	/*********   business proc  ******************/
 
 	@RequestMapping(value={"rent/getNearByAvailableCars","rent/getNearByBusyCars"}, method=RequestMethod.POST)
@@ -107,65 +108,6 @@ public class JOYCarController {
 		 return Reobj;
 	}
 	
-	@RequestMapping(value="rent/getMyReservedCar", method=RequestMethod.POST)
-	public  @ResponseBody JSONObject getMyReservedCar(HttpServletRequest req){
-		 System.out.println("getNearByAvailableCars method was invoked...");
-		 Map<String,Object> likeCondition = new HashMap<String, Object>();
-		 JSONObject Reobj=new JSONObject();
-		 Reobj.put("result", "10001");
-		 
-		 try {  
-			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			 likeCondition.put("delFlag", JOYReserveOrder.NODEL_FLAG);
-			 likeCondition.put("expSeconds", JOYReserveOrder.EXPIRE_SECONDS);
-			 List<JOYReserveOrder> reOrders = joyReserveOrderService.getNeededReserveOrder(likeCondition);
-			 Reobj.put("result","10002" );
-			 Reobj.put("errMsg","No data");
-			 if(reOrders.size()==1) {
-				 JOYReserveOrder cOrder = reOrders.get(0);
-				 if(cOrder.carId==null) {
-					 //it is a new style reserve order
-					 String vinNum = cOrder.carVinNum;
-					 Car cacheCar = cacheCarService.getByVinNum(vinNum);
-					 if(cacheCar.getState()==Car.state_reserved) {
-						 Reobj.put("result", "10000");
-						 JSONObject carJson = new JSONObject();
-						 Reobj.put("cars", carJson);
-						 carJson.put("carId", vinNum);
-						 carJson.put("longitude", cacheCar.getLongitude());
-						 carJson.put("latitude", cacheCar.getLatitude());
-						 carJson.put("desp","dsfdsf");
-						 carJson.put("startTime", cOrder.startTime);
-						 carJson.put("ifBlueTeeth", cOrder.ifBlueTeeth);
-
-					 }
-				 } else {
-					 // it is a old style reserve order
-					 likeCondition.put("id", cOrder.carId);
-					 List<JOYCar> cars = joyCarService.getCarById(likeCondition);
-					 if(cars.size() ==1) {
-						 JOYCar car = cars.get(0);
-						 Reobj.put("result", "10000");
-						 JSONObject carJson = new JSONObject();
-						 Reobj.put("cars", carJson);
-						 
-						 carJson.put("carId", String.valueOf(cOrder.carId));
-						 carJson.put("longitude", car.positionX);
-						 carJson.put("latitude", car.positionY);
-						 carJson.put("desp",car.desp);
-						 carJson.put("startTime", cOrder.startTime);
-						 carJson.put("ifBlueTeeth",cOrder.ifBlueTeeth);
-					 } 
-				 }
-			 } 
-		 } catch(Exception e) {
-			 Reobj.put("result", "10001");
-			 System.out.println(e);
-		 }
-		 return Reobj;
-	}
-	
 	
 
 	
@@ -209,21 +151,25 @@ public class JOYCarController {
 		 try{
 			 //first check if this car reserved by me , if not ,return 
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			 JOYOrder orderFilter = new JOYOrder();
+
 			 Integer carId = Integer.parseInt(jsonObj.get("carId").toString()); 
 			 likeCondition.put("carId", carId);
 			 likeCondition.put("delFlag", JOYReserveOrder.NODEL_FLAG);
 			 likeCondition.put("delMark", JOYReserveOrder.NODEL_FLAG);
 			 likeCondition.put("expSeconds", JOYReserveOrder.EXPIRE_SECONDS);
-			 
-			 List<JOYReserveOrder> reOrders = joyReserveOrderService.getNeededReserveOrder(likeCondition);
 			 likeCondition.remove("carId");
 			 likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			 List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
-			 
-			 JOYReserveOrder cReOrder = reOrders.size()>0?reOrders.get(0):null;
+			 orderFilter.carId = carId;
+			 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+			 orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+			 List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
+			 JOYCar carFilter = new JOYCar();
+			 carFilter.id  = carId;
+
 			 likeCondition.put("id", carId);
 		      //check the state of this car, it muse be in car_free
-		      List<JOYCar> cars = joyCarService.getCarById(likeCondition);
+		      List<JOYCar> cars = joyCarService.getNeededList(carFilter);
 		      JOYCar cCar = cars.get(0);
 		       if(orders.size()>0) {
 		    	 //already have a order
@@ -232,16 +178,17 @@ public class JOYCarController {
 		    	   Reobj.put("state",cOrder.state);
 		    	   Reobj.put("errMsg", "already ordered + "+cOrder.id);
 		    	   
-		       } else if(cCar.state==JOYCar.STATE_FREE || (cCar.state==JOYCar.STATE_RESERVE &&
-		    		  cReOrder.mobileNo.equals((String)jsonObj.get("mobileNo")))) {
+		       } else if(cCar.state==JOYCar.STATE_FREE ) {
 		    	      JOYOrder order = new JOYOrder();
 		    	      order.mobileNo = ((String)jsonObj.get("mobileNo"));
 		    	      order.carId = (carId);
 				      order.ifBlueTeeth = cCar.ifBlueTeeth;
 				      order.startLongitude = cCar.positionX.doubleValue();
 				      order.startLatitude = cCar.positionY.doubleValue();
-				      joyOrderService.insertOrder(order);
-		    	      orders = joyOrderService.getNeededOrder(likeCondition);
+				      order.startTime = new Date(System.currentTimeMillis());
+				      joyOrderService.insertRecord(order);
+				      order.delMark = JOYOrder.NON_DEL_MARK;
+		    	      orders = joyOrderService.getNeededList(order);
 		    	      order = orders.get(0);
 		    	      Reobj.put("result", "10000");
 
@@ -275,16 +222,17 @@ public class JOYCarController {
 			 //change the order, owner by the 'mobileNo' and the 'carId' to be state 'wait for pay'
 			 //then ok.
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			 likeCondition.put("state", JOYOrder.state_busy);
-			 List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
+			 JOYOrder orderFilter = new  JOYOrder();
+			 orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+			 orderFilter.state = JOYOrder.state_busy;
+			 List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
 			JOYOrder order = orders.get(0);
 			order.delMark = (JOYOrder.NON_DEL_MARK);
 			order.state = (JOYOrder.state_wait_pay);
 			order.stopTime = (new Date(System.currentTimeMillis()));
 			order.stopLatitude = order.startLatitude;
 			order.stopLongitude = order.startLongitude;
-			joyOrderService.updateOrderStop(order);
+			joyOrderService.updateRecord(order,orderFilter);
 			 //update car's state
 			 JOYCar car = new JOYCar();
 			 car.id = (order.carId);
@@ -312,10 +260,10 @@ public class JOYCarController {
 		 try{
 			 //first check if this car reserved by me , if not ,return 
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			
-			 likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-			 likeCondition.put("delMark", JOYReserveOrder.NODEL_FLAG);
-			 List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
+			 JOYOrder orderFilter = new JOYOrder();
+			 orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+			 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+			 List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
 			 
 			 cacheCar = new Car();
 			 cacheCar.setOwner((String)jsonObj.get("mobileNo"));
@@ -390,11 +338,12 @@ public class JOYCarController {
 
 				 double zhifubaoFee = Double.valueOf((String)jsonObj.get("zhifubao"));
 				 /*******************          *******           ****************/
+				 JOYOrder orderFilter = new JOYOrder();
 				 //first get the orders
-				 likeCondition.put("mobileNo",mobileNo);
-				 likeCondition.put("delMark",JOYOrder.NON_DEL_MARK);
-				 likeCondition.put("state",JOYOrder.state_wait_pay);
-				 List<JOYOrder> orders =  joyOrderService.getNeededOrder(likeCondition);
+				 orderFilter.mobileNo = mobileNo;
+				 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+				 orderFilter.state = JOYOrder.state_wait_pay;
+				 List<JOYOrder> orders =  joyOrderService.getNeededList(orderFilter);
 				 JOYOrder order = orders.get(0);
 				 /*******************          *******           ****************/
 				 //then get the coupon from sql
@@ -415,8 +364,8 @@ public class JOYCarController {
 				 for(JOYCoupon coupon:coupons){
 					if(coupon.getDelMark()==JOYCoupon.NON_DELMARK) {
 						 couponFee += coupon.couponNum.doubleValue();
-						 usedIds.add(coupon.couponId.longValue());
-						 usedLongIds.add(coupon.couponId.longValue());
+						 usedIds.add(coupon.id.longValue());
+						 usedLongIds.add(coupon.id.longValue());
 						 if(couponFee >= orderFee){
 							 break;
 						 }
@@ -432,9 +381,12 @@ public class JOYCarController {
 					 //change the order state
 					// joyCouponService.deleteCouponById((Long [])usedIds.toArray());
 					 temp = new Long[usedLongIds.size()];
-					 order.state = (JOYOrder.state_pay_over);
-					 order.delMark = (JOYOrder.DEL_MARK);
-					 joyOrderService.deleteOrder(usedLongIds.toArray(temp),order);
+					 JOYOrder orderNewValue =new JOYOrder();
+					 orderNewValue.state = JOYOrder.state_pay_over;
+					 orderNewValue.delMark = JOYOrder.DEL_MARK;
+					 temp = new Long[usedLongIds.size()];
+                     joyCouponService.deleteCouponById(usedLongIds.toArray(temp));
+					 joyOrderService.updateRecord(orderNewValue,orderFilter); //deleteOrder(usedLongIds.toArray(temp),order);
 					 Reobj.put("result", "10000");
 					 
 				 } else if (couponFee + zhifubaoFee >= orderFee) {
@@ -454,7 +406,7 @@ public class JOYCarController {
 					 wxpayInfo.out_trade_no = (wx_trade_no);
 					 wxpayInfo.totalFee = (Double.valueOf(zhifubaoFee));
 					 String wx_code = WeChatPayUtil.genePayStr(String.valueOf(Double.valueOf(zhifubaoFee * 100).longValue()), wx_trade_no);
-					 joywxPayInfoService.insertWXPayInfo(wxpayInfo);
+					 joywxPayInfoService.insertRecord(wxpayInfo);  //insertWXPayInfo(wxpayInfo);
 					 /** generate result **/
 					 Reobj.put("zhifubao_code", zhifubao_code);
 					 Reobj.put("wx_code",new JSONParser().parse(wx_code));
@@ -481,12 +433,13 @@ public class JOYCarController {
 		//       sdfdsfdsf
 		 try{
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			   JOYOrder cOrder = new JOYOrder();
-			   cOrder.mobileNo = ((String)jsonObj.get("mobileNo"));
-			   cOrder.carId = (((Long)jsonObj.get("carId")).intValue());
-	    	   cOrder.delMark  = (JOYReserveOrder.NODEL_FLAG);
-	    	   cOrder.batonMode = (((Long)jsonObj.get("batonMode")).intValue());
-	    	   joyOrderService.changeBatonMode(cOrder);			 
+			   JOYOrder orderFilter = new JOYOrder();
+			 JOYOrder orderNew = new JOYOrder();
+			   orderFilter.mobileNo = ((String)jsonObj.get("mobileNo"));
+			   orderFilter.carId = (((Long)jsonObj.get("carId")).intValue());
+	    	   orderFilter.delMark  = (JOYReserveOrder.NODEL_FLAG);
+	    	   orderNew.batonMode = (((Long)jsonObj.get("batonMode")).intValue());
+	    	   joyOrderService.updateRecord(orderNew,orderFilter);
 			   Reobj.put("result", "10000");
 		 } catch(Exception e){
 			
@@ -506,14 +459,15 @@ public class JOYCarController {
 		//       sdfdsfdsf
 		 try{
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 JOYOrder cOrder = new JOYOrder();
-			 cOrder.mobileNo = ((String)jsonObj.get("mobileNo"));
-			 cOrder.carId = (Integer.parseInt(jsonObj.get("carId").toString()));
-	    	 cOrder.delMark = (JOYReserveOrder.NODEL_FLAG);
+			 JOYOrder orderFilter = new JOYOrder();
+			 JOYOrder orderNew = new JOYOrder();
+			 orderFilter.mobileNo = ((String)jsonObj.get("mobileNo"));
+			 orderFilter.carId = (Integer.parseInt(jsonObj.get("carId").toString()));
+	    	 orderFilter.delMark = (JOYReserveOrder.NODEL_FLAG);
 	    	 
 	    	 String destination = jsonObj.get("destination").toString();
-	    	 cOrder.destination = (destination);
-	    	 joyOrderService.updateDestination(cOrder);	 
+	    	 orderNew.destination = (destination);
+	    	 joyOrderService.updateRecord(orderNew,orderFilter);
 			 Reobj.put("result", "10000");
 		 } catch(Exception e){
 			
@@ -531,7 +485,8 @@ public class JOYCarController {
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
 		 try{
-			 List<JOYInterPOI> pois = joyInterPOIService.getAllPOI();
+			 JOYInterPOI poiFilter = new JOYInterPOI();
+			 List<JOYInterPOI> pois = joyInterPOIService.getNeededList(poiFilter);
 			 //process pois
 			 for(JOYInterPOI poi:pois){
 				 JSONArray poiGroup = null;

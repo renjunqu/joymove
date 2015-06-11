@@ -90,7 +90,7 @@ public class CheckAuthToken extends HandlerInterceptorAdapter {
 			 try {
 				     JOYUser toAuthUser = new JOYUser();
 				     toAuthUser.authToken = authToken;
-					 List<JOYUser> users = joyUserService.getNeededUser(toAuthUser);
+					 List<JOYUser> users = joyUserService.getNeededList(toAuthUser);
 					 
 					 if(users.size() > 0) {
 						 JOYUser cUser = users.get(0);

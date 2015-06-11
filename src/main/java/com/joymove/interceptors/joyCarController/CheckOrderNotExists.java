@@ -44,9 +44,11 @@ public class CheckOrderNotExists extends HandlerInterceptorAdapter {
 			Object orderId = jsonObj.get("orderId");
 			
 			try {
+				   JOYOrder orderFilter = new JOYOrder();
 					Map<String,Object> likeCondition = new HashMap<String, Object>();
     				likeCondition.put("id", orderId);
-    				JOYOrder order =  joyOrderService.getOrderById(likeCondition);
+				    orderFilter.id = Integer.parseInt(String.valueOf(orderId));
+    				JOYOrder order =  joyOrderService.getNeededRecord(orderFilter);
     				if(order !=null) {
     					req.setAttribute("cOrder", order);
     					return true;

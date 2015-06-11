@@ -54,16 +54,18 @@ public class PowerOnHandler  implements EventHandler {
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if(car.getState()==Car.state_wait_poweron) {
                 if(result==1L) {
+                    JOYNCar ncarFilter = new JOYNCar();
                     JOYOrder order = new JOYOrder();
                     order.mobileNo = (car.getOwner());
                     order.carVinNum = (car.getVinNum());
                     order.startLongitude = car.getLongitude();
                     order.startLatitude = car.getLatitude();
                     likeCondition.put("vinNum", car.getVinNum());
-                    List<JOYNCar> ncars = joynCarService.getNeededCar(likeCondition);
+                    ncarFilter.vinNum = car.getVinNum();
+                    List<JOYNCar> ncars = joynCarService.getNeededList(ncarFilter);
                     JOYNCar ncar = ncars.get(0);
                      order.ifBlueTeeth = ncar.ifBlueTeeth;
-                    joyNOrderService.insertNOrder(order);
+                    joyNOrderService.insertRecord(order);
                     cacheCarService.updateCarStateBusy(car);
                 } else {
                     //try again

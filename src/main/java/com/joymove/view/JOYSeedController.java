@@ -1,5 +1,6 @@
 package com.joymove.view;
 
+import com.joymove.entity.JOYOrder;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import com.joymove.service.JOYSeedService;
@@ -33,13 +34,13 @@ public class JOYSeedController {
         JOYSeed seed = null;
         try {
 
+            JOYSeed seedFilter = new JOYSeed();
             Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-            likeCondition.put("code", jsonObj.get("code"));
-            likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
-            likeCondition.put("status", JOYSeed.status_seed_alive);
-            likeCondition.put("type", JOYSeed.type_coupon_seed);
-
-            seed = joySeedService.getNeededSeed(likeCondition);
+            seedFilter.code = String.valueOf(jsonObj.get("code"));
+            seedFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+            seedFilter.status = JOYSeed.status_seed_alive;
+            seedFilter.type = JOYSeed.type_coupon_seed;
+            seed = joySeedService.getNeededRecord(seed);
             if((seed != null) && seed.mobileNo.equals(jsonObj.get("mobileNo"))) {
                  joySeedService.exchangeCoupon(seed);
                 Reobj.put("result","10000");
