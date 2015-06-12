@@ -47,7 +47,7 @@ public class JOYIntegrationController {
 				
 				Integer sumCredits = 0;
 				for(JOYIntegration credit:joyIntegrations) {
-					sumCredits += credit.jiFen;
+					sumCredits += credit.jifen;
 					jsonObject.put("result","10000");
 					jsonObject.put("Integrations",jsonArray);
 					jsonObject.put("TotalPoints",sumCredits);
@@ -78,7 +78,7 @@ public class JOYIntegrationController {
 				String statusMark = (String) hash.get("statusMark");
 				JOYIntegration joyintegration = new JOYIntegration();
 				joyintegration.mobileNo = (mobileNo);
-				joyintegration.jiFen = (Integer.valueOf(jiFen));
+				joyintegration.jifen = (Integer.valueOf(jiFen));
 				joyintegration.jifenDesc = (jiFenDesc);
 				joyintegration.statusMark = (Integer.valueOf(statusMark));
 				joyIntegrationService.insertRecord(joyintegration);

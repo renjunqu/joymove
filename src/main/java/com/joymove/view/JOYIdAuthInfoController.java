@@ -63,7 +63,7 @@ public class JOYIdAuthInfoController {
 				userFilter.mobileNo = mobileNo;
 				userValue.authenticateDriver = JOYUser.auth_state_ing;
 
-				 if(infos.size()>0) {
+				 if(infos.size()==0) {
 					 //update 
 					 joyIdAuthInfoService.insertRecord(authInfo);
 					 joyUserService.updateRecord(userValue,userFilter);
@@ -100,19 +100,22 @@ public class JOYIdAuthInfoController {
 		try{
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			JOYIdAuthInfo authInfoFilter = new JOYIdAuthInfo();
+
 			String mobileNo = (String)jsonObj.get("mobileNo");
-			authInfoFilter.mobileNo = mobileNo;
-			List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededList(authInfoFilter);
-			if(infos.size()==0) {
-				Reobj.put("result","10002");
-			} else {
-				JOYIdAuthInfo authInfo = infos.get(0);
-				BASE64Encoder encoder = new BASE64Encoder();
-				Reobj.put("idName",authInfo.idAuthInfo);
-				Reobj.put("idNo",authInfo.idNo);
-				Reobj.put("idAuthInfo",encoder.encode(authInfo.idAuthInfo));
-				Reobj.put("idAuthInfo_back",encoder.encode(authInfo.idAuthInfo_back));
-				Reobj.put("result", "10000");
+			if(mobileNo!=null) {
+					authInfoFilter.mobileNo = mobileNo;
+					List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededList(authInfoFilter);
+					if (infos.size() == 0) {
+						Reobj.put("result", "10002");
+					} else {
+						JOYIdAuthInfo authInfo = infos.get(0);
+						BASE64Encoder encoder = new BASE64Encoder();
+						Reobj.put("idName", authInfo.idAuthInfo);
+						Reobj.put("idNo", authInfo.idNo);
+						Reobj.put("idAuthInfo", encoder.encode(authInfo.idAuthInfo));
+						Reobj.put("idAuthInfo_back", encoder.encode(authInfo.idAuthInfo_back));
+						Reobj.put("result", "10000");
+					}
 			}
 		}catch(Exception e){
 			e.printStackTrace();

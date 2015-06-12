@@ -289,7 +289,7 @@ public class JOYCarController {
 		    	   Reobj.put("batonMode", cOrder.batonMode);
 		    	   Reobj.put("state",cOrder.state);
 		    	   Reobj.put("destination",cOrder.destination);
-				   Reobj.put("authCode", "A");
+				   Reobj.put("authCode", "ABCDEF");
 				   Reobj.put("ifBlueTeeth", cOrder.ifBlueTeeth);
 		    	   if(cOrder.state == JOYOrder.state_wait_pay) {
 		    		   Reobj.put("stopTime", cOrder.stopTime.getTime());
@@ -336,7 +336,7 @@ public class JOYCarController {
 				 
 				 String mobileNo = (String)jsonObj.get("mobileNo");
 
-				 double zhifubaoFee = Double.valueOf((String)jsonObj.get("zhifubao"));
+				 double zhifubaoFee = Double.valueOf(String.valueOf(jsonObj.get("zhifubao")));
 				 /*******************          *******           ****************/
 				 JOYOrder orderFilter = new JOYOrder();
 				 //first get the orders
@@ -351,7 +351,7 @@ public class JOYCarController {
 				 Long [] cIds = new Long[couponIds.size()];
 				 int index = 0;
 				 for(Object id:couponIds){
-					 cIds[index++] = Long.valueOf((String)id);
+					 cIds[index++] = Long.valueOf(String.valueOf(id));
 				 }
 				 
 				 List<JOYCoupon> coupons = joyCouponService.getCouponById(cIds);
@@ -362,7 +362,7 @@ public class JOYCarController {
 				 double  orderFee = (double)(Math.round(order.getTotalFee()*100)/100.0);
 				 double  couponFee = 0.0;
 				 for(JOYCoupon coupon:coupons){
-					if(coupon.getDelMark()==JOYCoupon.NON_DELMARK) {
+					if(coupon.delMark==JOYCoupon.NON_DELMARK) {
 						 couponFee += coupon.couponNum.doubleValue();
 						 usedIds.add(coupon.id.longValue());
 						 usedLongIds.add(coupon.id.longValue());

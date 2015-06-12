@@ -48,18 +48,20 @@ public class JOYDriverLicenseController {
 				Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				String mobileNo = (String)jsonObj.get("mobileNo");
 				JOYDriverLicense driverLicenseFilter = new JOYDriverLicense();
-				driverLicenseFilter.mobileNo = mobileNo;
-				 List<JOYDriverLicense> driveAuthInfos = joyDriverLicenseService.getNeededList(driverLicenseFilter);
-				 if(driveAuthInfos.size()>0) {
-					 BASE64Encoder encoder = new BASE64Encoder();
-					 JOYDriverLicense driverLicense = driveAuthInfos.get(0);
-					 Reobj.put("driverLicenseNumber",driverLicense.driverLicenseNumber);
-					 Reobj.put("expireTime",driverLicense.expireTime);
-					 Reobj.put("driverAuthInfo",encoder.encode(driverLicense.driverAuthInfo));
-					 Reobj.put("result", "10000");
-				 } else {
-					 Reobj.put("result","10002");
-				 }
+				if(mobileNo!=null) {
+					driverLicenseFilter.mobileNo = mobileNo;
+					List<JOYDriverLicense> driveAuthInfos = joyDriverLicenseService.getNeededList(driverLicenseFilter);
+					if (driveAuthInfos.size() > 0) {
+						BASE64Encoder encoder = new BASE64Encoder();
+						JOYDriverLicense driverLicense = driveAuthInfos.get(0);
+						Reobj.put("driverLicenseNumber", driverLicense.driverLicenseNumber);
+						Reobj.put("expireTime", driverLicense.expireTime);
+						Reobj.put("driverAuthInfo", encoder.encode(driverLicense.driverAuthInfo));
+						Reobj.put("result", "10000");
+					} else {
+						Reobj.put("result", "10002");
+					}
+				}
 				
 			}catch(Exception e){
 				e.printStackTrace();

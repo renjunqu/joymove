@@ -29,7 +29,7 @@ public class JOYCouponController {
 	private JOYCouponService joycouponService;
 	
 	
-	@RequestMapping(value="usermgr/",method=RequestMethod.POST)
+	@RequestMapping(value="usermgr/viewCoupon1",method=RequestMethod.POST)
 	public @ResponseBody JSONObject veiwConpon1(HttpServletRequest req){
 		JSONObject jsonObject = new JSONObject(); 
 		jsonObject.put("result","10001");
@@ -37,13 +37,14 @@ public class JOYCouponController {
 				 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 				 String mobileNo = (String) jsonObj.get("mobileNo");
 				 JOYCoupon couponFilter = new JOYCoupon();
+
 				 couponFilter.mobileNo = mobileNo;
 				 couponFilter.delMark = JOYCoupon.NON_DELMARK;
 				 List<JOYCoupon> joyCoupons = joycouponService.getNeededList(couponFilter);
 				 JSONArray jsonArray = new JSONArray();
 				 if (joyCoupons.size() > 0) {
 					 for (JOYCoupon joyCoupon : joyCoupons) {
-						 	jsonArray.add(joyCoupon.toMap());
+						 	jsonArray.add(joyCoupon.toJSON());
 					}
 					 	jsonObject.put("result","10000");
 						jsonObject.put("Coupons",jsonArray);
