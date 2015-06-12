@@ -29,7 +29,7 @@ public class JOYCouponController {
 	private JOYCouponService joycouponService;
 	
 	
-	@RequestMapping(value="usermgr/viewCoupon1",method=RequestMethod.POST)
+	@RequestMapping(value="usermgr/",method=RequestMethod.POST)
 	public @ResponseBody JSONObject veiwConpon1(HttpServletRequest req){
 		JSONObject jsonObject = new JSONObject(); 
 		jsonObject.put("result","10001");
