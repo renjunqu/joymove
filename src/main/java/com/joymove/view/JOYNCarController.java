@@ -256,7 +256,10 @@ public class JOYNCarController {
 			 } else if(URI.contains("blow")) {
 				 operation  = "blow";
 				 url = ConfigUtils.getPropValues("cloudmove.blow");
-				 data = "vin="+vinNum+"&time="+timeStr +"&duration=30000&interval=500&times=6";
+				 String duration = ConfigUtils.getPropValues("caropt.duration");
+				 String interval = ConfigUtils.getPropValues("caropt.interval");
+				 String times = ConfigUtils.getPropValues("caropt.times");
+				 data = "vin="+vinNum+"&time="+timeStr +"&duration="+duration+"&interval="+interval+"&times="+times;
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
 				 opResult = Integer.parseInt(cmObj.get("result").toString());
@@ -267,7 +270,10 @@ public class JOYNCarController {
 			 } else if(URI.contains("vague")) {
 				 operation  = "vague";
 				 url = ConfigUtils.getPropValues("cloudmove.vague");
-				 data = "vin="+vinNum+"&time=" + timeStr + "&duration=30000&interval=500&times=6";
+				 String duration = ConfigUtils.getPropValues("caropt.duration");
+				 String interval = ConfigUtils.getPropValues("caropt.interval");
+				 String times = ConfigUtils.getPropValues("caropt.times");
+				 data = "vin="+vinNum+"&time=" + timeStr + "&duration="+duration+"&interval="+duration+"&times="+times;
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
 				 opResult = Integer.parseInt(cmObj.get("result").toString());

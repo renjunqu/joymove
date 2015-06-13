@@ -21,9 +21,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.joymove.entity.JOYWXPayInfo;
-import com.joymove.service.JOYWXPayInfoService;
 import com.futuremove.cacheServer.utils.Id5Utils;
+import com.joymove.entity.JOYPayReqInfo;
+import com.joymove.service.JOYPayReqInfoService;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.json.simple.JSONObject;
@@ -55,8 +55,8 @@ public class JOYUserController{
 	private JOYUserService joyUserService;
 	@Resource(name = "JOYDynamicPwsService")
     private JOYDynamicPwsService joyDynamicPwsService;
-	@Resource(name = "JOYWXPayInfoService")
-	private JOYWXPayInfoService joywxPayInfoService;
+	@Resource(name = "JOYPayReqInfoService")
+	private JOYPayReqInfoService  joyPayReqInfoService;
 	
 
 
@@ -376,13 +376,20 @@ public class JOYUserController{
 				 /* generate zhifubao's code **/
 				 String zhifubao_code = ZhifubaoUtils.getPayInfo("depositRecharge", mobileNo, balance, currTimeStr+balance.toString().replace(".", "-"));
 				 /** generate wx's code */
-				JOYWXPayInfo wxpayInfo = new JOYWXPayInfo();
+				 JOYPayReqInfo wxpayInfo = new JOYPayReqInfo();
+				JOYPayReqInfo zhifubaoPayInfo = new JOYPayReqInfo();
 				 wxpayInfo.mobileNo = (mobileNo);
-				 String wx_trade_no = "depositRecharge" + mobileNo + String.valueOf(System.currentTimeMillis()).substring(8,12);
+				wxpayInfo.type = JOYPayReqInfo.type_wx;
+				zhifubaoPayInfo.type = JOYPayReqInfo.type_zhifubao;
+				zhifubaoPayInfo.mobileNo = mobileNo;
+				 String wx_trade_no = "depositRecharge" + String.valueOf(System.currentTimeMillis());
 				 wxpayInfo.out_trade_no = (wx_trade_no);
+				zhifubaoPayInfo.out_trade_no = currTimeStr+balance.toString().replace(".", "-");
 				 wxpayInfo.totalFee = (Double.valueOf(balance));
+				zhifubaoPayInfo.totalFee = wxpayInfo.totalFee;
 				 String wx_code = WeChatPayUtil.genePayStr(String.valueOf(Double.valueOf(balance*100).longValue()),wx_trade_no);
-				 joywxPayInfoService.insertRecord(wxpayInfo);
+				 joyPayReqInfoService.insertRecord(wxpayInfo);
+				 joyPayReqInfoService.insertRecord(zhifubaoPayInfo);
 				/**generate result **/
 				 Reobj.put("result", "10000");
 				 Reobj.put("zhifubao_code", zhifubao_code);

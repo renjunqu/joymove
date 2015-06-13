@@ -4,10 +4,18 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import com.futuremove.cacheServer.concurrent.UserOptLock;
+import com.joymove.entity.JOYPayHistory;
+import com.joymove.entity.JOYPayReqInfo;
+import com.joymove.service.JOYPayHistoryService;
+import com.joymove.service.JOYPayReqInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -45,6 +53,11 @@ public class JOYZhifubaoController {
 	private JOYOrderService joyOrderService;
 	@Resource(name = "JOYUserService")
 	private JOYUserService joyUserService;
+	@Resource(name ="JOYPayHistoryService")
+	private JOYPayHistoryService  joyPayHistoryService;
+	@Resource(name = "JOYPayReqInfoService")
+	private JOYPayReqInfoService joyPayReqInfoService;
+
 	
 		/************  business proc   *****************/
 	
@@ -52,74 +65,95 @@ public class JOYZhifubaoController {
 	//same pay, the zhifubao may be notify multi times
 	//the tow out_trade_no could not be same
 	@RequestMapping(value={"zhifubao/notify"},method=RequestMethod.POST)
-	public @ResponseBody String resetPwd(HttpServletRequest req){
+	public void  resetPwd(HttpServletRequest req,HttpServletResponse response){
 		
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		JOYOrder orderFilter = new JOYOrder();
 		JOYOrder orderNew = new JOYOrder();
+		JOYPayHistory payHistoryNew = new JOYPayHistory();
+		payHistoryNew.type = JOYPayHistory.zhifubao_type;
+		ReentrantLock optLock = null;
+
 		try {
 			String subject = req.getParameter("subject");
 			String body    = req.getParameter("body");
 			String out_trade_no = req.getParameter("out_trade_no");
-			 //first get the orders
-			String currTimeStr = System.currentTimeMillis()+"";
-			logger.debug("get zhifubao info");
-			if(subject.equals("rentPay")) {
-				
-				 String mobileNo = body;
+			String mobileNo = body;
+			JOYPayReqInfo filterObj = new JOYPayReqInfo();
+			filterObj.out_trade_no = out_trade_no;
+			filterObj.payOverFlag = 0;
+			filterObj.type = JOYPayReqInfo.type_zhifubao;
 
-				 logger.debug("it is a rent pay info , mobileNo is "+mobileNo);
-				orderFilter.mobileNo= mobileNo;
-				orderFilter.delMark = JOYOrder.NON_DEL_MARK;
-				orderFilter.state = JOYOrder.state_wait_pay;
-				orderNew.delMark = JOYOrder.DEL_MARK;
-				orderNew.state = JOYOrder.state_pay_over;
-				 joyOrderService.updateRecord(orderNew,orderFilter);
-				 logger.debug("rent pay over ");
-				 
-			} else if (subject.equals("depositRecharge")){
-				
-				Jedis jedis =  pool.getResource();
-				
-				logger.debug("get user deposit charging message");
-				String mobileNo = body;
-				String jedisKey = mobileNo+out_trade_no;
-				
-				Double deposit = Double.valueOf(out_trade_no.substring(currTimeStr.length()).replace("-", "."));
-				String payed = jedis.get(jedisKey);
-				if(payed!=null && payed.length()>10) {
-				    //alreayed payed.
-					return "success";
-				} else {
-					jedis.set(jedisKey, "this is just uesd to prevent zhifubao for multi calling");
+			List<JOYPayReqInfo> infos = joyPayReqInfoService.getNeededList(filterObj);
+
+            if(infos.size()==1) {
+				 JOYPayReqInfo payInfo = infos.get(0);
+				 //开始加锁，用户信息的操作锁
+				 optLock = UserOptLock.getUserLock(payInfo.mobileNo);
+				 optLock.lock();
+				 //要重新获取一次payInfo
+				 payInfo = joyPayReqInfoService.getNeededRecord(filterObj);
+				//first get the orders
+				String currTimeStr = System.currentTimeMillis() + "";
+				logger.debug("get zhifubao info");
+				if (subject.equals("rentPay")) {
+					logger.debug("it is a rent pay info , mobileNo is " + mobileNo);
+					orderFilter.mobileNo = mobileNo;
+					orderFilter.delMark = JOYOrder.NON_DEL_MARK;
+					orderFilter.state = JOYOrder.state_wait_pay;
+					orderFilter = joyOrderService.getNeededRecord(orderFilter);
+					//检查orderFilter是否是null,否则就全部都变成支付成功了。
+					payHistoryNew.orderId = orderFilter.id;
+					orderNew.delMark = JOYOrder.DEL_MARK;
+					orderNew.state = JOYOrder.state_pay_over;
+					joyOrderService.updateRecord(orderNew, orderFilter);
+					payHistoryNew.balance = payInfo.totalFee;
+					payHistoryNew.target = JOYPayHistory.pay_for_rent;
+					payHistoryNew.mobileNo = mobileNo;
+					//记录支付历史信息
+					joyPayHistoryService.insertRecord(payHistoryNew);
+					logger.debug("rent pay over ");
+
+				} else if (subject.equals("depositRecharge")) {
+
+					System.out.println("mobile No is " + payInfo.mobileNo);
+					System.out.println("deposit is " + payInfo.totalFee);
+					JOYUser userFilter = new JOYUser();
+					userFilter.mobileNo = mobileNo;  //setMobileNo(mobileNo);
+					JOYUser userValue = joyUserService.getNeededRecord(userFilter);
+					BigDecimal currDepo = userValue.deposit; //.getDeposit();
+					System.out.println("before recharge: " + currDepo);
+					currDepo = currDepo.add(BigDecimal.valueOf(payInfo.totalFee));
+					userValue.deposit = currDepo; //setDeposit(currDepo);
+					System.out.println("after recharge: " + currDepo);
+					joyUserService.updateRecord(userValue, userFilter);
+					//record this pay
+					//记录支付过程
+					payHistoryNew.balance = payInfo.totalFee;
+					payHistoryNew.target = JOYPayHistory.pay_for_deposit;
+					payHistoryNew.mobileNo = mobileNo;
+					//记录支付历史信息
+					joyPayHistoryService.insertRecord(payHistoryNew);
+					logger.debug("recharge ok");
 				}
-				
-				System.out.println("mobile No is "+mobileNo);
-				System.out.println("deposit is "+deposit);
-				JOYUser user = new JOYUser();
-				user.mobileNo = mobileNo;  //setMobileNo(mobileNo);
-				List<JOYUser> users = joyUserService.getNeededList(user);
-				 
-			    if(users.size()==1) {
-					JOYUser userNew = new JOYUser();
-			          BigDecimal currDepo = users.get(0).deposit; //.getDeposit();
-			          System.out.println("before recharge: "+currDepo);
-			          currDepo = currDepo.add(BigDecimal.valueOf(deposit));
-					   userNew.deposit = currDepo; //setDeposit(currDepo);
-			          System.out.println("after recharge: "+currDepo);
-			          joyUserService.updateRecord(userNew,user);
-			          //record this pay
-			          
-			          logger.debug("recharge ok");
-			    }
-			}
+				// mark the pay info
+				JOYPayReqInfo valueInfoObj = new JOYPayReqInfo();
+				valueInfoObj.payOverFlag = 1;
+				joyPayReqInfoService.updateRecord(valueInfoObj,payInfo); //markPayInfo(payInfo);
+			}//if info.size == 1
+			//给微信返回值
+			ServletOutputStream outputStream = response.getOutputStream();
+			outputStream.write("success".getBytes());
+			outputStream.close();
+			optLock.unlock();
+
 		} catch (Exception e){
 			logger.info(e.toString());
+			if(optLock!=null && optLock.getHoldCount()>0)
+				optLock.unlock();
 		}
-	    return "success";
+	  //  return "success";
 	}
-
-
     public static void main(String [] args){
     	String t = "order112345";
     	System.out.println(t.substring(6).replace("1", "a"));

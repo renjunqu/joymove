@@ -32,6 +32,18 @@
 		<property name="password" value="Qrj12345"> </property>
 	</bean>
 -->
+<!--
+	<bean id="springDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:SPRING_TEST" />
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="username" value="root" />
+		<property name="password" value="root" />
+		<property name="removeAbandoned" value="true"/>
+		<property name="initialSize" value="20" />
+		<property name="maxActive" value="30" />
+	</bean>
+-->
+
 
 
 	<bean id="dataSource" class="org.apache.ibatis.datasource.pooled.PooledDataSource">

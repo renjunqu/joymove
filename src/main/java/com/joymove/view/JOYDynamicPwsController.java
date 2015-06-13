@@ -71,9 +71,9 @@ public class JOYDynamicPwsController {
 		
 		try {
 			Hashtable<String,Object> jsonObj = (Hashtable<String,Object>)req.getAttribute("jsonArgs");//JsonHashUtils.strToJSONHash(req.getReader());
-				String number = (String)jsonObj.get("number");
+				String number = String.valueOf(jsonObj.get("number"));
 				
-				String phone = (String) jsonObj.get("phoneNo");
+				String phone = String.valueOf(jsonObj.get("phoneNo"));
 				JOYDynamicPws dynamicPwsFilter = new JOYDynamicPws();
 			    dynamicPwsFilter.mobileNo = String.valueOf(jsonObj.get("phoneNo"));
 				List<JOYDynamicPws>joyDynamicPwsess = joydynamicpwsService.getNeededList(dynamicPwsFilter,0,1,"DESC");

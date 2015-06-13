@@ -53,8 +53,8 @@ public class JOYCarController {
 	private JOYInterPOIService joyInterPOIService;
 	@Resource(name = "JOYUserService")
 	private JOYUserService joyUserService;
-	@Resource(name = "JOYWXPayInfoService")
-	private JOYWXPayInfoService joywxPayInfoService;
+	@Resource(name = "JOYPayReqInfoService")
+	private JOYPayReqInfoService  joyPayReqInfoService;
 
 
 
@@ -363,7 +363,7 @@ public class JOYCarController {
 				 //check the coupon's num
 				 JSONArray usedIds = new JSONArray();
 				 List<Long> usedLongIds = new ArrayList<Long>();
-				 double  orderFee = (double)(Math.round(order.getTotalFee()*100)/100.0);
+				 double  orderFee = (double)(Math.floor(order.getTotalFee() * 100)/100.0);
 				 double  couponFee = 0.0;
 				 for(JOYCoupon coupon:coupons){
 					if(coupon.delMark==JOYCoupon.NON_DELMARK) {
@@ -389,7 +389,7 @@ public class JOYCarController {
 					 orderNewValue.state = JOYOrder.state_pay_over;
 					 orderNewValue.delMark = JOYOrder.DEL_MARK;
 					 temp = new Long[usedLongIds.size()];
-                     joyCouponService.deleteCouponById(usedLongIds.toArray(temp));
+                     joyCouponService.deleteCouponById(usedLongIds.toArray(temp),order.id);
 					 joyOrderService.updateRecord(orderNewValue,orderFilter); //deleteOrder(usedLongIds.toArray(temp),order);
 					 Reobj.put("result", "10000");
 					 
@@ -402,15 +402,23 @@ public class JOYCarController {
 					 String currTime = System.currentTimeMillis() + "";
 					 String zhifubao_code = ZhifubaoUtils.getPayInfo("rentPay", mobileNo, zhifubaoFee, currTime + String.valueOf(order.id));
 					 temp = new Long[usedLongIds.size()];
-					 joyCouponService.deleteCouponById(usedLongIds.toArray(temp));
+					 joyCouponService.deleteCouponById(usedLongIds.toArray(temp),order.id);
 					 /***** wx's code ******/
-					 JOYWXPayInfo wxpayInfo = new JOYWXPayInfo();
+					 JOYPayReqInfo wxpayInfo = new JOYPayReqInfo();
+					 JOYPayReqInfo zhifubaoInfo = new JOYPayReqInfo();
+					 zhifubaoInfo.mobileNo = mobileNo;
 					 wxpayInfo.mobileNo = (mobileNo);
-					 String wx_trade_no = "rentPay" + mobileNo + String.valueOf(System.currentTimeMillis()).substring(8,12);
+					 zhifubaoInfo.type = JOYPayReqInfo.type_zhifubao;
+					 wxpayInfo.type = JOYPayReqInfo.type_wx;
+
+					 String wx_trade_no = "rentPay" + String.valueOf(System.currentTimeMillis());
+					 zhifubaoInfo.out_trade_no = currTime + String.valueOf(order.id);
 					 wxpayInfo.out_trade_no = (wx_trade_no);
 					 wxpayInfo.totalFee = (Double.valueOf(zhifubaoFee));
+					 zhifubaoInfo.totalFee = wxpayInfo.totalFee;
 					 String wx_code = WeChatPayUtil.genePayStr(String.valueOf(Double.valueOf(zhifubaoFee * 100).longValue()), wx_trade_no);
-					 joywxPayInfoService.insertRecord(wxpayInfo);  //insertWXPayInfo(wxpayInfo);
+					 joyPayReqInfoService.insertRecord(zhifubaoInfo);
+					 joyPayReqInfoService.insertRecord(wxpayInfo);  //insertWXPayInfo(wxpayInfo);
 					 /** generate result **/
 					 Reobj.put("zhifubao_code", zhifubao_code);
 					 Reobj.put("wx_code",new JSONParser().parse(wx_code));
