@@ -256,7 +256,7 @@ public class JOYNCarController {
 			 } else if(URI.contains("blow")) {
 				 operation  = "blow";
 				 url = ConfigUtils.getPropValues("cloudmove.blow");
-				 data = "vin="+vinNum+"&time="+timeStr +"&duration=10&interval=1&times=2";
+				 data = "vin="+vinNum+"&time="+timeStr +"&duration=30000&interval=500&times=6";
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
 				 opResult = Integer.parseInt(cmObj.get("result").toString());
@@ -267,7 +267,7 @@ public class JOYNCarController {
 			 } else if(URI.contains("vague")) {
 				 operation  = "vague";
 				 url = ConfigUtils.getPropValues("cloudmove.vague");
-				 data = "vin="+vinNum+"&time=" + timeStr + "&duration=10&interval=1&times=2";
+				 data = "vin="+vinNum+"&time=" + timeStr + "&duration=30000&interval=500&times=6";
 				 result = HttpPostUtils.post(url, data);
 				 JSONObject cmObj = (JSONObject)parser.parse(result);
 				 opResult = Integer.parseInt(cmObj.get("result").toString());

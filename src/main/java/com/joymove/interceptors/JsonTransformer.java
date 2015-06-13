@@ -44,7 +44,7 @@ public class JsonTransformer extends HandlerInterceptorAdapter {
 			 
 			  JSONObject reObj = new JSONObject();
 			  reObj.put("result", "10003");
-			  reObj.put("errMsg", "change to json failed");
+			  reObj.put("errMsg", "数据格式有错误");
 			  response.setContentType("application/json;charset=UTF-8");           
 			  response.setHeader("Cache-Control", "no-cache");
 			  response.getWriter().write(reObj.toString()); 

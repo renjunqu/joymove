@@ -7,9 +7,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.futuremove.cacheServer.concurrent.CarOpLock;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -145,6 +147,7 @@ public class JOYCarController {
 		 System.out.println("getNearByAvailableCars method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
+		 ReentrantLock optLock = null;
 		 Reobj.put("result", "10001");
 		 
 		//       sdfdsfdsf
@@ -153,57 +156,60 @@ public class JOYCarController {
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			 JOYOrder orderFilter = new JOYOrder();
 
-			 Integer carId = Integer.parseInt(jsonObj.get("carId").toString()); 
-			 likeCondition.put("carId", carId);
-			 likeCondition.put("delFlag", JOYReserveOrder.NODEL_FLAG);
-			 likeCondition.put("delMark", JOYReserveOrder.NODEL_FLAG);
-			 likeCondition.put("expSeconds", JOYReserveOrder.EXPIRE_SECONDS);
-			 likeCondition.remove("carId");
-			 likeCondition.put("mobileNo", jsonObj.get("mobileNo"));
+			 Integer carId = Integer.parseInt(jsonObj.get("carId").toString());
 			 orderFilter.carId = carId;
 			 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
 			 orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
 			 List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
 			 JOYCar carFilter = new JOYCar();
 			 carFilter.id  = carId;
-
-			 likeCondition.put("id", carId);
 		      //check the state of this car, it muse be in car_free
-		      List<JOYCar> cars = joyCarService.getNeededList(carFilter);
-		      JOYCar cCar = cars.get(0);
-		       if(orders.size()>0) {
-		    	 //already have a order
-		    	   JOYOrder cOrder = orders.get(0);
-		    	   Reobj.put("orderId",cOrder.id);
-		    	   Reobj.put("state",cOrder.state);
-		    	   Reobj.put("errMsg", "already ordered + "+cOrder.id);
-		    	   
-		       } else if(cCar.state==JOYCar.STATE_FREE ) {
-		    	      JOYOrder order = new JOYOrder();
-		    	      order.mobileNo = ((String)jsonObj.get("mobileNo"));
-		    	      order.carId = (carId);
-				      order.ifBlueTeeth = cCar.ifBlueTeeth;
-				      order.startLongitude = cCar.positionX.doubleValue();
-				      order.startLatitude = cCar.positionY.doubleValue();
-				      order.startTime = new Date(System.currentTimeMillis());
-				      joyOrderService.insertRecord(order);
-				      order.delMark = JOYOrder.NON_DEL_MARK;
-		    	      orders = joyOrderService.getNeededList(order);
-		    	      order = orders.get(0);
-		    	      Reobj.put("result", "10000");
+			 optLock = CarOpLock.getCarLock(String.valueOf(carId));
+				 if(optLock.tryLock()) {
 
-		    	      Reobj.put("orderId", order.id);
-		    	      Reobj.put("carId", String.valueOf(order.carId));
-				      Reobj.put("ifBlueTeeth", JOYCar.NON_BT);
-		    	      Reobj.put("startTime", order.startTime.getTime());
-		    	      Reobj.put("authCode", "abcdef");
-		    	      
-		      } else {
-		    	  Reobj.put("errMsg", "car not in free state");
-		      }
+					  List<JOYCar> cars = joyCarService.getNeededList(carFilter);
+					  JOYCar cCar = cars.get(0);
+					   if(orders.size()>0) {
+						 //already have a order
+						   JOYOrder cOrder = orders.get(0);
+						   Reobj.put("orderId",cOrder.id);
+						   Reobj.put("state",cOrder.state);
+						   Reobj.put("errMsg", "您已经租用车辆");
+
+					   } else if(cCar.state==JOYCar.STATE_FREE ) {
+								  JOYCar carNewValue = new JOYCar();
+								  carNewValue.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+								  carNewValue.state = JOYCar.STATE_BUSY;
+								  joyCarService.updateRecord(carNewValue, cCar);
+								  JOYOrder order = new JOYOrder();
+								  order.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
+								  order.carId = (carId);
+								  order.ifBlueTeeth = cCar.ifBlueTeeth;
+								  order.startLongitude = cCar.positionX.doubleValue();
+								  order.startLatitude = cCar.positionY.doubleValue();
+								  order.startTime = new Date(System.currentTimeMillis());
+								  joyOrderService.insertRecord(order);
+								  order.delMark = JOYOrder.NON_DEL_MARK;
+								  orders = joyOrderService.getNeededList(order);
+								  order = orders.get(0);
+								  Reobj.put("orderId", order.id);
+								  Reobj.put("carId", String.valueOf(order.carId));
+								  Reobj.put("ifBlueTeeth", JOYCar.NON_BT);
+								  Reobj.put("startTime", order.startTime.getTime());
+								  Reobj.put("authCode", "abcdef");
+								  Reobj.put("result", "10000");
+					  } else {
+						  Reobj.put("errMsg", "车辆不在空闲状态");
+					  }
+					 //unlock
+					 optLock.unlock();
+				 } else {
+                       Reobj.put("errMsg","车辆被其他用户抢先租用.");
+				}
 		 } catch(Exception e){
-			
-			
+			 if(optLock!=null && optLock.getHoldCount()>0) {
+				 optLock.unlock();
+			 }
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -215,8 +221,6 @@ public class JOYCarController {
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
-		 
-		//       sdfdsfdsf
 		 try{
 			 
 			 //change the order, owner by the 'mobileNo' and the 'carId' to be state 'wait for pay'
@@ -304,7 +308,7 @@ public class JOYCarController {
 		      } else {
 		    	  Reobj.put("result", "10000");
 		    	  Reobj.put("state", 0);
-		    	  Reobj.put("errMsg", "not ordered");
+		    	  Reobj.put("errMsg", "您目前无订单");
 		      }
 		 } catch(Exception e){
 			 Reobj.put("errMsg", e.toString());
@@ -413,7 +417,7 @@ public class JOYCarController {
 					 Reobj.put("result", "10000");
 				 } else {
 					 //coupon and zhifubao is not ok
-					 Reobj.put("errMsg", "fee not enough");
+					 Reobj.put("errMsg", "支付的费用不够完成本次租车");
 				 }
 
 			 } catch(Exception e){
@@ -444,7 +448,7 @@ public class JOYCarController {
 		 } catch(Exception e){
 			
 			
-			 Reobj.put("errMsg", e.toString());
+			 Reobj.put("errMsg",e.toString());
 		 }
 		 return Reobj;
 	}

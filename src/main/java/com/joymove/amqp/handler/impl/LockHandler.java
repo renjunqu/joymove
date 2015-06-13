@@ -65,7 +65,7 @@ public class LockHandler implements EventHandler {
 
 
                     orderValue.state = JOYOrder.state_wait_pay;
-                    orderValue.stopLatitude = car.getLongitude();
+                    orderValue.stopLongitude = car.getLongitude();
                     orderValue.stopLatitude = car.getLatitude();
                     orderValue.stopTime = new Date(System.currentTimeMillis());
                     joyNOrderService.updateRecord(orderValue,orderFilter);
