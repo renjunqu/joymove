@@ -22,6 +22,7 @@ public class RegisterHandler  implements EventHandler {
 				return false;
 		} catch(Exception e){
 			error = true;
+			logger.error(e.getStackTrace().toString());
 			 logger.info("error to send data to joymove");
 		}
 		return error;

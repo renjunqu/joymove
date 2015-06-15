@@ -63,6 +63,7 @@ public class SendKeyHandler  implements EventHandler {
 		 		}
 		} catch(Exception e){
 			error = true;
+			logger.error(e.getStackTrace().toString());
 			logger.info("send key exception: "+e.toString());
 		}
 		return error;

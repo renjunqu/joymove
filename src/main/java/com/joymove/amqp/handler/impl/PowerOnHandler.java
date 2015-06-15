@@ -42,7 +42,7 @@ public class PowerOnHandler  implements EventHandler {
         boolean error=true;
         ReentrantLock opLock = null;
         try {
-            logger.debug("get the send code report from clouemove");
+            logger.debug("get the send power on report from clouemove");
 
             String vinNum = String.valueOf(json.get("vin"));
             opLock = CarOpLock.getCarLock(vinNum);
@@ -53,7 +53,9 @@ public class PowerOnHandler  implements EventHandler {
             car = cacheCarService.getByVinNum(vinNum);
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if(car.getState()==Car.state_wait_poweron) {
+                logger.error("now we at state_wait_power on, for "+car.getVinNum());
                 if(result==1L) {
+                    logger.error("the cloumove tell us it is ok");
                     JOYNCar ncarFilter = new JOYNCar();
                     JOYOrder order = new JOYOrder();
                     order.mobileNo = (car.getOwner());
@@ -68,6 +70,7 @@ public class PowerOnHandler  implements EventHandler {
                     joyNOrderService.insertRecord(order);
                     cacheCarService.updateCarStateBusy(car);
                 } else {
+                    logger.error("the cloudmove tell us it it failed");
                     //try again
                     cacheCarService.sendPowerOn(car.getVinNum());
                 }
@@ -75,6 +78,7 @@ public class PowerOnHandler  implements EventHandler {
             error = false;
         } catch(Exception e){
             error = true;
+            logger.error(e.getStackTrace().toString());
         } finally {
             if(opLock!=null && opLock.getHoldCount()>0)
                 opLock.unlock();

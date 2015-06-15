@@ -43,7 +43,7 @@ public class LockHandler implements EventHandler {
         boolean error=true;
         ReentrantLock opLock = null;
         try {
-            logger.debug("get the send code report from clouemove");
+            logger.debug("get the lock report from clouemove");
             String vinNum = String.valueOf(json.get("vin"));
             opLock = CarOpLock.getCarLock(vinNum);
             opLock.lock();//>>============================
@@ -52,7 +52,7 @@ public class LockHandler implements EventHandler {
             car = cacheCarService.getByVinNum(vinNum);
             Long result = Long.parseLong(String.valueOf(json.get("result")));
             if (car.getState() == Car.state_wait_lock) {
-                logger.debug("get the lock result");
+                logger.debug("get the lock result for state_wait_lock with "+car.getVinNum());
                 if(result==1) {
                     logger.debug("lock success ");
                     //首先停止订单
@@ -86,6 +86,7 @@ public class LockHandler implements EventHandler {
 
         } catch(Exception e){
             error = true;
+            logger.error(e.getStackTrace().toString());
         } finally {
             if(opLock!=null && opLock.getHoldCount()>0)
                 opLock.unlock();

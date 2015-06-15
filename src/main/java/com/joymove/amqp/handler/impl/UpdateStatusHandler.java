@@ -68,6 +68,7 @@ public class UpdateStatusHandler  implements EventHandler {
 		} catch(Exception e){
 			error = true;
 			logger.error(e.toString());
+			logger.error(e.getStackTrace().toString());
 		} finally {
 			if(opLock!=null && opLock.getHoldCount()>0)
 				opLock.unlock();

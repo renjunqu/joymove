@@ -34,7 +34,7 @@ public class PowerOffHandler implements EventHandler {
         ReentrantLock opLock = null;
 
         try {
-            logger.debug("get the send code report from clouemove");
+            logger.debug("get the power off  report from clouemove");
             String vinNum = String.valueOf(json.get("vin"));
             opLock = CarOpLock.getCarLock(vinNum);
             opLock.lock();//>>============================
@@ -58,6 +58,7 @@ public class PowerOffHandler implements EventHandler {
 
         } catch(Exception e){
             error = true;
+            logger.error(e.getStackTrace().toString());
         } finally {
             if(opLock!=null && opLock.getHoldCount()>0)
                 opLock.unlock();
