@@ -5,29 +5,33 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.impl.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CMShutdownListener implements ShutdownListener  {
+
+	final static Logger logger = LoggerFactory.getLogger(CMShutdownListener.class);
 
 	@Override
 	public void shutdownCompleted(ShutdownSignalException cause) {
 		// TODO Auto-generated method stub
 		if (cause.isHardError())
 		  {
-			System.out.println("amq: -- hareware error");
+			logger.trace("amq: -- hareware error");
 		    Connection conn = (Connection)cause.getReference();
 		    if (!cause.isInitiatedByApplication())
 		    {
 		      Method reason = (Method)cause.getReason();
-		      System.out.println("amq: reason : "+cause.getReason().toString());
+		      logger.trace("amq: reason : "+cause.getReason().toString());
 		      
 		    } else {
-		    	System.out.println("shutdown by app itself");
+		    	logger.trace("shutdown by app itself");
 		    }
 		    
 		  } else {
-			System.out.println("amq: -- not hareware error");
+			logger.trace("amq: -- not hareware error");
 		    Channel ch = (Channel)cause.getReference();
-		    System.out.println("amq: reason : "+cause.getReason().toString());
+		    logger.trace("amq: reason : "+cause.getReason().toString());
 		    Method reason = (Method)cause.getReason();
 		    
 		  }

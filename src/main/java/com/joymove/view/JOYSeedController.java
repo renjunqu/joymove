@@ -2,6 +2,8 @@ package com.joymove.view;
 
 import com.joymove.entity.JOYOrder;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import com.joymove.service.JOYSeedService;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,10 @@ import com.joymove.entity.JOYSeed;
 
 @Controller("JOYSeedController")
 public class JOYSeedController {
+
+    final static Logger logger = LoggerFactory.getLogger(JOYSeedController.class);
+
+
     @Resource(name = "JOYSeedService")
     private JOYSeedService joySeedService;
 
@@ -48,6 +54,7 @@ public class JOYSeedController {
                 Reobj.put("errMsg", "输入的兑换码有错误");
             }
         } catch(Exception e){
+            logger.error(e.getStackTrace().toString());
              Reobj.put("errMsg",e.toString());
         }
         return Reobj;

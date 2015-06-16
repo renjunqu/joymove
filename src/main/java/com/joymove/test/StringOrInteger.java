@@ -8,7 +8,7 @@ public class StringOrInteger {
 	public static void main(String []args){
 		
 		String tt ="123456";
-		System.out.println(StringOrInteger.isValidateNumber(tt));
+	//	logger.trace(StringOrInteger.isValidateNumber(tt));
 	}
 	public static boolean isValidateNumber(String str) throws NumberFormatException{
         if (str==null) {

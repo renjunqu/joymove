@@ -80,7 +80,7 @@ public class SmsUtils {
 		//post  
        
 		String content = "zh=carlfan&mm=Passw0rd&hm="+number+"&nr="+nr+"&sms_type=46";
-		System.out.println(content);
+		logger.trace(content);
 		StringEntity postingString;
 		try {
 			
@@ -92,7 +92,7 @@ public class SmsUtils {
 			
 			CloseableHttpClient httpclient = HttpClients.createDefault();
 			HttpResponse  response = httpclient.execute(post);
-			System.out.println(response);
+			logger.trace(response);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -104,7 +104,7 @@ public class SmsUtils {
 	*/
 	
 	public static void main(String[] args) {
-		System.out.println(SmsUtils.sendRegisterCode("1112", "18500217642"));
+		logger.trace(SmsUtils.sendRegisterCode("1112", "18500217642"));
 	/*	
 		for(int i =45;i<50;i++) {
 			SmsUtils.sendBikeCmd("zh=carlfan&mm=Passw0rd&hm=18500217642&nr=qurenjunqurenjun&sms_type="+i);	

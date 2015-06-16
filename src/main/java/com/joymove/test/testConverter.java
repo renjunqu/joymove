@@ -357,8 +357,8 @@ public class testConverter
         double x = x_1/20037508.34*180;
         double y = y_1/20037508.34*180;
         y= 180/(Math.PI)*(2* Math.atan(Math.exp(y * Math.PI / 180))-Math.PI/2);
-        System.out.println(x);
-        System.out.println(y);
+       // logger.trace(x);
+       // logger.trace(y);
     }
 
 

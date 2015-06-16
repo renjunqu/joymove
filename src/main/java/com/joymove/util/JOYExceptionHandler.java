@@ -18,10 +18,10 @@ public class JOYExceptionHandler implements HandlerExceptionResolver {
     public ModelAndView resolveException(HttpServletRequest request,
                                          HttpServletResponse response, Object handler, Exception ex) {
         // TODO Auto-generated method stub
-       // System.out.println(ex.getStackTrace());
+       // logger.trace(ex.getStackTrace());
         Map<String,Object> context = new HashMap<String, Object>();
         context.put("exception",ex);
-        //System.out.println("Hello errorPage");
+        //logger.trace("Hello errorPage");
         return new ModelAndView("errorPage",context);
     }
 

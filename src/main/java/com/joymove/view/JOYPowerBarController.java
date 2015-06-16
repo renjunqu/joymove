@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,9 +28,13 @@ public class JOYPowerBarController {
 	private  JOYPowerBarService joyPowerBarService;
 
 
+	final static Logger logger = LoggerFactory.getLogger(JOYPowerBarController.class);
+
+
+
 	@RequestMapping(value="rent/getNearByPowerBars", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject getNearByPowerBars(HttpServletRequest req){
-		 System.out.println("getNearByPowerBars method was invoked...");
+		 logger.trace("getNearByPowerBars method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 JSONArray  pbArray  = new JSONArray();
@@ -56,7 +62,7 @@ public class JOYPowerBarController {
 			 
 		 } catch(Exception e) {
 			 Reobj.put("result", "10001");
-			 System.out.println(e);
+			 logger.error(e.getStackTrace().toString());
 		 }
 		 return Reobj;
 	}

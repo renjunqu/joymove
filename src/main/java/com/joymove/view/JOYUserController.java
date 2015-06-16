@@ -27,6 +27,8 @@ import com.joymove.service.JOYPayReqInfoService;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,13 +59,17 @@ public class JOYUserController{
     private JOYDynamicPwsService joyDynamicPwsService;
 	@Resource(name = "JOYPayReqInfoService")
 	private JOYPayReqInfoService  joyPayReqInfoService;
-	
 
 
-	
-	
-	
-	
+	final static Logger logger = LoggerFactory.getLogger(JOYUserController.class);
+
+
+
+
+
+
+
+
 	/**
      * @return
 	 */
@@ -361,7 +367,7 @@ public class JOYUserController{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(user.gender);
+		logger.trace(user.gender);
 	}
 
 	@RequestMapping(value="usermgr/depositRecharge",method=RequestMethod.POST)

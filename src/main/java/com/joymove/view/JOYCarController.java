@@ -63,7 +63,7 @@ public class JOYCarController {
 
 	@RequestMapping(value={"rent/getNearByAvailableCars","rent/getNearByBusyCars"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject getNearByAvailableCars(HttpServletRequest req){
-		 System.out.println("getNearByAvailableCars method was invoked...");
+		 logger.trace("getNearByAvailableCars method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 JSONArray  carArray  = new JSONArray();
@@ -105,7 +105,7 @@ public class JOYCarController {
 			 
 		 } catch(Exception e) {
 			 Reobj.put("result", "10001");
-			 System.out.println(e);
+			 logger.trace(e.getStackTrace().toString());
 		 }
 		 return Reobj;
 	}
@@ -115,7 +115,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value={"rent/rentCarReq","rent/pingCar"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject rentCarReq(HttpServletRequest req){
-		 System.out.println("rentCarReq method was invoked...");
+		 logger.trace("rentCarReq method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 JSONArray  carArray  = new JSONArray();
@@ -133,8 +133,8 @@ public class JOYCarController {
 			 }
 			 
 			 
-			 System.out.println("servlet path: " +req.getSession().getServletContext().getRealPath("/"));
-			 //  System.out.println("servlet path: " +req.getSession().getServletContext().);
+			 logger.trace("servlet path: " +req.getSession().getServletContext().getRealPath("/"));
+			 //  logger.trace("servlet path: " +req.getSession().getServletContext().);
 		 } catch(Exception e){
 			 
 		 }
@@ -144,7 +144,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value="rent/rentCarAck", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject rentCarAck(HttpServletRequest req){
-		 System.out.println("getNearByAvailableCars method was invoked...");
+		 logger.trace("getNearByAvailableCars method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 ReentrantLock optLock = null;
@@ -210,6 +210,7 @@ public class JOYCarController {
 			 if(optLock!=null && optLock.getHoldCount()>0) {
 				 optLock.unlock();
 			 }
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -217,7 +218,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value="rent/terminateMyOrder", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject terminateMyOrder(HttpServletRequest req){
-		 System.out.println("getNearByAvailableCars method was invoked...");
+		 logger.trace("getNearByAvailableCars method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -244,7 +245,7 @@ public class JOYCarController {
 			 joyCarService.setCarFree(car);
 			Reobj.put("result","10000");
 		 } catch(Exception e){
-			 e.printStackTrace();
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -252,7 +253,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value={"rent/checkOrderStatus","rent/getOrderDetail"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject checkOrderStatus(HttpServletRequest req){
-		 System.out.println("checkOrderStatus method was invoked...");
+		 logger.trace("checkOrderStatus method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -311,6 +312,7 @@ public class JOYCarController {
 		    	  Reobj.put("errMsg", "您目前无订单");
 		      }
 		 } catch(Exception e){
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -321,7 +323,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value="rent/payOrderReq", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject payOrderReq(HttpServletRequest req){
-			 System.out.println("payOrderReq method was invoked...");
+			 logger.trace("payOrderReq method was invoked...");
 			 Map<String,Object> likeCondition = new HashMap<String, Object>();
 			 JSONObject Reobj=new JSONObject();
 			 Reobj.put("result", "10001");
@@ -437,7 +439,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value="rent/changeBatonMode", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject changeBatonMode(HttpServletRequest req){
-		 System.out.println("changeBatonMode method was invoked...");
+		 logger.trace("changeBatonMode method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -454,8 +456,7 @@ public class JOYCarController {
 	    	   joyOrderService.updateRecord(orderNew,orderFilter);
 			   Reobj.put("result", "10000");
 		 } catch(Exception e){
-			
-			
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg",e.toString());
 		 }
 		 return Reobj;
@@ -463,7 +464,7 @@ public class JOYCarController {
 	
 	@RequestMapping(value="rent/updateDestination", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject updateDestination(HttpServletRequest req){
-		 System.out.println("updateDestination method was invoked...");
+		 logger.trace("updateDestination method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -482,8 +483,7 @@ public class JOYCarController {
 	    	 joyOrderService.updateRecord(orderNew,orderFilter);
 			 Reobj.put("result", "10000");
 		 } catch(Exception e){
-			
-			
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -492,7 +492,7 @@ public class JOYCarController {
 	/***    get interesting points ********/
 	@RequestMapping(value="rent/getInterestPOI", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject getInterestPOI(HttpServletRequest req){
-		 System.out.println("getInterestPOI method was invoked...");
+		 logger.trace("getInterestPOI method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -530,6 +530,7 @@ public class JOYCarController {
 			 Reobj.put("route", ReObj_POIs);
 
 		 } catch(Exception e){
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;

@@ -17,7 +17,7 @@ public class Image {
 
 		BigDecimal q = new BigDecimal("0.0100000");
 		BigDecimal q1 = new BigDecimal(0.01);
-		System.out.println(q.doubleValue() >= q1.doubleValue());
+	//	logger.trace(q.doubleValue() >= q1.doubleValue());
 		 //PrintWriter printWriter = new PrintWriter(fileOutputStream);
 	}
 }

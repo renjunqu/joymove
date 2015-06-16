@@ -1,6 +1,8 @@
 package com.joymove.test;
 
 import com.joymove.entity.JOYNCar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -9,9 +11,12 @@ import java.util.Map;
 
 @Component("DoPost")
 public class DoPost {
-	
+
+	final static Logger logger = LoggerFactory.getLogger(DoPost.class);
+
+
 	public void doPost() throws  Exception{
-		System.out.println("hello doPost");
+		logger.trace("hello doPost");
 		throw new Exception("heelo world");
 	}
 	public static void main(String [] args) {
@@ -28,9 +33,9 @@ public class DoPost {
 				}
 			}
 			for (Field ncar_f : nCar_fields) {
-			     System.out.println("name: "+ncar_f.getName()+" value: "+ncar_f.get(car));
+			     logger.trace("name: "+ncar_f.getName()+" value: "+ncar_f.get(car));
 			}
-			System.out.println(car);
+			logger.trace(car.toString());
 		} catch (Exception e){
 			e.printStackTrace();
 		}

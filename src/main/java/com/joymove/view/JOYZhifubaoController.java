@@ -116,16 +116,16 @@ public class JOYZhifubaoController {
 
 				} else if (subject.equals("depositRecharge")) {
 
-					System.out.println("mobile No is " + payInfo.mobileNo);
-					System.out.println("deposit is " + payInfo.totalFee);
+					logger.trace("mobile No is " + payInfo.mobileNo);
+					logger.trace("deposit is " + payInfo.totalFee);
 					JOYUser userFilter = new JOYUser();
 					userFilter.mobileNo = mobileNo;  //setMobileNo(mobileNo);
 					JOYUser userValue = joyUserService.getNeededRecord(userFilter);
 					BigDecimal currDepo = userValue.deposit; //.getDeposit();
-					System.out.println("before recharge: " + currDepo);
+					logger.trace("before recharge: " + currDepo);
 					currDepo = currDepo.add(BigDecimal.valueOf(payInfo.totalFee));
 					userValue.deposit = currDepo; //setDeposit(currDepo);
-					System.out.println("after recharge: " + currDepo);
+					logger.trace("after recharge: " + currDepo);
 					joyUserService.updateRecord(userValue, userFilter);
 					//record this pay
 					//记录支付过程
@@ -156,7 +156,7 @@ public class JOYZhifubaoController {
 	}
     public static void main(String [] args){
     	String t = "order112345";
-    	System.out.println(t.substring(6).replace("1", "a"));
+    	logger.trace(t.substring(6).replace("1", "a"));
     }
 	
 

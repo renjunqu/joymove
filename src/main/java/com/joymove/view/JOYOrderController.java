@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.futuremove.cacheServer.service.CarService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,6 +28,10 @@ import com.joymove.service.JOYOrderService;
 @Controller("JOYOrderController")
 @RequestMapping("/ordermgr")
 public class JOYOrderController {
+
+	final static Logger logger = LoggerFactory.getLogger(JOYOrderController.class);
+
+
 
 	@Resource(name = "JOYOrderService")
 	private JOYOrderService joyOrderService;
@@ -42,7 +48,7 @@ public class JOYOrderController {
 	/***            ****/
 	@RequestMapping(value = "/listHistoryOrder", method = { RequestMethod.POST, RequestMethod.GET })
     public @ResponseBody JSONObject listHistoryOrder(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		 System.out.println("listHistoryOrder method was invoked...");
+		 logger.trace("listHistoryOrder method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 JSONArray  orderArray  = new JSONArray();
@@ -83,7 +89,7 @@ public class JOYOrderController {
 			 
 		 } catch(Exception e) {
 			 Reobj.put("result", "10001");
-			 System.out.println(e);
+			 logger.error(e.getStackTrace().toString());
 		 }
 		 return Reobj;
     }

@@ -71,7 +71,7 @@ public class CMConsumer implements Consumer{
 	}
 
 	public void handleRecoverOk(String arg0) {
-		System.out.println("recover ok");
+		logger.trace("recover ok");
 	}
 
 	public void handleShutdownSignal(String arg0, ShutdownSignalException arg1) throws  ShutdownSignalException  {

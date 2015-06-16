@@ -60,7 +60,7 @@ public class JOYWeChatController {
         payHistoryNew.type = JOYPayHistory.weixin_type;
         ReentrantLock optLock = null;
         try {
-          //  System.out.println("++++++ inside wechat controller ");
+          //  logger.trace("++++++ inside wechat controller ");
             Map<String,Object> likeCondition = new HashMap<String, Object>();
 
             BufferedReader reader = req.getReader();
@@ -95,11 +95,11 @@ public class JOYWeChatController {
                             userFilter = joyUserService.getNeededRecord(userFilter);
                             JOYUser userNew = new JOYUser();
                             BigDecimal currDepo =userFilter.deposit;  // getDeposit();
-                            System.out.println("before recharge: " + currDepo);
+                            logger.trace("before recharge: " + currDepo);
                             currDepo = currDepo.add(BigDecimal.valueOf(Double.valueOf(fee) / 100));
                             userNew.deposit = currDepo;  //setDeposit(currDepo);
                             userNew.mobileNo = payInfo.mobileNo;  //setMobileNo(payInfo.getMobileNo());
-                            System.out.println("after recharge: " + currDepo);
+                            logger.trace("after recharge: " + currDepo);
                             joyUserService.updateRecord(userNew,userFilter);
                             //记录支付过程
                             payHistoryNew.balance = payInfo.totalFee;
@@ -145,10 +145,10 @@ public class JOYWeChatController {
                 outputStream.close();
 
             }//equals SUCCESS
-          //  System.out.println(jstr);
-           // System.out.println("++++++ inside wechat controller ");
+          //  logger.trace(jstr);
+           // logger.trace("++++++ inside wechat controller ");
         } catch (Exception e){
-           System.out.println(e.toString());
+           logger.trace(e.toString());
             //记得做解锁
             if(optLock!=null && optLock.getHoldCount()>0)
                 optLock.unlock();

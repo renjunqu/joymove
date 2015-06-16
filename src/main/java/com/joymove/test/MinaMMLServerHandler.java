@@ -19,7 +19,7 @@ public class MinaMMLServerHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionCreated(IoSession session) {
-		System.out.println(session.getRemoteAddress().toString());
+    System.out.println(session.getRemoteAddress().toString());
 	}
 
 	@Override

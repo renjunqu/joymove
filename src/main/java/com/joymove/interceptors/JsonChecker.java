@@ -5,6 +5,8 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.springframework.web.servlet.ModelAndView;
@@ -16,13 +18,17 @@ import com.joymove.util.JsonHashUtils;
 
 
 public class JsonChecker extends HandlerInterceptorAdapter {
-	
+
+	final static Logger logger = LoggerFactory.getLogger(JsonChecker.class);
+
+
+
 	@Override  
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse response, Object handler) throws Exception {
 		
 		  String URI = req.getRequestURI();
-		  System.out.println(URI);
+		  logger.trace(URI);
 		  Hashtable<String,String[]> jsonCheckProps = new Hashtable<String,String[]>();
 	    	
 		 
@@ -146,7 +152,7 @@ public class JsonChecker extends HandlerInterceptorAdapter {
 		  if(req.getAttribute("jsonArgs") !=null) {
 			  Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			  String reqURI = (String)req.getRequestURI();
-			  System.out.println(reqURI);
+			  logger.trace(reqURI);
 			  String[] neededProps = jsonCheckProps.get(req.getRequestURI());
 			  if(neededProps != null && neededProps.length>0 && JsonHashUtils.checkJsonProps(jsonObj,neededProps)) {
 				 

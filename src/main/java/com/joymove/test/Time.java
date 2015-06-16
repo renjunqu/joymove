@@ -1,15 +1,20 @@
 package com.joymove.test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Time {
+	final static Logger logger = LoggerFactory.getLogger(Time.class);
+
 	public static void main(String[] args) {
 		
 		 long  ss = 13345561;
 		 int tt = 20;
 		 Time time = new Time();
 		 String time2 = time.getTime(ss);
-		 System.out.println(time2);
+		 logger.trace(time2);
 		 Integer jinQian = time.getJinQian(time2,tt);
-		 System.out.println(jinQian);
+		 logger.trace(jinQian.toString());
 	}
 	
 	 private  String getTime(long time) {

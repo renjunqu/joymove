@@ -36,7 +36,7 @@ import com.joymove.service.JOYUserService;
 @Controller("JOYNCarController")
 public class JOYNCarController {
 	
-	final static Logger logger = LoggerFactory.getLogger("com.joymove.view");
+	final static Logger logger = LoggerFactory.getLogger(JOYNCarController.class);
 
 	@Resource(name = "JOYNCarService")
 	private JOYNCarService  joyNCarService;
@@ -90,7 +90,7 @@ public class JOYNCarController {
 					 
 					 car_json.put("desp", ncar.licensenum);
 					 car_json.put("ifBlueTeeth",ncar.ifBlueTeeth);
-					 System.out.println("license num is "+ncar.licensenum);
+					 logger.trace("license num is " + ncar.licensenum);
 					 if(URI.contains("getNearByAvailableCars")) {
 						 
 					 } else {
@@ -104,7 +104,7 @@ public class JOYNCarController {
 				 Reobj.put("result", "10002");
 			 }
 		 } catch(Exception e){
-			 logger.error(e.toString());
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg",e.toString());
 		 }
 		 return Reobj;
@@ -125,13 +125,13 @@ public class JOYNCarController {
 			 List<Car> cars  = carService.getBusyCarByScope(likeCondition);
 			 if(cars.size()>0) {
 				 Car car = cars.get(0);
-				 System.out.println(car.getLatitude());
-				 System.out.println(car.getLongitude());
+				 logger.trace(car.getLatitude().toString());
+				 logger.trace(car.getLongitude().toString());
 			 }
-			 System.out.println("over");
+			 logger.trace("over");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getStackTrace().toString());
 		}
 
 	}
@@ -369,7 +369,7 @@ public class JOYNCarController {
 				    cacheCarService.updateCarStateFree(car);
                     optLock.unlock();
 			}
-			Reobj.put("errMsg", e.toString());
+			logger.error(e.getStackTrace().toString());
 			logger.error(e.toString());
 		}
 
@@ -424,7 +424,7 @@ public class JOYNCarController {
     //暂时留着，为以前保持兼容
 	@RequestMapping(value={"newcar/rentCarTerminate"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject rentCarTerminate(HttpServletRequest req){
-		System.out.println("rentCarTerminate method was invoked...");
+		logger.trace("rentCarTerminate method was invoked...");
 		Map<String,Object> likeCondition = new HashMap<String, Object>();
 		JSONObject Reobj=new JSONObject();
 		Reobj.put("result", "10001");
@@ -469,7 +469,7 @@ public class JOYNCarController {
 			if(optLock!=null && optLock.getHoldCount()>0) {
 				optLock.unlock();
 			}
-			logger.error(e.toString());
+			logger.error(e.getStackTrace().toString());
 			Reobj.put("errMsg", e.toString());
 		}
 		return Reobj;
@@ -479,7 +479,7 @@ public class JOYNCarController {
 	
 	@RequestMapping(value={"newcar/rentCarTerminateReq"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject rentCarTerminateReq(HttpServletRequest req){
-		 System.out.println("rentCarTerminateReq method was invoked...");
+		 logger.trace("rentCarTerminateReq method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -518,7 +518,7 @@ public class JOYNCarController {
 			 if(optLock!=null && optLock.getHoldCount()>0) {
 				 optLock.unlock();
 			 }
-			 logger.error(e.toString());
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -526,7 +526,7 @@ public class JOYNCarController {
 
 	@RequestMapping(value={"newcar/rentCarTerminateAck"}, method=RequestMethod.POST)
 	public  @ResponseBody JSONObject rentCarTerminateAck(HttpServletRequest req){
-		System.out.println("rentCarTerminateAck method was invoked...");
+		logger.trace("rentCarTerminateAck method was invoked...");
 		Map<String,Object> likeCondition = new HashMap<String, Object>();
 		JSONObject Reobj=new JSONObject();
 		Reobj.put("result", "10001");
@@ -546,7 +546,7 @@ public class JOYNCarController {
 				Reobj.put("result","10000");
 			}
 		} catch(Exception e){
-			logger.error(e.toString());
+			logger.error(e.getStackTrace().toString());
 			Reobj.put("errMsg", e.toString());
 		}
 		return Reobj;
@@ -584,7 +584,7 @@ public class JOYNCarController {
 	
 	@RequestMapping(value="newcar/changeBatonMode", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject changeBatonMode(HttpServletRequest req){
-		 System.out.println("new car changeBatonMode method was invoked...");
+		 logger.trace("new car changeBatonMode method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -601,6 +601,7 @@ public class JOYNCarController {
 	    	   joyNOrderService.updateRecord(orderNewValue,orderFilter);
 			   Reobj.put("result", "10000");
 		 } catch(Exception e){
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
@@ -608,7 +609,7 @@ public class JOYNCarController {
 	
 	@RequestMapping(value="newcar/updateDestination", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject updateDestination(HttpServletRequest req){
-		 System.out.println("new car updateDestination method was invoked...");
+		 logger.trace("new car updateDestination method was invoked...");
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
@@ -627,6 +628,7 @@ public class JOYNCarController {
 	    	 joyNOrderService.updateRecord(orderNewValue,orderFilter);
 			 Reobj.put("result", "10000");
 		 } catch(Exception e){
+			 logger.error(e.getStackTrace().toString());
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;

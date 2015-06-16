@@ -13,7 +13,7 @@ public class TestInterceptor extends HandlerInterceptorAdapter{
 	@Override
 	public boolean preHandle(HttpServletRequest request,
 			HttpServletResponse response, Object handler) throws Exception {
-		System.out.println("I am interceptor2 "+ request.getRequestURI());
+		//logger.trace("I am interceptor2 "+ request.getRequestURI());
 		JSONObject ttt = new JSONObject();
 		ttt.put("hello", "world");
 		response.setContentType("text/x-json;charset=UTF-8");           

@@ -23,8 +23,8 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 
 public class testMQConsumer implements Consumer{
-	
-	
+
+
 	 
 	
 	
@@ -46,7 +46,7 @@ public class testMQConsumer implements Consumer{
 
 	
 	public void handleRecoverOk(String arg0) {
-		System.out.println("recover ok");
+		//logger.trace("recover ok");
 	}
 
 	public void handleShutdownSignal(String arg0, ShutdownSignalException arg1) throws  ShutdownSignalException  {
@@ -61,7 +61,7 @@ public class testMQConsumer implements Consumer{
 	public void handleDelivery(String arg0, Envelope arg1,
 			BasicProperties arg2, byte[] arg3) throws IOException {
 		// TODO Auto-generated method stub
-		System.out.println("show data");
+		//logger.trace("show data");
 		System.out.print(arg3.toString());	
 	}
 	

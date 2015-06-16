@@ -23,16 +23,16 @@ public class pushTester {
 	    	 payLoad.addBadge(2);
 	    	 payLoad.addSound("test");
 	    	 AppleNotificationServerBasicImpl app =  new AppleNotificationServerBasicImpl("aps_development.p12", "314159", false);
-	    	 System.out.println(app.getNotificationServerHost());
-	    	 System.out.println(app.getNotificationServerPort());
+	    	// logger.trace(app.getNotificationServerHost());
+	    	// logger.trace(app.getNotificationServerPort());
 	    	 pushManager.initializeConnection(app);
 	    	 pushManager.addDevice("iPhone", deviceId);
 	    	 Device client =  pushManager.getDevice("iPhone");
              PushedNotification notifition = pushManager.sendNotification(client, payLoad);  
              boolean result = notifition.isSuccessful();
-             System.out.println(result);
+             //logger.trace(result);
 	     } catch (Exception e) {
-	    	 System.out.println(e);
+	    	// logger.trace(e);
 	     }
 	}
 }

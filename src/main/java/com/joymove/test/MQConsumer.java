@@ -12,8 +12,14 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MQConsumer extends MQEndPoint implements Runnable, Consumer{
+
+	final static Logger logger = LoggerFactory.getLogger(MQConsumer.class);
+
+
 
 	public MQConsumer(String endpointName, String ip, int port) throws IOException {
 		super(endpointName, ip, port);
@@ -30,7 +36,7 @@ public class MQConsumer extends MQEndPoint implements Runnable, Consumer{
 	public void handleDelivery(String arg0, Envelope arg1,
 			BasicProperties arg2, byte[] arg3) throws IOException {
 			String res = new String(arg3);
-			System.out.println(res);
+			logger.trace(res);
 			/*JSONParser parser=new JSONParser();
 			 try {
 			Map json = (Map)parser.parse(res);

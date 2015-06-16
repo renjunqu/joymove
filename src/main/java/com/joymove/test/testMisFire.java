@@ -24,7 +24,7 @@ public class testMisFire {
 			System.out.println("now  show jobs:  ");
 	       for(String group: scheduler.getJobGroupNames()) {
 	           // enumerate each job in group
-	    	   System.out.println("job of group "+ group);   
+	    	   System.out.println("job of group "+ group);
 	           for(JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(group))){
 	               System.out.println("Found job identified by: " + jobKey);
 	           }

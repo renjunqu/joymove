@@ -6,6 +6,8 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.springframework.web.servlet.ModelAndView;
@@ -17,7 +19,10 @@ import com.joymove.util.JsonHashUtils;
 
 
 public class JsonTransformer extends HandlerInterceptorAdapter {
-	
+
+	final static Logger logger = LoggerFactory.getLogger(JsonTransformer.class);
+
+
 	@Override  
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse response, Object handler) throws Exception {
@@ -37,7 +42,7 @@ public class JsonTransformer extends HandlerInterceptorAdapter {
 				  
 				  
 			  } catch(Exception e) {
-				  System.out.println(e);
+				  logger.error(e.getStackTrace().toString());
 				 
 				  
 			  }  

@@ -22,7 +22,7 @@ public class MQTest {
 		
 		try {
 			MQTest.test();
-			System.out.println("sfsdf");
+		//	logger.trace("sfsdf");
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

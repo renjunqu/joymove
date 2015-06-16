@@ -11,7 +11,7 @@ public class quartzLister {
 	
 	
 	public static void main(String[] args){
-		System.out.println("now, lest's start");
+		logger.trace("now, lest's start");
 		 // Grab the Scheduler instance from the Factory 
 		//ClearExpireReserveJob.testMain();
 	try {

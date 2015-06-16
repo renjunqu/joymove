@@ -5,6 +5,8 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.json.simple.*;
 
@@ -13,7 +15,11 @@ import com.joymove.service.JOYOrderService;
 
 
 public class CheckOrderNotExists extends HandlerInterceptorAdapter {
-	
+
+	final static Logger logger = LoggerFactory.getLogger(CheckOrderNotExists.class);
+
+
+
 	private JOYOrderService   joyOrderService;
 	
 	
@@ -54,7 +60,7 @@ public class CheckOrderNotExists extends HandlerInterceptorAdapter {
     					return true;
     				} 
  			} catch(Exception e){
- 				System.out.println(e.toString());
+ 				logger.trace(e.toString());
 				
 			}
 			

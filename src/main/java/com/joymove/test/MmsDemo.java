@@ -68,10 +68,10 @@ public class MmsDemo {
 		para.put("con", con);
 
 		try {
-			System.out.println(HttpClientHelper.convertStreamToString(
-					HttpClientHelper.post(
-							"http://api.weimi.cc/2/mms/send.html", para),
-					"UTF-8"));
+		//	logger.trace(HttpClientHelper.convertStreamToString(
+		//			HttpClientHelper.post(
+		//					"http://api.weimi.cc/2/mms/send.html", para),
+		//			"UTF-8"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
