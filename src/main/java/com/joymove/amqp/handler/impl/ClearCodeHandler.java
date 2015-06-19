@@ -50,12 +50,14 @@ public class ClearCodeHandler  implements EventHandler {
 					//try again
 					cacheCarService.sendClearCode(car.getVinNum());
 				}
+			}else {
+				logger.debug("the car in state "+car.getState()+" so we do not do anything");
 			}
 			error = false;
 
 		} catch(Exception e){
 			error = true;
-			logger.error(e.getStackTrace().toString());
+			logger.error("excpetion: ",e);
 		} finally {
 			if(opLock!=null && opLock.getHoldCount()>0)
 				opLock.unlock();

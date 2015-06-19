@@ -53,12 +53,14 @@ public class PowerOffHandler implements EventHandler {
                     //try again
                     cacheCarService.sendPowerOff(car.getVinNum());
                 }
+            }else {
+                logger.debug("the car in state "+car.getState()+" so we do not do anything");
             }
             error = false;
 
         } catch(Exception e){
             error = true;
-            logger.error(e.getStackTrace().toString());
+            logger.error("exception:",e);
         } finally {
             if(opLock!=null && opLock.getHoldCount()>0)
                 opLock.unlock();

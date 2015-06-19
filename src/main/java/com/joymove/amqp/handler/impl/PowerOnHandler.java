@@ -62,23 +62,25 @@ public class PowerOnHandler  implements EventHandler {
                     order.carVinNum = (car.getVinNum());
                     order.startLongitude = car.getLongitude();
                     order.startLatitude = car.getLatitude();
-                    likeCondition.put("vinNum", car.getVinNum());
                     ncarFilter.vinNum = car.getVinNum();
                     List<JOYNCar> ncars = joynCarService.getNeededList(ncarFilter);
                     JOYNCar ncar = ncars.get(0);
                      order.ifBlueTeeth = ncar.ifBlueTeeth;
                     joyNOrderService.insertRecord(order);
                     cacheCarService.updateCarStateBusy(car);
+
                 } else {
                     logger.error("the cloudmove tell us it it failed");
                     //try again
                     cacheCarService.sendPowerOn(car.getVinNum());
                 }
+            } else {
+                logger.debug("the car in state "+car.getState()+" so we do not do anything");
             }
             error = false;
         } catch(Exception e){
             error = true;
-            logger.error(e.getStackTrace().toString());
+            logger.error("exception:",e);
         } finally {
             if(opLock!=null && opLock.getHoldCount()>0)
                 opLock.unlock();

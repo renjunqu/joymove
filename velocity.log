@@ -652,3 +652,203 @@ java.lang.ClassNotFoundException: com.joymove.velocity.directives.WherePrefix
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.lang.reflect.Method.invoke(Method.java:497)
 	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:134)
+2015-06-18 11:21:21,715 - Log4JLogChute initialized using file 'velocity.log'
+2015-06-18 11:21:21,723 - Initializing Velocity, Calling init()...
+2015-06-18 11:21:21,723 - *******************************************************************
+2015-06-18 11:21:21,723 - Starting Apache Velocity v1.7 (compiled: 2010-11-19 12:14:37)
+2015-06-18 11:21:21,723 - RuntimeInstance initializing.
+2015-06-18 11:21:21,723 - Default Properties File: org/apache/velocity/runtime/defaults/velocity.properties
+2015-06-18 11:21:21,723 - Trying to use logger class org.apache.velocity.runtime.log.AvalonLogChute
+2015-06-18 11:21:21,723 - Target log system for org.apache.velocity.runtime.log.AvalonLogChute is not available (java.lang.NoClassDefFoundError: org/apache/log/format/Formatter).  Falling back to next log system...
+2015-06-18 11:21:21,724 - Trying to use logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:21:21,724 - Using logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:21:21,727 - Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+2015-06-18 11:21:21,738 - ResourceLoader instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+2015-06-18 11:21:21,741 - ClasspathResourceLoader : initialization complete.
+2015-06-18 11:21:21,753 - ResourceCache: initialized (class org.apache.velocity.runtime.resource.ResourceCacheImpl) with class java.util.Collections$SynchronizedMap cache map.
+2015-06-18 11:21:21,753 - Default ResourceManager initialization complete.
+2015-06-18 11:21:21,754 - Loaded System Directive: org.apache.velocity.runtime.directive.Stop
+2015-06-18 11:21:21,756 - Loaded System Directive: org.apache.velocity.runtime.directive.Define
+2015-06-18 11:21:21,756 - Loaded System Directive: org.apache.velocity.runtime.directive.Break
+2015-06-18 11:21:21,757 - Loaded System Directive: org.apache.velocity.runtime.directive.Evaluate
+2015-06-18 11:21:21,758 - Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+2015-06-18 11:21:21,759 - Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+2015-06-18 11:21:21,760 - Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+2015-06-18 11:21:21,762 - Loaded System Directive: org.apache.velocity.runtime.directive.Include
+2015-06-18 11:21:21,763 - Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+2015-06-18 11:21:21,764 - Loaded User Directive: com.joymove.velocity.directives.SelectFilterPageList
+2015-06-18 11:21:21,765 - Loaded User Directive: com.joymove.velocity.directives.DeleteFilter
+2015-06-18 11:21:21,766 - Loaded User Directive: com.joymove.velocity.directives.InsertOne
+2015-06-18 11:21:21,766 - Loaded User Directive: com.joymove.velocity.directives.UpdateFilter
+2015-06-18 11:21:21,767 - Loaded User Directive: com.joymove.velocity.directives.SelectCount
+2015-06-18 11:21:21,768 - Loaded User Directive: com.joymove.velocity.directives.SelectExtendInfoPagedList
+2015-06-18 11:21:21,772 - Loaded User Directive: com.joymove.velocity.directives.SelectWithExtendCondition
+2015-06-18 11:21:21,774 - Loaded User Directive: com.joymove.velocity.directives.WhereWithExtendCondition
+2015-06-18 11:21:21,776 - Loaded User Directive: com.joymove.velocity.directives.TimeScopeFilter
+2015-06-18 11:21:21,778 - Loaded User Directive: com.joymove.velocity.directives.QrjTrim
+2015-06-18 11:21:21,778 - Loaded User Directive: org.mybatis.scripting.velocity.TrimDirective
+2015-06-18 11:21:21,778 - Loaded User Directive: org.mybatis.scripting.velocity.WhereDirective
+2015-06-18 11:21:21,778 - Loaded User Directive: org.mybatis.scripting.velocity.SetDirective
+2015-06-18 11:21:21,779 - Loaded User Directive: org.mybatis.scripting.velocity.InDirective
+2015-06-18 11:21:21,779 - Loaded User Directive: org.mybatis.scripting.velocity.RepeatDirective
+2015-06-18 11:21:21,820 - Created '20' parsers.
+2015-06-18 11:21:21,825 - Velocimacro : initialization starting.
+2015-06-18 11:21:21,825 - Velocimacro : "velocimacro.library" is not set.  Trying default library: VM_global_library.vm
+2015-06-18 11:21:21,827 - Could not load resource 'VM_global_library.vm' from ResourceLoader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader: ClasspathResourceLoader Error: cannot find resource VM_global_library.vm
+2015-06-18 11:21:21,827 - Velocimacro : Default library not found.
+2015-06-18 11:21:21,827 - Velocimacro : allowInline = true : VMs can be defined inline in templates
+2015-06-18 11:21:21,827 - Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+2015-06-18 11:21:21,827 - Velocimacro : allowInlineLocal = false : VMs defined inline will be global in scope if allowed.
+2015-06-18 11:21:21,827 - Velocimacro : autoload off : VM system will not automatically reload global library macros
+2015-06-18 11:21:21,827 - Velocimacro : Velocimacro : initialization complete.
+2015-06-18 11:21:21,827 - RuntimeInstance successfully initialized.
+2015-06-18 11:22:09,862 - Log4JLogChute initialized using file 'velocity.log'
+2015-06-18 11:22:09,862 - Initializing Velocity, Calling init()...
+2015-06-18 11:22:09,862 - *******************************************************************
+2015-06-18 11:22:09,862 - Starting Apache Velocity v1.7 (compiled: 2010-11-19 12:14:37)
+2015-06-18 11:22:09,862 - RuntimeInstance initializing.
+2015-06-18 11:22:09,862 - Default Properties File: org/apache/velocity/runtime/defaults/velocity.properties
+2015-06-18 11:22:09,862 - Trying to use logger class org.apache.velocity.runtime.log.AvalonLogChute
+2015-06-18 11:22:09,862 - Target log system for org.apache.velocity.runtime.log.AvalonLogChute is not available (java.lang.NoClassDefFoundError: org/apache/log/format/Formatter).  Falling back to next log system...
+2015-06-18 11:22:09,862 - Trying to use logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:22:09,862 - Using logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:22:09,865 - Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+2015-06-18 11:22:09,867 - ResourceLoader instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+2015-06-18 11:22:09,868 - ClasspathResourceLoader : initialization complete.
+2015-06-18 11:22:09,887 - ResourceCache: initialized (class org.apache.velocity.runtime.resource.ResourceCacheImpl) with class java.util.Collections$SynchronizedMap cache map.
+2015-06-18 11:22:09,887 - Default ResourceManager initialization complete.
+2015-06-18 11:22:09,890 - Loaded System Directive: org.apache.velocity.runtime.directive.Stop
+2015-06-18 11:22:09,892 - Loaded System Directive: org.apache.velocity.runtime.directive.Define
+2015-06-18 11:22:09,893 - Loaded System Directive: org.apache.velocity.runtime.directive.Break
+2015-06-18 11:22:09,895 - Loaded System Directive: org.apache.velocity.runtime.directive.Evaluate
+2015-06-18 11:22:09,896 - Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+2015-06-18 11:22:09,897 - Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+2015-06-18 11:22:09,899 - Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+2015-06-18 11:22:09,900 - Loaded System Directive: org.apache.velocity.runtime.directive.Include
+2015-06-18 11:22:09,901 - Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+2015-06-18 11:22:09,902 - Loaded User Directive: com.joymove.velocity.directives.SelectFilterPageList
+2015-06-18 11:22:09,903 - Loaded User Directive: com.joymove.velocity.directives.DeleteFilter
+2015-06-18 11:22:09,904 - Loaded User Directive: com.joymove.velocity.directives.InsertOne
+2015-06-18 11:22:09,905 - Loaded User Directive: com.joymove.velocity.directives.UpdateFilter
+2015-06-18 11:22:09,906 - Loaded User Directive: com.joymove.velocity.directives.SelectCount
+2015-06-18 11:22:09,907 - Loaded User Directive: com.joymove.velocity.directives.SelectExtendInfoPagedList
+2015-06-18 11:22:09,907 - Loaded User Directive: com.joymove.velocity.directives.SelectWithExtendCondition
+2015-06-18 11:22:09,908 - Loaded User Directive: com.joymove.velocity.directives.WhereWithExtendCondition
+2015-06-18 11:22:09,909 - Loaded User Directive: com.joymove.velocity.directives.TimeScopeFilter
+2015-06-18 11:22:09,910 - Loaded User Directive: com.joymove.velocity.directives.QrjTrim
+2015-06-18 11:22:09,910 - Loaded User Directive: org.mybatis.scripting.velocity.TrimDirective
+2015-06-18 11:22:09,910 - Loaded User Directive: org.mybatis.scripting.velocity.WhereDirective
+2015-06-18 11:22:09,910 - Loaded User Directive: org.mybatis.scripting.velocity.SetDirective
+2015-06-18 11:22:09,911 - Loaded User Directive: org.mybatis.scripting.velocity.InDirective
+2015-06-18 11:22:09,911 - Loaded User Directive: org.mybatis.scripting.velocity.RepeatDirective
+2015-06-18 11:22:09,952 - Created '20' parsers.
+2015-06-18 11:22:09,961 - Velocimacro : initialization starting.
+2015-06-18 11:22:09,962 - Velocimacro : "velocimacro.library" is not set.  Trying default library: VM_global_library.vm
+2015-06-18 11:22:09,962 - Could not load resource 'VM_global_library.vm' from ResourceLoader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader: ClasspathResourceLoader Error: cannot find resource VM_global_library.vm
+2015-06-18 11:22:09,962 - Velocimacro : Default library not found.
+2015-06-18 11:22:09,962 - Velocimacro : allowInline = true : VMs can be defined inline in templates
+2015-06-18 11:22:09,962 - Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+2015-06-18 11:22:09,962 - Velocimacro : allowInlineLocal = false : VMs defined inline will be global in scope if allowed.
+2015-06-18 11:22:09,962 - Velocimacro : autoload off : VM system will not automatically reload global library macros
+2015-06-18 11:22:09,962 - Velocimacro : Velocimacro : initialization complete.
+2015-06-18 11:22:09,962 - RuntimeInstance successfully initialized.
+2015-06-18 11:23:02,359 - Log4JLogChute initialized using file 'velocity.log'
+2015-06-18 11:23:02,360 - Initializing Velocity, Calling init()...
+2015-06-18 11:23:02,360 - *******************************************************************
+2015-06-18 11:23:02,360 - Starting Apache Velocity v1.7 (compiled: 2010-11-19 12:14:37)
+2015-06-18 11:23:02,360 - RuntimeInstance initializing.
+2015-06-18 11:23:02,360 - Default Properties File: org/apache/velocity/runtime/defaults/velocity.properties
+2015-06-18 11:23:02,360 - Trying to use logger class org.apache.velocity.runtime.log.AvalonLogChute
+2015-06-18 11:23:02,360 - Target log system for org.apache.velocity.runtime.log.AvalonLogChute is not available (java.lang.NoClassDefFoundError: org/apache/log/format/Formatter).  Falling back to next log system...
+2015-06-18 11:23:02,360 - Trying to use logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:23:02,360 - Using logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:23:02,362 - Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+2015-06-18 11:23:02,365 - ResourceLoader instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+2015-06-18 11:23:02,366 - ClasspathResourceLoader : initialization complete.
+2015-06-18 11:23:02,378 - ResourceCache: initialized (class org.apache.velocity.runtime.resource.ResourceCacheImpl) with class java.util.Collections$SynchronizedMap cache map.
+2015-06-18 11:23:02,378 - Default ResourceManager initialization complete.
+2015-06-18 11:23:02,379 - Loaded System Directive: org.apache.velocity.runtime.directive.Stop
+2015-06-18 11:23:02,380 - Loaded System Directive: org.apache.velocity.runtime.directive.Define
+2015-06-18 11:23:02,381 - Loaded System Directive: org.apache.velocity.runtime.directive.Break
+2015-06-18 11:23:02,381 - Loaded System Directive: org.apache.velocity.runtime.directive.Evaluate
+2015-06-18 11:23:02,382 - Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+2015-06-18 11:23:02,383 - Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+2015-06-18 11:23:02,384 - Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+2015-06-18 11:23:02,385 - Loaded System Directive: org.apache.velocity.runtime.directive.Include
+2015-06-18 11:23:02,386 - Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+2015-06-18 11:23:02,387 - Loaded User Directive: com.joymove.velocity.directives.SelectFilterPageList
+2015-06-18 11:23:02,387 - Loaded User Directive: com.joymove.velocity.directives.DeleteFilter
+2015-06-18 11:23:02,388 - Loaded User Directive: com.joymove.velocity.directives.InsertOne
+2015-06-18 11:23:02,389 - Loaded User Directive: com.joymove.velocity.directives.UpdateFilter
+2015-06-18 11:23:02,389 - Loaded User Directive: com.joymove.velocity.directives.SelectCount
+2015-06-18 11:23:02,390 - Loaded User Directive: com.joymove.velocity.directives.SelectExtendInfoPagedList
+2015-06-18 11:23:02,393 - Loaded User Directive: com.joymove.velocity.directives.SelectWithExtendCondition
+2015-06-18 11:23:02,397 - Loaded User Directive: com.joymove.velocity.directives.WhereWithExtendCondition
+2015-06-18 11:23:02,399 - Loaded User Directive: com.joymove.velocity.directives.TimeScopeFilter
+2015-06-18 11:23:02,400 - Loaded User Directive: com.joymove.velocity.directives.QrjTrim
+2015-06-18 11:23:02,400 - Loaded User Directive: org.mybatis.scripting.velocity.TrimDirective
+2015-06-18 11:23:02,400 - Loaded User Directive: org.mybatis.scripting.velocity.WhereDirective
+2015-06-18 11:23:02,401 - Loaded User Directive: org.mybatis.scripting.velocity.SetDirective
+2015-06-18 11:23:02,401 - Loaded User Directive: org.mybatis.scripting.velocity.InDirective
+2015-06-18 11:23:02,401 - Loaded User Directive: org.mybatis.scripting.velocity.RepeatDirective
+2015-06-18 11:23:02,439 - Created '20' parsers.
+2015-06-18 11:23:02,445 - Velocimacro : initialization starting.
+2015-06-18 11:23:02,445 - Velocimacro : "velocimacro.library" is not set.  Trying default library: VM_global_library.vm
+2015-06-18 11:23:02,446 - Could not load resource 'VM_global_library.vm' from ResourceLoader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader: ClasspathResourceLoader Error: cannot find resource VM_global_library.vm
+2015-06-18 11:23:02,446 - Velocimacro : Default library not found.
+2015-06-18 11:23:02,446 - Velocimacro : allowInline = true : VMs can be defined inline in templates
+2015-06-18 11:23:02,446 - Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+2015-06-18 11:23:02,446 - Velocimacro : allowInlineLocal = false : VMs defined inline will be global in scope if allowed.
+2015-06-18 11:23:02,446 - Velocimacro : autoload off : VM system will not automatically reload global library macros
+2015-06-18 11:23:02,446 - Velocimacro : Velocimacro : initialization complete.
+2015-06-18 11:23:02,446 - RuntimeInstance successfully initialized.
+2015-06-18 11:24:32,554 - Log4JLogChute initialized using file 'velocity.log'
+2015-06-18 11:24:32,555 - Initializing Velocity, Calling init()...
+2015-06-18 11:24:32,555 - *******************************************************************
+2015-06-18 11:24:32,555 - Starting Apache Velocity v1.7 (compiled: 2010-11-19 12:14:37)
+2015-06-18 11:24:32,555 - RuntimeInstance initializing.
+2015-06-18 11:24:32,555 - Default Properties File: org/apache/velocity/runtime/defaults/velocity.properties
+2015-06-18 11:24:32,555 - Trying to use logger class org.apache.velocity.runtime.log.AvalonLogChute
+2015-06-18 11:24:32,555 - Target log system for org.apache.velocity.runtime.log.AvalonLogChute is not available (java.lang.NoClassDefFoundError: org/apache/log/format/Formatter).  Falling back to next log system...
+2015-06-18 11:24:32,555 - Trying to use logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:24:32,555 - Using logger class org.apache.velocity.runtime.log.Log4JLogChute
+2015-06-18 11:24:32,558 - Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+2015-06-18 11:24:32,560 - ResourceLoader instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+2015-06-18 11:24:32,562 - ClasspathResourceLoader : initialization complete.
+2015-06-18 11:24:32,590 - ResourceCache: initialized (class org.apache.velocity.runtime.resource.ResourceCacheImpl) with class java.util.Collections$SynchronizedMap cache map.
+2015-06-18 11:24:32,590 - Default ResourceManager initialization complete.
+2015-06-18 11:24:32,591 - Loaded System Directive: org.apache.velocity.runtime.directive.Stop
+2015-06-18 11:24:32,593 - Loaded System Directive: org.apache.velocity.runtime.directive.Define
+2015-06-18 11:24:32,593 - Loaded System Directive: org.apache.velocity.runtime.directive.Break
+2015-06-18 11:24:32,595 - Loaded System Directive: org.apache.velocity.runtime.directive.Evaluate
+2015-06-18 11:24:32,596 - Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+2015-06-18 11:24:32,598 - Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+2015-06-18 11:24:32,599 - Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+2015-06-18 11:24:32,600 - Loaded System Directive: org.apache.velocity.runtime.directive.Include
+2015-06-18 11:24:32,601 - Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+2015-06-18 11:24:32,602 - Loaded User Directive: com.joymove.velocity.directives.SelectFilterPageList
+2015-06-18 11:24:32,604 - Loaded User Directive: com.joymove.velocity.directives.DeleteFilter
+2015-06-18 11:24:32,604 - Loaded User Directive: com.joymove.velocity.directives.InsertOne
+2015-06-18 11:24:32,606 - Loaded User Directive: com.joymove.velocity.directives.UpdateFilter
+2015-06-18 11:24:32,607 - Loaded User Directive: com.joymove.velocity.directives.SelectCount
+2015-06-18 11:24:32,608 - Loaded User Directive: com.joymove.velocity.directives.SelectExtendInfoPagedList
+2015-06-18 11:24:32,609 - Loaded User Directive: com.joymove.velocity.directives.SelectWithExtendCondition
+2015-06-18 11:24:32,610 - Loaded User Directive: com.joymove.velocity.directives.WhereWithExtendCondition
+2015-06-18 11:24:32,611 - Loaded User Directive: com.joymove.velocity.directives.TimeScopeFilter
+2015-06-18 11:24:32,616 - Loaded User Directive: com.joymove.velocity.directives.QrjTrim
+2015-06-18 11:24:32,616 - Loaded User Directive: org.mybatis.scripting.velocity.TrimDirective
+2015-06-18 11:24:32,616 - Loaded User Directive: org.mybatis.scripting.velocity.WhereDirective
+2015-06-18 11:24:32,616 - Loaded User Directive: org.mybatis.scripting.velocity.SetDirective
+2015-06-18 11:24:32,618 - Loaded User Directive: org.mybatis.scripting.velocity.InDirective
+2015-06-18 11:24:32,618 - Loaded User Directive: org.mybatis.scripting.velocity.RepeatDirective
+2015-06-18 11:24:32,656 - Created '20' parsers.
+2015-06-18 11:24:32,661 - Velocimacro : initialization starting.
+2015-06-18 11:24:32,661 - Velocimacro : "velocimacro.library" is not set.  Trying default library: VM_global_library.vm
+2015-06-18 11:24:32,662 - Could not load resource 'VM_global_library.vm' from ResourceLoader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader: ClasspathResourceLoader Error: cannot find resource VM_global_library.vm
+2015-06-18 11:24:32,662 - Velocimacro : Default library not found.
+2015-06-18 11:24:32,662 - Velocimacro : allowInline = true : VMs can be defined inline in templates
+2015-06-18 11:24:32,662 - Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+2015-06-18 11:24:32,663 - Velocimacro : allowInlineLocal = false : VMs defined inline will be global in scope if allowed.
+2015-06-18 11:24:32,663 - Velocimacro : autoload off : VM system will not automatically reload global library macros
+2015-06-18 11:24:32,663 - Velocimacro : Velocimacro : initialization complete.
+2015-06-18 11:24:32,663 - RuntimeInstance successfully initialized.

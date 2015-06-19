@@ -45,7 +45,7 @@
 -->
 
 
-
+<!--
 	<bean id="dataSource" class="org.apache.ibatis.datasource.pooled.PooledDataSource">
 		<property name="driver" value="com.mysql.jdbc.Driver" />
 		<property name="url" value="jdbc:mysql://123.57.151.176:3306/${joy_db.name}" />
@@ -54,6 +54,7 @@
 		<property name="poolMaximumIdleConnections" value="10" />
 		<property name="poolMaximumActiveConnections" value="30" />
 	</bean>
+-->
 
 
 
@@ -61,7 +62,6 @@
 
 
 
-	<!--
 	<bean name="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName">
@@ -78,7 +78,7 @@
 		</property>
 
 	</bean>
-   -->
+
 
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
@@ -121,8 +121,8 @@
 		            </property>
 		            <property name="backOffPolicy">
 		                <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
-		                    <property name="initialInterval" value="50"/>
-		                    <property name="maxInterval" value="800"/>
+		                    <property name="initialInterval" value="200"/>
+		                    <property name="maxInterval" value="2000"/>
 		                    <property name="multiplier" value="1.5"/>
 		                </bean>
 		            </property>
@@ -152,6 +152,7 @@
 
 		<aop:advisor pointcut-ref="ttt"
 					 advice-ref="debugInterceptor" order="0"/>
+		<!--order 越大离被调用的对象越近-->
 		<aop:advisor pointcut-ref="ttt"
 					 advice-ref="retryAdvice" order="1"/>
 

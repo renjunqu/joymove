@@ -67,8 +67,7 @@ public class UpdateStatusHandler  implements EventHandler {
 			carService.updateCarPosition(car);
 		} catch(Exception e){
 			error = true;
-			logger.error(e.toString());
-			logger.error(e.getStackTrace().toString());
+			logger.error("exception:",e);
 		} finally {
 			if(opLock!=null && opLock.getHoldCount()>0)
 				opLock.unlock();

@@ -14,7 +14,7 @@ import com.futuremove.cacheServer.service.CarService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-@Component("ReportSendCodeHandler")
+@Component("SendCodeHandler")
 public class SendCodeHandler implements EventHandler {
 
 	@Resource(name = "carService")
@@ -38,8 +38,9 @@ public class SendCodeHandler implements EventHandler {
 		ReentrantLock opLock = null;
 
 		try {
-			logger.debug("get the send code report from clouemove");
 			String vinNum = String.valueOf(json.get("vin"));
+			logger.debug("get the send code report from clouemove for "+vinNum);
+
 			opLock = CarOpLock.getCarLock(vinNum);
 			opLock.lock();//>>============================
 			Car car = new Car();
@@ -47,19 +48,24 @@ public class SendCodeHandler implements EventHandler {
 			car = cacheCarService.getByVinNum(vinNum);
 			Long result = Long.parseLong(String.valueOf(json.get("result")));
 				if (car.getState() == Car.state_wait_sendcode) {
+					logger.debug("we already in wait sendcode state ");
 					if(result==1) {
+						logger.debug("the cloudmove tell us it is good");
 						cacheCarService.updateCarStateWaitPowerOn(car);
 						cacheCarService.sendPowerOn(car.getVinNum());
 					} else {
+						logger.debug("the cloudmove tell us it is failed");
 						//try again
 						cacheCarService.sendAuthCode(car.getVinNum());
 					}
+				} else {
+					logger.debug("the car in state "+car.getState()+" so we do not do anything");
 				}
 				error = false;
-
 		} catch(Exception e){
 			error = true;
-			logger.error(e.getStackTrace().toString());
+			logger.error("exception:",e);
+
 		} finally {
 			if(opLock!=null && opLock.getHoldCount()>0)
 				opLock.unlock();
