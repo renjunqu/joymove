@@ -65,9 +65,14 @@ public class PowerOnHandler  implements EventHandler {
                     ncarFilter.vinNum = car.getVinNum();
                     List<JOYNCar> ncars = joynCarService.getNeededList(ncarFilter);
                     JOYNCar ncar = ncars.get(0);
+                    logger.error("get ncar info ok");
                      order.ifBlueTeeth = ncar.ifBlueTeeth;
-                    joyNOrderService.insertRecord(order);
+                    order.carLicenseNum = ncar.licensenum;
+                    //要生成一个唯一的uuid
+                    joyNOrderService.createNewOrder(order);
+                    logger.error("start to update order status to busy");
                     cacheCarService.updateCarStateBusy(car);
+                    logger.error("power on process ok");
 
                 } else {
                     logger.error("the cloudmove tell us it it failed");
