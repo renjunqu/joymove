@@ -82,7 +82,7 @@ public class JOYCarController {
 				 likeCondition.put("state", JOYCar.STATE_BUSY);
 			 }
 			 List<JOYCar> cars = joyCarService.getCarByScope(likeCondition);
-			 
+
 			 Iterator iter = cars.iterator();
 			 while(iter.hasNext()){
 				 JOYCar car_item  = (JOYCar)iter.next();
@@ -92,23 +92,62 @@ public class JOYCarController {
 				 car_json.put("latitude",  car_item.positionY);
 				 car_json.put("desp",  car_item.desp);
 				 car_json.put("ifBlueTeeth",car_item.ifBlueTeeth);
+				 car_json.put("carInfo",car_item.carInfo);
+				 car_json.put("imageUrl",car_item.imageUrl);
+				 car_json.put("powerType",car_item.powerType);
+				 car_json.put("powerPercent",car_item.powerPercent);
 				 if(URI.contains("getNearByAvailableCars")) {
-					 
+
 				 } else {
 					 long timeScope = jsonObj.get("timeScope")==null? 60000:Long.parseLong(jsonObj.get("timeScope").toString());
 					 car_json.put("eta",  (int)(Math.random()*timeScope) + System.currentTimeMillis());
-					 
+
 				 }
 				 carArray.add(car_json);
 			 }
 			 Reobj.put("result", "10000");
-			 
+
 		 } catch(Exception e) {
 			 Reobj.put("result", "10001");
 			 logger.trace(e.getStackTrace().toString());
 		 }
 		 return Reobj;
 	}
+
+	@RequestMapping(value={"rent/getCarDetailInfo"}, method=RequestMethod.POST)
+	public  @ResponseBody JSONObject getCarDetailInfo(HttpServletRequest req){
+		logger.trace("getCarDetailInfo method was invoked...");
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JSONObject Reobj=new JSONObject();
+		//       sdfdsfdsf
+		Reobj.put("result", "10001");
+
+		try {
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");;
+            JOYCar carFilter = new JOYCar();
+			Integer carId = Integer.parseInt(String.valueOf(jsonObj.get("carId")));
+			carFilter.id = carId;
+			JOYCar car = joyCarService.getNeededRecord(carFilter);
+			if(car==null) {
+                 Reobj.put("result","10002");
+				 Reobj.put("errMsg","车辆ID不正确");
+			} else {
+				Reobj.put("longitude",  car.positionX);
+				Reobj.put("latitude",  car.positionY);
+				Reobj.put("desp",  car.desp);
+				Reobj.put("ifBlueTeeth",car.ifBlueTeeth);
+				Reobj.put("carInfo",car.carInfo);
+				Reobj.put("imageUrl",car.imageUrl);
+				Reobj.put("powerType",car.powerType);
+				Reobj.put("powerPercent",car.powerPercent);
+			}
+		} catch(Exception e) {
+			Reobj.put("result", "10001");
+			logger.trace("exception: ",e);
+		}
+		return Reobj;
+	}
+
 	
 	
 

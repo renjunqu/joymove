@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
+import com.joymove.entity.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,10 +24,6 @@ import com.futuremove.cacheServer.entity.Car;
 import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
-import com.joymove.entity.JOYNCar;
-import com.joymove.entity.JOYOrder;
-import com.joymove.entity.JOYReserveOrder;
-import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
 import com.joymove.service.JOYOrderService;
@@ -90,6 +87,10 @@ public class JOYNCarController {
 					 
 					 car_json.put("desp", ncar.licensenum);
 					 car_json.put("ifBlueTeeth",ncar.ifBlueTeeth);
+					 car_json.put("carInfo",ncar.carInfo);
+					 car_json.put("imageUrl",ncar.imageUrl);
+					 car_json.put("powerType",ncar.powerType);
+					 car_json.put("powerPercent",ncar.powerPercent);
 					 logger.trace("license num is " + ncar.licensenum);
 					 if(URI.contains("getNearByAvailableCars")) {
 						 
@@ -104,11 +105,47 @@ public class JOYNCarController {
 				 Reobj.put("result", "10002");
 			 }
 		 } catch(Exception e){
-			 logger.error(e.getStackTrace().toString());
+			 logger.error("exception:",e);
 			 Reobj.put("errMsg",e.toString());
 		 }
 		 return Reobj;
 	}
+
+	@RequestMapping(value={"newcar/getCarDetailInfo"}, method=RequestMethod.POST)
+	public  @ResponseBody JSONObject getCarDetailInfo(HttpServletRequest req){
+		logger.trace("getCarDetailInfo method was invoked...");
+		Map<String,Object> likeCondition = new HashMap<String, Object>();
+		JSONObject Reobj=new JSONObject();
+		//       sdfdsfdsf
+		Reobj.put("result", "10001");
+
+		try {
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");;
+			JOYNCar carFilter = new JOYNCar();
+			String  vinNum = String.valueOf(jsonObj.get("carId"));
+			Car cacheCar = cacheCarService.getByVinNum(vinNum);
+			carFilter.vinNum = vinNum;
+			JOYNCar ncar = joyNCarService.getNeededRecord(carFilter);
+			if(ncar==null || cacheCar==null) {
+				Reobj.put("result","10002");
+				Reobj.put("errMsg","车辆ID不正确");
+			} else {
+				Reobj.put("longitude",  cacheCar.getLongitude());
+				Reobj.put("latitude",  cacheCar.getLatitude());
+				Reobj.put("desp",  ncar.licensenum);
+				Reobj.put("ifBlueTeeth",ncar.ifBlueTeeth);
+				Reobj.put("carInfo",ncar.carInfo);
+				Reobj.put("imageUrl",ncar.imageUrl);
+				Reobj.put("powerType",ncar.powerType);
+				Reobj.put("powerPercent",ncar.powerPercent);
+			}
+		} catch(Exception e) {
+			Reobj.put("result", "10001");
+			logger.trace("exception: ", e);
+		}
+		return Reobj;
+	}
+
 	
 	
 	

@@ -1,5 +1,6 @@
 package com.joymove.view;
 
+import java.sql.Blob;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -56,8 +57,8 @@ public class JOYDriverLicenseController {
 						JOYDriverLicense driverLicense = driveAuthInfos.get(0);
 						Reobj.put("driverLicenseNumber", driverLicense.driverLicenseNumber);
 						Reobj.put("expireTime", driverLicense.expireTime);
-						Reobj.put("driverAuthInfo", encoder.encode(driverLicense.driverAuthInfo));
-						Reobj.put("driverAuthInfo_back", encoder.encode(driverLicense.driverAuthInfo_back));
+						Reobj.put("driverAuthInfo", driverLicense.driverAuthInfo);
+						Reobj.put("driverAuthInfo_back", driverLicense.driverAuthInfo_back);
 						Reobj.put("result", "10000");
 					} else {
 						Reobj.put("result", "10002");
@@ -83,17 +84,15 @@ public class JOYDriverLicenseController {
 				 String driverNumber = String.valueOf(jsonObj.get("driverNumber"));
 				 Date expireTime = new Date(Long.parseLong(jsonObj.get("expireTime").toString()));
 				 BASE64Decoder decode = new BASE64Decoder();
-				 byte[] byteImage = decode.decodeBuffer(image);
-				 byte[] byteImage_back = decode.decodeBuffer(image_back);
 				JOYDriverLicense driverLicenseFilter = new JOYDriverLicense();
-				driverLicenseFilter.mobileNo = mobileNo;
+				 driverLicenseFilter.mobileNo = mobileNo;
 				 List<JOYDriverLicense> drivers = joyDriverLicenseService.getNeededList(driverLicenseFilter);
 				 JOYDriverLicense  driverLicense = new JOYDriverLicense();
 				 driverLicense.mobileNo = (mobileNo);
-				 driverLicense.driverAuthInfo = (byteImage);
+				 driverLicense.driverAuthInfo = image;
 				 driverLicense.driverLicenseNumber = (driverNumber);
 				 driverLicense.expireTime = (expireTime);
-				 driverLicense.driverAuthInfo_back = byteImage_back;
+				 driverLicense.driverAuthInfo_back = image_back;
 
 				JOYUser userFilter = new JOYUser();
 				JOYUser userValue = new JOYUser();

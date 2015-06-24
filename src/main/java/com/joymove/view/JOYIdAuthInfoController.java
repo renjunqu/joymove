@@ -49,19 +49,18 @@ public class JOYIdAuthInfoController {
 				 String idName = (String) jsonObj.get("id_name");
 				 String idCard = (String) jsonObj.get("id_card");
 				 String idCard_back = (String) jsonObj.get("id_card_back");
-				 BASE64Decoder decode = new BASE64Decoder();
 				 authInfo.mobileNo = (mobileNo);
 				 authInfo.idName = (idName);
 				 authInfo.idNo = (idNo);
-				 authInfo.idAuthInfo =  (decode.decodeBuffer(idCard));
-				 authInfo.idAuthInfo_back = (decode.decodeBuffer(idCard_back));
+				 authInfo.idAuthInfo =  idCard;
+				 authInfo.idAuthInfo_back = idCard_back;
 				 
 				 
 				 List<JOYIdAuthInfo> infos = joyIdAuthInfoService.getNeededList(authInfoFilter);
 				JOYUser userFilter = new JOYUser();
 				JOYUser userValue = new JOYUser();
 				userFilter.mobileNo = mobileNo;
-				userValue.authenticateDriver = JOYUser.auth_state_ing;
+				userValue.authenticateId = JOYUser.auth_state_ing;
 
 				 if(infos.size()==0) {
 					 //update 
@@ -112,8 +111,8 @@ public class JOYIdAuthInfoController {
 						BASE64Encoder encoder = new BASE64Encoder();
 						Reobj.put("idName", authInfo.idAuthInfo);
 						Reobj.put("idNo", authInfo.idNo);
-						Reobj.put("idAuthInfo", encoder.encode(authInfo.idAuthInfo));
-						Reobj.put("idAuthInfo_back", encoder.encode(authInfo.idAuthInfo_back));
+						Reobj.put("idAuthInfo", authInfo.idAuthInfo);
+						Reobj.put("idAuthInfo_back", authInfo.idAuthInfo_back);
 						Reobj.put("result", "10000");
 					}
 			}
