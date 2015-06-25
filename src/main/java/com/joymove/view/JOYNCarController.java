@@ -138,6 +138,7 @@ public class JOYNCarController {
 				Reobj.put("imageUrl",ncar.imageUrl);
 				Reobj.put("powerType",ncar.powerType);
 				Reobj.put("powerPercent",ncar.powerPercent);
+				Reobj.put("result","10000");
 			}
 		} catch(Exception e) {
 			Reobj.put("result", "10001");

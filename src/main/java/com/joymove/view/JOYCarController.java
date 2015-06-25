@@ -284,7 +284,7 @@ public class JOYCarController {
 			 joyCarService.setCarFree(car);
 			Reobj.put("result","10000");
 		 } catch(Exception e){
-			 logger.error(e.getStackTrace().toString());
+			 logger.error("exception:",e);
 			 Reobj.put("errMsg", e.toString());
 		 }
 		 return Reobj;
