@@ -60,8 +60,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mybatis.scripting</groupId>
-			<artifactId>mybatis-velocity</artifactId>
-			<version>1.1</version>
+			<artifactId>mybatis-velocity-qrj</artifactId>
+			<version>1.2-SNAPSHOT</version>
 		</dependency>
 
 
