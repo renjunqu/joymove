@@ -12,6 +12,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import com.joymove.util.WeChatPay.WeChatPayUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,14 +21,13 @@ import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.annotation.Resource;
-import org.springframework.context.annotation.Scope;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
 import com.joymove.service.*;
 import com.joymove.util.zhifubao.ZhifubaoUtils;
 import com.joymove.entity.*;
@@ -41,8 +42,8 @@ public class JOYCarController {
 	private  JOYCarService joyCarService;
 	@Resource(name = "JOYCouponService")
 	private JOYCouponService joyCouponService;
-	@Resource(name = "carService")
-	private CarService cacheCarService;
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
 	@Resource(name = "JOYOrderService")
 	private JOYOrderService joyOrderService;
 	@Resource(name = "JOYNOrderService")
@@ -308,14 +309,13 @@ public class JOYCarController {
 			 orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
 			 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
 			 List<JOYOrder> orders = joyOrderService.getNeededList(orderFilter);
-			 
-			 cacheCar = new Car();
-			 cacheCar.setOwner((String)jsonObj.get("mobileNo"));
-			 cacheCar.setState(Car.state_free);
-			 cacheCar =  cacheCarService.getByOwnerAndNotState(cacheCar);
-			 
-			 
-		       if(orders.size()>0) {
+			 CarDynProps carPropsFilter = new CarDynProps();
+			 carPropsFilter.owner = ((String)jsonObj.get("mobileNo"));
+			 carPropsFilter.state = CarDynProps.state_free;
+			 CarDynProps carProps = new CarDynProps();
+			 carProps.fromDocument(carPropsService.getByOwnerAndNotState(carPropsFilter).limit(1).first());
+
+			 if(orders.size()>0) {
 		    	   JOYOrder cOrder = orders.get(0);
 		    	 //already have a order
 		    	  
@@ -340,11 +340,11 @@ public class JOYCarController {
 		    	   }
 		    	   Reobj.put("fee", cOrder.getTotalFee());
 		    	   Reobj.put("mile", cOrder.getTotalFee() *3.1415);
-		      }else if (cacheCar!=null){
+		      }else if (carProps.vinNum!=null){
 		    	  //if there is a ncar in wait_code state, and the owner is me
 		    	  Reobj.put("state", -2);
 		    	  Reobj.put("result","10000");
-		    	  Reobj.put("carId", cacheCar.getVinNum());
+		    	  Reobj.put("carId", carProps.vinNum);
 		      } else {
 		    	  Reobj.put("result", "10000");
 		    	  Reobj.put("state", 0);

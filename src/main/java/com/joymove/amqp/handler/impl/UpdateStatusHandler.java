@@ -3,13 +3,17 @@ package com.joymove.amqp.handler.impl;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.entity.CarLocation;
+import com.futuremove.cacheServer.service.CarDynPropsService;
+import com.futuremove.cacheServer.utils.CoordinatesUtil;
+import com.futuremove.cacheServer.utils.Gps;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -19,8 +23,8 @@ public class UpdateStatusHandler  implements EventHandler {
 
 	final static Logger logger = LoggerFactory.getLogger(UpdateStatusHandler.class);
 
-	@Resource(name = "carService")
-	private  CarService carService;
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
 	
 
 
@@ -45,26 +49,34 @@ public class UpdateStatusHandler  implements EventHandler {
 
 		try {
 			logger.info("update car status  handler called !!");
-			Car car = new Car();
-			car.setLatitude(Double.parseDouble(String.valueOf(json.get("latitude"))));
-			car.setLongitude(Double.parseDouble(String.valueOf(json.get("longitude"))));
-			car.setVinNum(String.valueOf(json.get("vin")));
-			opLock = CarOpLock.getCarLock(car.getVinNum());
+			CarDynProps carPropsFilter = new CarDynProps();
+			CarDynProps  carProps  = new CarDynProps();
+
+			carPropsFilter.vinNum = String.valueOf(json.get("vin"));
+			opLock = CarOpLock.getCarLock(carPropsFilter.vinNum);
 			opLock.lock();//>>============================
-			Car cacheCar = carService.getByVinNum(car.getVinNum());
+			carProps.fromDocument(carPropsService.find(carPropsFilter).first());
 			logger.info("call carservice to update car loc info !!");
 
-			if(cacheCar.getState()==Car.state_wait_clearcode) {
-				logger.info("car inside wait cCCCCClear code state, send the cmd again");
-                carService.sendClearCode(car.getVinNum());
-			} else if(cacheCar.getState()==Car.state_wait_poweroff) {
-				logger.info("car inside wait pPPPPPower off code state, send the cmd again");
-				carService.sendPowerOff(car.getVinNum());
-			} else if(cacheCar.getState()==Car.state_wait_lock) {
-				logger.info("car inside wait LLLLock state, send the cmd again");
-				carService.sendLock(car.getVinNum());
+			if(carProps.state==Car.state_wait_clearcode) {
+				logger.info("car inside wait clear code state, send the cmd again");
+                carPropsService.sendClearCode(carPropsFilter.vinNum);
+			} else if(carProps.state==Car.state_wait_poweroff) {
+				logger.info("car inside wait power off code state, send the cmd again");
+				carPropsService.sendPowerOff(carPropsFilter.vinNum);
+			} else if(carProps.state==Car.state_wait_lock) {
+				logger.info("car inside wait Lock state, send the cmd again");
+				carPropsService.sendLock(carPropsFilter.vinNum);
 			}
-			carService.updateCarPosition(car);
+			carProps.location = new CarLocation();
+			Gps gps = CoordinatesUtil.gcj02_To_Gps84(
+					Double.parseDouble(String.valueOf(json.get("latitude"))),
+					Double.parseDouble(String.valueOf(json.get("longitude")))
+			);
+
+			carProps.location.coordinates.set(1,gps.getWgLat());
+			carProps.location.coordinates.set(0,gps.getWgLon());
+			carPropsService.update(carPropsFilter,carProps);
 		} catch(Exception e){
 			error = true;
 			logger.error("exception:",e);

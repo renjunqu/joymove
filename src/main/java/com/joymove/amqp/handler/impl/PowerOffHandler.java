@@ -1,7 +1,7 @@
 package com.joymove.amqp.handler.impl;
 
-import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.concurrent.CarOpLock;
 import org.json.simple.JSONObject;
@@ -18,8 +18,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component("PowerOffHandler")
 public class PowerOffHandler implements EventHandler {
 
-    @Resource(name = "carService")
-    private CarService cacheCarService;
+    @Resource(name = "CarDynPropsService")
+    private CarDynPropsService carPropsService;
 
     final static Logger logger = LoggerFactory.getLogger(PowerOffHandler.class);
 
@@ -32,29 +32,32 @@ public class PowerOffHandler implements EventHandler {
     public boolean handleData(JSONObject json) {
         boolean error=true;
         ReentrantLock opLock = null;
+        CarDynProps carPropsFilter = new CarDynProps();
+        CarDynProps  carProps  = new CarDynProps();
 
         try {
             logger.debug("get the power off  report from clouemove");
             String vinNum = String.valueOf(json.get("vin"));
             opLock = CarOpLock.getCarLock(vinNum);
             opLock.lock();//>>============================
-            Car car = new Car();
-            car.setVinNum(vinNum);
-            car = cacheCarService.getByVinNum(vinNum);
+            carPropsFilter.vinNum = vinNum;
+            carProps.fromDocument(carPropsService.find(carPropsFilter).first());
             Long result = Long.parseLong(String.valueOf(json.get("result")));
-            if (car.getState() == Car.state_wait_poweroff) {
+            if (carProps.state == CarDynProps.state_wait_poweroff) {
                 logger.debug("get the power off result");
                 if(result==1) {
-                         logger.debug("power off ok");
-                        cacheCarService.updateCarStateWaitLock(car);
-                        cacheCarService.sendLock(car.getVinNum());
-                    } else {
+                    logger.debug("power off ok");
+                    carProps.clearProperties();
+                    carProps.state=CarDynProps.state_wait_lock;
+                    carPropsService.update(carPropsFilter,carProps);
+                    carPropsService.sendLock(vinNum);
+                } else {
                     logger.debug("power off failed ,try again");
                     //try again
-                    cacheCarService.sendPowerOff(car.getVinNum());
+                    carPropsService.sendPowerOff(vinNum);
                 }
             }else {
-                logger.debug("the car in state "+car.getState()+" so we do not do anything");
+                logger.debug("the car in state "+carProps.state+" so we do not do anything");
             }
             error = false;
 

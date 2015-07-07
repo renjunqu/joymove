@@ -206,7 +206,7 @@ public class JOYUserController{
 				 Map<String,Object> likeCondition = new HashMap<String, Object>();
 				JOYDynamicPws dynamicPwsFilter = new JOYDynamicPws();
 				dynamicPwsFilter.mobileNo = mobileNo;
-				 List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getNeededList(dynamicPwsFilter);
+				List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getNeededList(dynamicPwsFilter,0,1,"DESC");
 				 JOYDynamicPws joyDynamicPws = dynamicPws.get(0);
 				 
 				

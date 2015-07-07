@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.futuremove.cacheServer.service.CarService;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -39,8 +39,10 @@ public class JOYOrderController {
 	@Resource(name = "JOYCarService")
 	private JOYCarService joyCarService;
 
-	@Resource(name = "carService")
-	private CarService cacheCarService;
+
+
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
 
 	
 	

@@ -1,7 +1,7 @@
 package com.joymove.amqp.handler.impl;
 
-import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import com.joymove.entity.JOYNCar;
 import com.joymove.service.JOYNCarService;
 import org.json.simple.JSONObject;
@@ -23,8 +23,8 @@ public class SendKeyHandler  implements EventHandler {
 		return 2;
 	}
 
-	@Resource(name = "carService")
-	private CarService cacheCarService;
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
 	@Resource(name = "JOYNCarService")
 	private JOYNCarService joyNCarService;
 
@@ -35,6 +35,8 @@ public class SendKeyHandler  implements EventHandler {
 	public boolean handleData(JSONObject json) {
 		boolean error=true;
 		try {
+			CarDynProps carPropsFilter = new CarDynProps();
+			CarDynProps  carProps  = new CarDynProps();
 				
 				logger.info("report send key   handler called !!");
 		 		Long result = Long.parseLong(String.valueOf(json.get("result")));
@@ -44,17 +46,13 @@ public class SendKeyHandler  implements EventHandler {
 					carNew.registerState = 1;
 					carFilter.vinNum = String.valueOf(json.get("vin"));
 					logger.debug("update car's register state ");
-					joyNCarService.updateRecord(carNew,carFilter);
+					joyNCarService.updateRecord(carNew, carFilter);
 					//add a new car entity to mongo
 					logger.debug("now ,save the new car info into mongo");
-					Car cacheCar = cacheCarService.getByVinNum(carFilter.vinNum);
-					if(cacheCar==null) {
-						cacheCar = new Car();
-						cacheCar.setVinNum(carFilter.vinNum);
-						cacheCar.setLongitude(0.0);
-						cacheCar.setLatitude(0.0);
-						cacheCar.setState(Car.state_free);
-						cacheCarService.save(cacheCar);
+					carPropsFilter.vinNum = carFilter.vinNum;
+					Long carPropsCount = carPropsService.count(carPropsFilter);
+					if(carPropsCount==0) {
+						carPropsService.insert(carPropsFilter);
 						logger.debug("now , register car ack ok");
 					}
 		 			return false;
@@ -63,8 +61,7 @@ public class SendKeyHandler  implements EventHandler {
 		 		}
 		} catch(Exception e){
 			error = true;
-			logger.error(e.getStackTrace().toString());
-			logger.info("send key exception: "+e.toString());
+			logger.info("send key exception: ",e);
 		}
 		return error;
 	}

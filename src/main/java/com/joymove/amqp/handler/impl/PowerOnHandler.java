@@ -1,7 +1,7 @@
 package com.joymove.amqp.handler.impl;
 
-import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import com.joymove.amqp.handler.EventHandler;
 import com.futuremove.cacheServer.concurrent.CarOpLock;
 import com.joymove.entity.JOYNCar;
@@ -26,8 +26,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component("PowerOnHandler")
 public class PowerOnHandler  implements EventHandler {
 
-    @Resource(name = "carService")
-    private CarService cacheCarService;
+    @Resource(name = "CarDynPropsService")
+    private CarDynPropsService carPropsService;
     @Resource(name = "JOYNOrderService")
     private JOYNOrderService joyNOrderService;
     @Resource(name = "JOYNCarService")
@@ -43,26 +43,27 @@ public class PowerOnHandler  implements EventHandler {
         ReentrantLock opLock = null;
         try {
             logger.debug("get the send power on report from clouemove");
+            CarDynProps carPropsFilter = new CarDynProps();
+            CarDynProps  carProps  = new CarDynProps();
 
             String vinNum = String.valueOf(json.get("vin"));
             opLock = CarOpLock.getCarLock(vinNum);
             Map<String,Object> likeCondition = new HashMap<String,Object>();
             opLock.lock();//>>============================
-            Car car = new Car();
-            car.setVinNum(vinNum);
-            car = cacheCarService.getByVinNum(vinNum);
+            carPropsFilter.vinNum = vinNum;
+            carProps.fromDocument(carPropsService.find(carPropsFilter).first());
             Long result = Long.parseLong(String.valueOf(json.get("result")));
-            if(car.getState()==Car.state_wait_poweron) {
-                logger.error("now we at state_wait_power on, for "+car.getVinNum());
+            if(carProps.state==CarDynProps.state_wait_poweron) {
+                logger.error("now we at state_wait_power on, for "+carProps.vinNum);
                 if(result==1L) {
                     logger.error("the cloumove tell us it is ok");
                     JOYNCar ncarFilter = new JOYNCar();
                     JOYOrder order = new JOYOrder();
-                    order.mobileNo = (car.getOwner());
-                    order.carVinNum = (car.getVinNum());
-                    order.startLongitude = car.getLongitude();
-                    order.startLatitude = car.getLatitude();
-                    ncarFilter.vinNum = car.getVinNum();
+                    order.mobileNo = carProps.owner;
+                    order.carVinNum = carProps.vinNum;
+                    order.startLongitude = carProps.location.coordinates.get(1);
+                    order.startLatitude = carProps.location.coordinates.get(0);
+                    ncarFilter.vinNum = carProps.vinNum;
                     List<JOYNCar> ncars = joynCarService.getNeededList(ncarFilter);
                     JOYNCar ncar = ncars.get(0);
                     logger.error("get ncar info ok");
@@ -71,16 +72,18 @@ public class PowerOnHandler  implements EventHandler {
                     //要生成一个唯一的uuid
                     joyNOrderService.createNewOrder(order);
                     logger.error("start to update order status to busy");
-                    cacheCarService.updateCarStateBusy(car);
+                    carProps.clearProperties();
+                    carProps.state = CarDynProps.state_busy;
+                    carPropsService.update(carPropsFilter,carProps);
                     logger.error("power on process ok");
 
                 } else {
                     logger.error("the cloudmove tell us it it failed");
                     //try again
-                    cacheCarService.sendPowerOn(car.getVinNum());
+                    carPropsService.sendPowerOn(vinNum);
                 }
             } else {
-                logger.debug("the car in state "+car.getState()+" so we do not do anything");
+                logger.debug("the car in state "+carProps.state+" so we do not do anything");
             }
             error = false;
         } catch(Exception e){

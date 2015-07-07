@@ -140,9 +140,8 @@
 
 	<aop:config>
 	    <aop:pointcut id="retry_car_update_state"
-		            expression="execution(* com.futuremove.cacheServer.service.impl.CarServiceImpl.updateCarState*(..))" />
-		<aop:pointcut id="retry_car_clear_reserve"
-		            expression="execution(* com.futuremove.cacheServer.service.impl.CarServiceImpl.clearExpireReserve(..))" />
+		            expression="execution(* com.futuremove.cacheServer.service.impl.CarDynPropsServiceImpl.update(..))" />
+
 		<aop:pointcut id="pc" expression="execution(* com.joymove.service.impl.*.*(..))" />
 
 		<aop:pointcut id="retry_redis_access"
@@ -163,8 +162,7 @@
 
 		<aop:advisor pointcut-ref="retry_car_update_state"
 		                 advice-ref="retryAdvice"/>
-		 <aop:advisor pointcut-ref="retry_car_clear_reserve"
-		                 advice-ref="retryAdvice"/>
+
 		<aop:advisor pointcut-ref="retry_redis_access"
 					 advice-ref="retryAdvice"/>
 

@@ -7,7 +7,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.entity.CarLocation;
+import com.futuremove.cacheServer.service.CarDynPropsService;
+import com.futuremove.cacheServer.utils.CoordinatesUtil;
+import com.futuremove.cacheServer.utils.Gps;
 import com.joymove.entity.*;
+import com.mongodb.client.FindIterable;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,13 +27,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
 import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.futuremove.cacheServer.utils.HttpPostUtils;
 import com.joymove.service.JOYNCarService;
 import com.joymove.service.JOYNOrderService;
 import com.joymove.service.JOYOrderService;
 import com.joymove.service.JOYUserService;
+import org.bson.Document;
 
 
 @Controller("JOYNCarController")
@@ -37,8 +43,10 @@ public class JOYNCarController {
 
 	@Resource(name = "JOYNCarService")
 	private JOYNCarService  joyNCarService;
-	@Resource(name = "carService")
-	private CarService      cacheCarService;
+
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
+
 	@Resource(name = "JOYNOrderService")
 	private JOYNOrderService joyNOrderService;
 	@Resource(name = "JOYOrderService")
@@ -61,49 +69,79 @@ public class JOYNCarController {
 		 
 		 try {
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			 likeCondition.put("userPositionX", jsonObj.get("userLongitude")==null ? 0.0: jsonObj.get("userLongitude") );
-			 likeCondition.put("userPositionY", jsonObj.get("userLatitude")==null ? 0.0: jsonObj.get("userLatitude") );
-			 likeCondition.put("scope", jsonObj.get("scope")==null ? 50 : jsonObj.get("scope") );
-			 String URI = req.getRequestURI();
-			 List<Car> cars = null;
-			 if(URI.contains("getNearByAvailableCars")) {
-				 cars = cacheCarService.getFreeCarByScope(likeCondition);
+			 Double userLatitude = null;
+			 Double userLongitude = null;
+
+			 if(jsonObj.get("userLongitude")==null) {
+				 userLongitude = 0.0;
 			 } else {
-				 cars = cacheCarService.getBusyCarByScope(likeCondition);
+				 userLongitude = Double.parseDouble(String.valueOf(jsonObj.get("userLongitude")));
 			 }
-			 if(cars!=null && cars.size()>0) {
-				 for(Car car:cars) {
+
+			 if(jsonObj.get("userLatitude")==null) {
+				 userLatitude = 0.0;
+			 } else {
+				 userLatitude = Double.parseDouble(String.valueOf(jsonObj.get("userLatitude")));
+			 }
+
+			 Long maxDistance = Long.parseLong(String.valueOf(jsonObj.get("scope") == null ? 50 : jsonObj.get("scope")));
+			 Integer skipFind = Integer.parseInt(String.valueOf(jsonObj.get("skip") == null ? 0 : jsonObj.get("skip")));
+			 Integer limitFind = Integer.parseInt(String.valueOf(jsonObj.get("limit") == null ? 20 : jsonObj.get("limit")));
+			 //do the coordinates transform
+			 Gps userGps = CoordinatesUtil.gcj02_To_Gps84(userLatitude,userLongitude);
+			 CarDynProps carPropsFilter = new CarDynProps();
+			 carPropsFilter.location = new CarLocation();
+			 carPropsFilter.location.coordinates.clear();
+			 carPropsFilter.location.coordinates.add(userGps.getWgLon());
+			 carPropsFilter.location.coordinates.add(userGps.getWgLat());
+
+			 String URI = req.getRequestURI();
+			 if(URI.contains("getNearByAvailableCars")) {
+				 carPropsFilter.state = CarDynProps.state_free;
+				// cars = cacheCarService.getFreeCarByScope(likeCondition);
+			 } else {
+				 carPropsFilter.state = CarDynProps.state_busy;
+				// cars = cacheCarService.getBusyCarByScope(likeCondition);
+			 }
+			 FindIterable<Document> carPropsDocs = carPropsService.getNearByNeededCar(maxDistance,carPropsFilter)
+					 .skip(skipFind)
+					 .limit(limitFind);
+			 Long count = carPropsService.countNearByNeededCar(maxDistance,carPropsFilter);
+             if(count>0) {
+				 for (Document carDoc : carPropsDocs) {
+					 CarDynProps carProp = new CarDynProps();
+					 carProp.fromDocument(carDoc);
 					 JSONObject car_json = new JSONObject();
-
-
-					 car_json.put("carId", car.getVinNum());
-					 car_json.put("longitude", car.getLongitude());
-					 car_json.put("latitude", car.getLatitude());
+					 car_json.put("carId", carProp.vinNum);
+					 //转换回火星坐标
+					 Gps carGcj02 = CoordinatesUtil.gps84_To_Gcj02(carProp.location.coordinates.get(1),
+							 carProp.location.coordinates.get(0));
+					 car_json.put("longitude", carGcj02.getWgLon());
+					 car_json.put("latitude", carGcj02.getWgLat());
 					 JOYNCar filterObj = new JOYNCar();
-					 filterObj.vinNum = car.getVinNum();
-					 List<JOYNCar>  ncars = joyNCarService.getNeededList(filterObj);
+					 filterObj.vinNum = carProp.vinNum;
+					 List<JOYNCar> ncars = joyNCarService.getNeededList(filterObj);
 					 JOYNCar ncar = ncars.get(0);
-					 
-					 
+					 //获取车辆的静态信息
 					 car_json.put("desp", ncar.licensenum);
-					 car_json.put("ifBlueTeeth",ncar.ifBlueTeeth);
-					 car_json.put("carInfo",ncar.carInfo);
-					 car_json.put("imageUrl",ncar.imageUrl);
-					 car_json.put("powerType",ncar.powerType);
-					 car_json.put("powerPercent",ncar.powerPercent);
+					 car_json.put("ifBlueTeeth", ncar.ifBlueTeeth);
+					 car_json.put("carInfo", ncar.carInfo);
+					 car_json.put("imageUrl", ncar.imageUrl);
+					 car_json.put("powerType", ncar.powerType);
+					 car_json.put("powerPercent", ncar.powerPercent);
 					 logger.trace("license num is " + ncar.licensenum);
-					 if(URI.contains("getNearByAvailableCars")) {
-						 
-					 } else {
-						 long timeScope = jsonObj.get("timeScope")==null? 60000:Long.valueOf(jsonObj.get("timeScope").toString());
-						 car_json.put("eta",  (int)(Math.random()*timeScope) + System.currentTimeMillis());
+					 if (!URI.contains("getNearByAvailableCars")) {
+						 long timeScope = jsonObj.get("timeScope") == null ? 60000 : Long.valueOf(jsonObj.get("timeScope").toString());
+						 car_json.put("eta", (int) (Math.random() * timeScope) + System.currentTimeMillis());
 					 }
 					 carArray.add(car_json);
 				 }
+				 Reobj.put("count",count);
 				 Reobj.put("result", "10000");
 			 } else {
 				 Reobj.put("result", "10002");
 			 }
+
 		 } catch(Exception e){
 			 logger.error("exception:",e);
 			 Reobj.put("errMsg",e.toString());
@@ -112,7 +150,8 @@ public class JOYNCarController {
 	}
 
 	@RequestMapping(value={"newcar/getCarDetailInfo"}, method=RequestMethod.POST)
-	public  @ResponseBody JSONObject getCarDetailInfo(HttpServletRequest req){
+	public  @ResponseBody
+	JSONObject getCarDetailInfo(HttpServletRequest req) {
 		logger.trace("getCarDetailInfo method was invoked...");
 		Map<String,Object> likeCondition = new HashMap<String, Object>();
 		JSONObject Reobj=new JSONObject();
@@ -123,15 +162,21 @@ public class JOYNCarController {
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");;
 			JOYNCar carFilter = new JOYNCar();
 			String  vinNum = String.valueOf(jsonObj.get("carId"));
-			Car cacheCar = cacheCarService.getByVinNum(vinNum);
+			CarDynProps carPropsFilter = new CarDynProps();
+			carPropsFilter.vinNum = vinNum;
+			CarDynProps carProps = new CarDynProps();
+			carProps.fromDocument(carPropsService.find(carPropsFilter).limit(1).first());
+
 			carFilter.vinNum = vinNum;
 			JOYNCar ncar = joyNCarService.getNeededRecord(carFilter);
-			if(ncar==null || cacheCar==null) {
+			if(ncar==null || carProps==null) {
 				Reobj.put("result","10002");
 				Reobj.put("errMsg","车辆ID不正确");
 			} else {
-				Reobj.put("longitude",  cacheCar.getLongitude());
-				Reobj.put("latitude",  cacheCar.getLatitude());
+				Gps carGcj02 = CoordinatesUtil.gps84_To_Gcj02(carProps.location.coordinates.get(1),
+						carProps.location.coordinates.get(0));
+				Reobj.put("longitude",  carGcj02.getWgLon());
+				Reobj.put("latitude",  carGcj02.getWgLat());
 				Reobj.put("desp",  ncar.licensenum);
 				Reobj.put("ifBlueTeeth",ncar.ifBlueTeeth);
 				Reobj.put("carInfo",ncar.carInfo);
@@ -150,29 +195,7 @@ public class JOYNCarController {
 	
 	
 	
-	public static void main_test_get_cars(String []args){
-		
-		
-		try {
-			ApplicationContext context = new ClassPathXmlApplicationContext("classpath*:**/applicationContext-mvc.xml");
-			CarService carService = (CarService)context.getBean("carService");
-			 Map<String,Object> likeCondition = new HashMap<String, Object>();
-			 likeCondition.put("userPositionX",  116.1);
-			 likeCondition.put("userPositionY",   39.78);
-			 likeCondition.put("scope", 50000000);
-			 List<Car> cars  = carService.getBusyCarByScope(likeCondition);
-			 if(cars.size()>0) {
-				 Car car = cars.get(0);
-				 logger.trace(car.getLatitude().toString());
-				 logger.trace(car.getLongitude().toString());
-			 }
-			 logger.trace("over");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			logger.error(e.getStackTrace().toString());
-		}
 
-	}
 	
 	/*******  operator want to insert a new car  *************/
 	@RequestMapping(value={"newcar/registerCarReq"}, method=RequestMethod.POST)
@@ -183,7 +206,6 @@ public class JOYNCarController {
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
 		 try {
-			 
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			 JOYNCar car =new JOYNCar();
 			 car.vinNum = ((String)jsonObj.get("vinNum"));
@@ -320,14 +342,9 @@ public class JOYNCarController {
 
 				 }
 			 }
-
-
-
-			// Reobj.put("result", "10000");
 		 } catch(Exception e){
 			 logger.error("qrj:" + e.toString());
 		 }
-	
 		 return Reobj;
 	}
 
@@ -338,13 +355,14 @@ public class JOYNCarController {
 		Map<String,Object> likeCondition = new HashMap<String, Object>();
 		JSONObject Reobj=new JSONObject();
 		Reobj.put("result", "10001");
-		Car cacheCar = null;
-		Car car  = null;
+		CarDynProps carPropsFilter = new CarDynProps();
+		CarDynProps  carProps  = new CarDynProps();
 		JOYNCar ncar = null;
 		ReentrantLock optLock = null;
+		String vinNum = "";
 		try {
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
-			String vinNum = jsonObj.get("carId").toString();
+			vinNum = jsonObj.get("carId").toString();
 			String mobileNo = jsonObj.get("mobileNo").toString();
 			//first check the user's auth state =======================================================
 			JOYUser user = new JOYUser();
@@ -356,14 +374,27 @@ public class JOYNCarController {
 				return Reobj;
 			}
 			//then check tue user's rent state
-			cacheCar = new Car();
-			cacheCar.setOwner(mobileNo);
-			cacheCar.setState(Car.state_free);
-			cacheCar =  cacheCarService.getByOwnerAndNotState(cacheCar);
-			if(cacheCar!=null && cacheCar.getVinNum().equals(vinNum)) {
-				car = cacheCar;
-			} else if(cacheCar==null){
-				car  = cacheCarService.getByVinNum(vinNum);
+
+
+			carPropsFilter.owner = mobileNo;
+			carPropsFilter.state = CarDynProps.state_free;
+			FindIterable<Document> carPropsIterable = carPropsService.getByOwnerAndNotState(carPropsFilter);
+
+			Document carPropDoc = carPropsIterable.first();
+			if(carPropDoc!=null) {
+				carProps.fromDocument(carPropDoc);
+			}
+
+
+			if(carProps.vinNum!=null && carProps.vinNum.equals(vinNum)) {
+				//当前此人已经租用了车辆了
+
+			} else if(carProps.vinNum==null){
+				//此人尚未租用车辆
+				carPropsFilter.clearProperties();
+				carPropsFilter.vinNum = vinNum;
+				Document carDoc  = carPropsService.find(carProps).first();
+				carProps.fromDocument(carDoc);
 			} else {
 				Reobj.put("errMsg", "之前还有未支付的订单。");
 				return Reobj;
@@ -383,19 +414,27 @@ public class JOYNCarController {
 			//start lock //锁锁锁  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			if(optLock.tryLock()) {
 				//获取到锁之后必须重新获取一次车的状态
-				car = cacheCarService.getByVinNum(vinNum);
-				if (car != null && ((car.getState() == Car.state_free) || (car.getState() == Car.state_reserved && car.getOwner().equals(mobileNo)))) {
-					car.setOwner(mobileNo);
+				carPropsFilter.clearProperties();
+				carPropsFilter.vinNum = vinNum;
+				Document carDoc  = carPropsService.find(carProps).first();
+				if(carDoc!=null)
+					carProps.fromDocument(carDoc);
+
+
+				if (carProps.vinNum != null && ((carProps.state == CarDynProps.state_free) || (carProps.state == CarDynProps.state_reserved && carProps.owner.equals(mobileNo)))) {
+					carProps.clearProperties();
+					carProps.owner = mobileNo;
+					carProps.state = CarDynProps.state_wait_sendcode;
 					//因为有了锁，可以认为肯定成功
-					cacheCarService.updateCarStateWaitSendCode(car);
-					if (cacheCarService.sendAuthCode(car.getVinNum())) {
+					carPropsService.update(carPropsFilter, carProps);
+					if (carPropsService.sendAuthCode(vinNum)) {
 						//cloudmove 已经成功接收到下发授权码的命令
 						Reobj.put("result", "10000");
 					} else {
 						//偷偷取消奥,cm 下发失败了
-						car.setState(null);
-						car.setOwner("");
-						cacheCarService.updateCarStateFree(car);
+						carProps.state = CarDynProps.state_free;
+						carProps.owner = "";
+						carPropsService.update(carPropsFilter, carProps);
 					}
 				} else {
 					Reobj.put("errMsg", "车辆不是空闲状态");
@@ -404,13 +443,15 @@ public class JOYNCarController {
 			}
 		} catch(Exception e){
 			if(optLock!=null && optLock.getHoldCount() > 0) {
-				    cacheCarService.updateCarStateFree(car);
+					carPropsFilter.clearProperties();
+					carPropsFilter.vinNum = vinNum;
+				    carProps.state = CarDynProps.state_free;
+				    carProps.owner = "";
+					carPropsService.update(carPropsFilter, carProps);
                     optLock.unlock();
 			}
-			logger.error(e.getStackTrace().toString());
-			logger.error(e.toString());
+			logger.error("exception: ",e);
 		}
-
 		return Reobj;
 	}
 	
@@ -423,22 +464,26 @@ public class JOYNCarController {
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
+		CarDynProps carPropsFilter = new CarDynProps();
+		CarDynProps  carProps  = new CarDynProps();
 		 
 		 try {
 			 //check if the car in state_wait_code or state_busy, and the owner equals the mobileNo
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			 String vinNum = (String)jsonObj.get("carId");
 			 String mobileNo = (String)jsonObj.get("mobileNo");
-			 Car car = cacheCarService.getByVinNum(vinNum);
-			 if(mobileNo.equals(car.getOwner())) {
-				 if(car.getState() == Car.state_wait_sendcode||car.getState()==Car.state_wait_poweron) {
+			 carPropsFilter.vinNum = vinNum;
+			 carProps.fromDocument(carPropsService.find(carPropsFilter).first());
+
+			 if(mobileNo.equals(carProps.owner)) {
+				 if(carProps.state == Car.state_wait_sendcode||carProps.state==Car.state_wait_poweron) {
 					 Reobj.put("result", "10005");
 					 Reobj.put("errMsg", "车辆还没准备好");
-				 } else if (car.getState() == Car.state_busy) {
+				 } else if (carProps.state == Car.state_busy) {
 					 // the order alreay created, now return the orderId
 					 JOYOrder orderFilter = new JOYOrder();
-					 orderFilter.carVinNum = car.getVinNum();
-					 orderFilter.mobileNo = car.getOwner();
+					 orderFilter.carVinNum = carProps.vinNum;
+					 orderFilter.mobileNo = carProps.owner;
 					 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
 					 List<JOYOrder> orders = joyNOrderService.getNeededList(orderFilter);
 					 JOYOrder cOrder = orders.get(0);
@@ -466,6 +511,8 @@ public class JOYNCarController {
 		Map<String,Object> likeCondition = new HashMap<String, Object>();
 		JSONObject Reobj=new JSONObject();
 		Reobj.put("result", "10001");
+		CarDynProps carPropsFilter = new CarDynProps();
+		CarDynProps  carProps  = new CarDynProps();
 		ReentrantLock optLock = null;
 		try {
 			//check if the car in state_wait_code or state_busy, and the owner equals the mobileNo
@@ -474,28 +521,30 @@ public class JOYNCarController {
 			String mobileNo = (String)jsonObj.get("mobileNo");
 			optLock = CarOpLock.getCarLock(vinNum);
 			optLock.lock(); //先 获取锁,再取得状态>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-			Car car = cacheCarService.getByVinNum(vinNum);
-			if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
-					|| car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy)  ) {
+			carPropsFilter.vinNum = vinNum;
+			carProps.fromDocument(carPropsService.find(carPropsFilter).first());
 
-				     if(car.getState()==car.state_busy) {
+			if(mobileNo.equals(carProps.owner) && (carProps.state==Car.state_wait_poweron
+					|| carProps.state==CarDynProps.state_wait_sendcode|| carProps.state==CarDynProps.state_busy)  ) {
+
+				     if(carProps.state==CarDynProps.state_busy) {
 						 //首先停止订单
 						 JOYOrder orderFilter = new JOYOrder();
 						 JOYOrder orderNewValue = new JOYOrder();
-						 orderFilter.carVinNum = car.getVinNum();
+						 orderFilter.carVinNum = carProps.vinNum;
 						 orderFilter.delMark = JOYOrder.NON_DEL_MARK;
 						 orderFilter.mobileNo = mobileNo;
 						 orderNewValue.state = JOYOrder.state_wait_pay;
-						 orderNewValue.stopLatitude = car.getLatitude();
-						 orderNewValue.stopLatitude = car.getLongitude();
+						 orderNewValue.stopLatitude = carProps.location.coordinates.get(1);
+						 orderNewValue.stopLatitude = carProps.location.coordinates.get(0);
 						 orderNewValue.stopTime = new Date(System.currentTimeMillis());
 						 joyNOrderService.updateRecord(orderNewValue,orderFilter);
 					 }
-
-				car.setState(null);
-				car.setOwner("");
+				carProps.clearProperties();
+				carProps.owner = "";
+				carProps.state = Car.state_wait_clearcode;
 				//这个过程的发起在car update status 来做
-				cacheCarService.updateCarStateWaitClearCode(car);
+				carPropsService.update(carPropsFilter, carProps);
 				Reobj.put("result", "10000");
 			} else {
 				Reobj.put("errMsg","目前无订单");
@@ -507,8 +556,7 @@ public class JOYNCarController {
 			if(optLock!=null && optLock.getHoldCount()>0) {
 				optLock.unlock();
 			}
-			logger.error(e.getStackTrace().toString());
-			Reobj.put("errMsg", e.toString());
+			logger.error("exceptions: ", e);
 		}
 		return Reobj;
 	}
@@ -521,6 +569,8 @@ public class JOYNCarController {
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
+		CarDynProps carPropsFilter = new CarDynProps();
+		CarDynProps  carProps  = new CarDynProps();
 		ReentrantLock optLock = null;
 		 try {
 			//check if the car in state_wait_code or state_busy, and the owner equals the mobileNo
@@ -529,21 +579,23 @@ public class JOYNCarController {
 			 String mobileNo = (String)jsonObj.get("mobileNo");
 			 optLock = CarOpLock.getCarLock(vinNum);
 			 optLock.lock(); //先 获取锁,再取得状态>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-			 Car car = cacheCarService.getByVinNum(vinNum);
-			 if(mobileNo.equals(car.getOwner()) && (car.getState()==Car.state_wait_poweron
-					 || car.getState()==Car.state_wait_sendcode|| car.getState()==Car.state_busy)  ) {
+			 carPropsFilter.vinNum = vinNum;
+			 carProps.fromDocument(carPropsService.find(carPropsFilter).first());
+			 if(mobileNo.equals(carProps.owner) && (carProps.state==Car.state_wait_poweron
+					 || carProps.state==Car.state_wait_sendcode|| carProps.state==Car.state_busy)  ) {
                     /*
 				     if(car.getState()==car.state_busy) {
 						 //首先停止订单
 						 joyNOrderService.updateOrderTermiate(car);
 					 }
 					 */
-				     car.setState(null);
+				     carProps.clearProperties();
+				     carProps.state = CarDynProps.state_wait_clearcode;
 				    // car.setOwner("");
 				     //这个过程的发起在car update status 来做
-					 cacheCarService.updateCarStateWaitClearCode(car);
+				    carPropsService.update(carPropsFilter, carProps);
 					 Reobj.put("result", "10000");
-			 } else if(car.getState()==Car.state_wait_lock|| car.getState()==Car.state_wait_poweroff||car.getState()==Car.state_wait_clearcode){
+			 } else if(carProps.state==Car.state_wait_lock|| carProps.state==Car.state_wait_poweroff||carProps.state==Car.state_wait_clearcode){
 				 //已经处于停止租用的流程了
 				 Reobj.put("result", "10000");
 			 }else {
@@ -569,7 +621,6 @@ public class JOYNCarController {
 		JSONObject Reobj=new JSONObject();
 		Reobj.put("result", "10001");
 		try {
-
 			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
             JOYOrder orderFilter = new JOYOrder();
 			orderFilter.mobileNo = String.valueOf(jsonObj.get("mobileNo"));
@@ -651,8 +702,7 @@ public class JOYNCarController {
 		 Map<String,Object> likeCondition = new HashMap<String, Object>();
 		 JSONObject Reobj=new JSONObject();
 		 Reobj.put("result", "10001");
-		 
-		//       sdfdsfdsf
+
 		 try{
 			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
 			 JOYOrder orderFilter = new JOYOrder();

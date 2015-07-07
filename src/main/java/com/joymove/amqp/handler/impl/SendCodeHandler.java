@@ -3,22 +3,22 @@ package com.joymove.amqp.handler.impl;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import com.joymove.service.JOYNOrderService;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.joymove.amqp.handler.EventHandler;
-import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 @Component("SendCodeHandler")
 public class SendCodeHandler implements EventHandler {
 
-	@Resource(name = "carService")
-	private CarService      cacheCarService;
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
 	@Resource(name = "JOYNOrderService")
 	private JOYNOrderService joyNOrderService;
 
@@ -38,28 +38,32 @@ public class SendCodeHandler implements EventHandler {
 		ReentrantLock opLock = null;
 
 		try {
+			CarDynProps carPropsFilter = new CarDynProps();
+			CarDynProps  carProps  = new CarDynProps();
+
 			String vinNum = String.valueOf(json.get("vin"));
 			logger.debug("get the send code report from clouemove for "+vinNum);
 
 			opLock = CarOpLock.getCarLock(vinNum);
 			opLock.lock();//>>============================
-			Car car = new Car();
-			car.setVinNum(vinNum);
-			car = cacheCarService.getByVinNum(vinNum);
+			carPropsFilter.vinNum = vinNum;
+			carProps.fromDocument(carPropsService.find(carPropsFilter).first());
 			Long result = Long.parseLong(String.valueOf(json.get("result")));
-				if (car.getState() == Car.state_wait_sendcode) {
+				if (carProps.state == CarDynProps.state_wait_sendcode) {
 					logger.debug("we already in wait sendcode state ");
 					if(result==1) {
 						logger.debug("the cloudmove tell us it is good");
-						cacheCarService.updateCarStateWaitPowerOn(car);
-						cacheCarService.sendPowerOn(car.getVinNum());
+						carProps.clearProperties();
+						carProps.state = CarDynProps.state_wait_poweron;
+						carPropsService.update(carPropsFilter,carProps);
+						carPropsService.sendPowerOn(vinNum);
 					} else {
 						logger.debug("the cloudmove tell us it is failed");
 						//try again
-						cacheCarService.sendAuthCode(car.getVinNum());
+						carPropsService.sendAuthCode(vinNum);
 					}
 				} else {
-					logger.debug("the car in state "+car.getState()+" so we do not do anything");
+					logger.debug("the car in state "+carProps.state+" so we do not do anything");
 				}
 				error = false;
 		} catch(Exception e){

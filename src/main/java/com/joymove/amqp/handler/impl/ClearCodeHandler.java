@@ -3,7 +3,8 @@ package com.joymove.amqp.handler.impl;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.entity.Car;
-import com.futuremove.cacheServer.service.CarService;
+import com.futuremove.cacheServer.entity.CarDynProps;
+import com.futuremove.cacheServer.service.CarDynPropsService;
 import com.futuremove.cacheServer.concurrent.CarOpLock;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -17,8 +18,8 @@ import javax.annotation.Resource;
 @Component("ReportClearCodeHandler")
 public class ClearCodeHandler  implements EventHandler {
 
-	@Resource(name = "carService")
-	private CarService cacheCarService;
+	@Resource(name = "CarDynPropsService")
+	private CarDynPropsService carPropsService;
 	final static Logger logger = LoggerFactory.getLogger(ClearCodeHandler.class);
 
 
@@ -30,28 +31,31 @@ public class ClearCodeHandler  implements EventHandler {
 	public boolean handleData(JSONObject json) {
 		boolean error=true;
 		ReentrantLock opLock = null;
+		CarDynProps carPropsFilter = new CarDynProps();
+		CarDynProps  carProps  = new CarDynProps();
 		try {
 			logger.debug("get the clear  code report from clouemove");
 			String vinNum = String.valueOf(json.get("vin"));
 			opLock = CarOpLock.getCarLock(vinNum);
 			opLock.lock();//>>============================
-			Car car = new Car();
-			car.setVinNum(vinNum);
-			car = cacheCarService.getByVinNum(vinNum);
+			carPropsFilter.vinNum = vinNum;
+			carProps.fromDocument(carPropsService.find(carPropsFilter).first());
 			Long result = Long.parseLong(String.valueOf(json.get("result")));
-			if (car.getState() == Car.state_wait_clearcode) {
+			if (carProps.state == Car.state_wait_clearcode) {
 				logger.debug("get the clear code result ");
 				if(result==1) {
 					logger.debug("clear code  success ");
-					cacheCarService.updateCarStateWaitPowerOff(car);
-					cacheCarService.sendPowerOff(car.getVinNum());
+					carProps.clearProperties();
+					carProps.state = CarDynProps.state_wait_poweroff;
+					carPropsService.update(carPropsFilter, carProps);
+					carPropsService.sendPowerOff(vinNum);
 				} else {
 					logger.debug("clear code failed ");
 					//try again
-					cacheCarService.sendClearCode(car.getVinNum());
+					carPropsService.sendPowerOff(vinNum);
 				}
 			}else {
-				logger.debug("the car in state "+car.getState()+" so we do not do anything");
+				logger.debug("the car in state "+carProps.state+" so we do not do anything");
 			}
 			error = false;
 
