@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,7 @@ public class PowerOnHandler  implements EventHandler {
                     logger.error("start to update order status to busy");
                     carProps.clearProperties();
                     carProps.state = CarDynProps.state_busy;
+                    carProps.stateUpdateTime = new Date(System.currentTimeMillis());
                     carPropsService.update(carPropsFilter,carProps);
                     logger.error("power on process ok");
 

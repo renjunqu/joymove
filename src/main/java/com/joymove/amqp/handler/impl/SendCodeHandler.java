@@ -1,5 +1,6 @@
 package com.joymove.amqp.handler.impl;
 
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
@@ -55,6 +56,7 @@ public class SendCodeHandler implements EventHandler {
 						logger.debug("the cloudmove tell us it is good");
 						carProps.clearProperties();
 						carProps.state = CarDynProps.state_wait_poweron;
+						carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 						carPropsService.update(carPropsFilter,carProps);
 						carPropsService.sendPowerOn(vinNum);
 					} else {

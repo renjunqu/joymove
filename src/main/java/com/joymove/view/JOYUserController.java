@@ -62,14 +62,6 @@ public class JOYUserController{
 
 
 	final static Logger logger = LoggerFactory.getLogger(JOYUserController.class);
-
-
-
-
-
-
-
-
 	/**
      * @return
 	 */
@@ -208,15 +200,10 @@ public class JOYUserController{
 				dynamicPwsFilter.mobileNo = mobileNo;
 				List<JOYDynamicPws> dynamicPws = joyDynamicPwsService.getNeededList(dynamicPwsFilter,0,1,"DESC");
 				 JOYDynamicPws joyDynamicPws = dynamicPws.get(0);
-				 
-				
 				if(joyDynamicPws.code.equals(code) && ((System.currentTimeMillis() - joyDynamicPws.createTime.getTime())/(60000) < 15)){
-				
-					
 					 if (passWord.length() <= 5 || passWord.length() >= 13) {
 						 jsonObject.put("errMsg","验证码格式错误");
 					}else{
-					
 							 JOYUser joyUser = (JOYUser)req.getAttribute("cUser");
 						 	 JOYUser userNew = new JOYUser();
 							 userNew.userpwd = passWord; //setUserpwd(passWord);
@@ -227,7 +214,6 @@ public class JOYUserController{
 				} else {
 					jsonObject.put("errMsg","验证码错误");
 				}
-				
 			}catch(Exception e){
 				e.printStackTrace();
 			}

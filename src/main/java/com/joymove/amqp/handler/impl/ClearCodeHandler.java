@@ -1,5 +1,6 @@
 package com.joymove.amqp.handler.impl;
 
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.entity.Car;
@@ -47,6 +48,7 @@ public class ClearCodeHandler  implements EventHandler {
 					logger.debug("clear code  success ");
 					carProps.clearProperties();
 					carProps.state = CarDynProps.state_wait_poweroff;
+					carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 					carPropsService.update(carPropsFilter, carProps);
 					carPropsService.sendPowerOff(vinNum);
 				} else {

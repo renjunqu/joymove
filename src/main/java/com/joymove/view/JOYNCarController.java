@@ -90,6 +90,9 @@ public class JOYNCarController {
 			 //do the coordinates transform
 			 Gps userGps = CoordinatesUtil.gcj02_To_Gps84(userLatitude,userLongitude);
 			 CarDynProps carPropsFilter = new CarDynProps();
+
+			 //只看一个20分钟之内有数据上报的
+			 carPropsFilter.dataUpdateTime = new Date(System.currentTimeMillis()-1000*1200);
 			 carPropsFilter.location = new CarLocation();
 			 carPropsFilter.location.coordinates.clear();
 			 carPropsFilter.location.coordinates.add(userGps.getWgLon());
@@ -425,6 +428,7 @@ public class JOYNCarController {
 					carProps.clearProperties();
 					carProps.owner = mobileNo;
 					carProps.state = CarDynProps.state_wait_sendcode;
+					carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 					//因为有了锁，可以认为肯定成功
 					carPropsService.update(carPropsFilter, carProps);
 					if (carPropsService.sendAuthCode(vinNum)) {
@@ -434,6 +438,7 @@ public class JOYNCarController {
 						//偷偷取消奥,cm 下发失败了
 						carProps.state = CarDynProps.state_free;
 						carProps.owner = "";
+						carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 						carPropsService.update(carPropsFilter, carProps);
 					}
 				} else {
@@ -447,6 +452,7 @@ public class JOYNCarController {
 					carPropsFilter.vinNum = vinNum;
 				    carProps.state = CarDynProps.state_free;
 				    carProps.owner = "";
+				    carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 					carPropsService.update(carPropsFilter, carProps);
                     optLock.unlock();
 			}
@@ -543,6 +549,7 @@ public class JOYNCarController {
 				carProps.clearProperties();
 				carProps.owner = "";
 				carProps.state = Car.state_wait_clearcode;
+				carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 				//这个过程的发起在car update status 来做
 				carPropsService.update(carPropsFilter, carProps);
 				Reobj.put("result", "10000");
@@ -591,6 +598,7 @@ public class JOYNCarController {
 					 */
 				     carProps.clearProperties();
 				     carProps.state = CarDynProps.state_wait_clearcode;
+				     carProps.stateUpdateTime = new Date(System.currentTimeMillis());
 				    // car.setOwner("");
 				     //这个过程的发起在car update status 来做
 				    carPropsService.update(carPropsFilter, carProps);

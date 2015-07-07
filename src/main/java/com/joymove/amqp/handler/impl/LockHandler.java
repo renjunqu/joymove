@@ -77,6 +77,7 @@ public class LockHandler implements EventHandler {
                     carProps.clearProperties();
                     carProps.state = CarDynProps.state_free;
                     carProps.owner = "";
+                    carProps.stateUpdateTime = new Date(System.currentTimeMillis());
                     carPropsService.update(carPropsFilter,carProps);
                 } else {
                     logger.debug("lock failed ");

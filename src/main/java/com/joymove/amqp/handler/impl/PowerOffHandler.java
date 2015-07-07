@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -49,6 +50,7 @@ public class PowerOffHandler implements EventHandler {
                     logger.debug("power off ok");
                     carProps.clearProperties();
                     carProps.state=CarDynProps.state_wait_lock;
+                    carProps.stateUpdateTime = new Date(System.currentTimeMillis());
                     carPropsService.update(carPropsFilter,carProps);
                     carPropsService.sendLock(vinNum);
                 } else {

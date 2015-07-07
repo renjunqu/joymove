@@ -1,5 +1,6 @@
 package com.joymove.amqp.handler.impl;
 
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.futuremove.cacheServer.concurrent.CarOpLock;
@@ -76,6 +77,7 @@ public class UpdateStatusHandler  implements EventHandler {
 
 			carProps.location.coordinates.set(1,gps.getWgLat());
 			carProps.location.coordinates.set(0,gps.getWgLon());
+			carProps.dataUpdateTime = new Date(System.currentTimeMillis());
 			carPropsService.update(carPropsFilter,carProps);
 		} catch(Exception e){
 			error = true;
