@@ -84,7 +84,7 @@ public class JOYNCarController {
 				 userLatitude = Double.parseDouble(String.valueOf(jsonObj.get("userLatitude")));
 			 }
 
-			 Long maxDistance = Long.parseLong(String.valueOf(jsonObj.get("scope") == null ? 50 : jsonObj.get("scope")));
+			 Double maxDistance = Double.parseDouble(String.valueOf(jsonObj.get("scope") == null ? 50 : jsonObj.get("scope")));
 			 Integer skipFind = Integer.parseInt(String.valueOf(jsonObj.get("skip") == null ? 0 : jsonObj.get("skip")));
 			 Integer limitFind = Integer.parseInt(String.valueOf(jsonObj.get("limit") == null ? 20 : jsonObj.get("limit")));
 			 //do the coordinates transform
@@ -106,10 +106,10 @@ public class JOYNCarController {
 				 carPropsFilter.state = CarDynProps.state_busy;
 				// cars = cacheCarService.getBusyCarByScope(likeCondition);
 			 }
-			 FindIterable<Document> carPropsDocs = carPropsService.getNearByNeededCar(maxDistance,carPropsFilter)
+			 FindIterable<Document> carPropsDocs = carPropsService.getNearByNeededCar(maxDistance.longValue(),carPropsFilter)
 					 .skip(skipFind)
 					 .limit(limitFind);
-			 Long count = carPropsService.countNearByNeededCar(maxDistance,carPropsFilter);
+			 Long count = carPropsService.countNearByNeededCar(maxDistance.longValue(),carPropsFilter);
              if(count>0) {
 				 for (Document carDoc : carPropsDocs) {
 					 CarDynProps carProp = new CarDynProps();

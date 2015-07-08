@@ -1,9 +1,8 @@
 package com.joymove.view;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -30,8 +29,6 @@ import com.joymove.service.JOYOrderService;
 public class JOYOrderController {
 
 	final static Logger logger = LoggerFactory.getLogger(JOYOrderController.class);
-
-
 
 	@Resource(name = "JOYOrderService")
 	private JOYOrderService joyOrderService;
@@ -68,6 +65,16 @@ public class JOYOrderController {
 			 List<JOYOrder> orders = joyOrderService.getNeededOrder(likeCondition);
 			 Reobj.put("orderCount", orders.size());
 			 for(JOYOrder order:orders) {
+
+				 if(order.state!=JOYOrder.state_busy && order.stopTime.getTime() == JOYOrder.defaultStopTime.getTime()) {
+					 //一个未配置结束时间的订单
+					 order.stopTime = new Date(order.startTime.getTime()+ 60 * 1000);
+					 order.stopLatitude = order.startLatitude;
+					 order.stopLongitude = order.startLongitude;
+				 } else if(order.state==JOYOrder.state_busy){
+					 order.stopTime = new Date(System.currentTimeMillis());
+				 }
+
 				 JSONObject orderJSON = new JSONObject();
 				 orderJSON.put("orderId",order.id);
 				 orderJSON.put("startTime", order.startTime);
@@ -77,6 +84,8 @@ public class JOYOrderController {
 				 } else {
 					 orderJSON.put("carId", order.carId);
 				 }
+
+
 				 orderJSON.put("fee", order.getTotalFee());
 				 orderJSON.put("miles", order.getTotalFee()*3.1314);
 				 orderJSON.put("destinations", order.destination);
