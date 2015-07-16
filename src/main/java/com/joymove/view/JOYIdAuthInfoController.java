@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.joymove.entity.JOYUser;
 import com.joymove.service.JOYUserService;
+import com.joymove.util.BaiduOCR.BaiduOCRUtil;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -122,6 +123,25 @@ public class JOYIdAuthInfoController {
 		return Reobj;
 
 	}
+
+	@RequestMapping(value="usermgr/idOCR",method=RequestMethod.POST)
+	public @ResponseBody JSONObject idOCR(HttpServletRequest req){
+		JSONObject Reobj = new JSONObject();
+		Reobj.put("result", "10001");
+		JOYIdAuthInfo authInfo = new JOYIdAuthInfo();
+		try{
+			Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+			JOYIdAuthInfo authInfoFilter = new JOYIdAuthInfo();
+			String idCard = (String) jsonObj.get("id_card");
+			JSONObject ocrRet = BaiduOCRUtil.ocr(idCard);
+			Reobj.putAll(ocrRet);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		return Reobj;
+	}
+
 
 
 	

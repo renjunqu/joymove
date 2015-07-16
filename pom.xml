@@ -442,7 +442,7 @@
            <id>backend_test</id>
            <activation>
            		<activeByDefault>
-               		true
+               		false
                	</activeByDefault>
            </activation>
            <properties>
@@ -466,7 +466,7 @@
            <id>iosdev_demo</id>
            <activation>
                <activeByDefault>
-               		false
+               		true
                </activeByDefault>
            </activation>
            <properties>
@@ -480,7 +480,7 @@
                <amqp.exchange.name>cloudmove</amqp.exchange.name>
                <amqp.queue.name>joymove</amqp.queue.name>
                <mongo.db>cacheServer</mongo.db>
-			   <mongo.ip>127.0.0.1</mongo.ip>
+			   <mongo.ip>123.57.151.176</mongo.ip>
 			   <mysql.password>Qrj12345</mysql.password>
 			   <mysql.ip>123.57.151.176</mysql.ip>
            </properties>
