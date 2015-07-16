@@ -68,13 +68,13 @@
 			<value>com.mysql.jdbc.Driver</value>
 		</property>
 		<property name="url">
-			<value>jdbc:mysql://123.57.151.176:3306/${joy_db.name}</value>
+			<value>jdbc:mysql://${mysql.ip}:3306/${joy_db.name}</value>
 		</property>
 		<property name="username">
 			<value>root</value>
 		</property>
 		<property name="password">
-			<value>Qrj12345</value>
+			<value>${mysql.password}</value>
 		</property>
 
 	</bean>

@@ -14,7 +14,7 @@
            <property name="writeConcern" value="SAFE" />
            <property name="serverStrings">
                <array>
-                   <value>123.57.151.176:27017</value>
+                   <value>${mongo.ip}:27017</value>
                </array>
            </property>
     </bean>
