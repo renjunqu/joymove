@@ -76,7 +76,6 @@
 		<property name="password">
 			<value>${mysql.password}</value>
 		</property>
-
 	</bean>
 
 
