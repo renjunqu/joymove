@@ -78,6 +78,40 @@
 		</property>
 	</bean>
 
+	<!-- postgres database conf -->
+	<bean name="pgDataSource"
+		  class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>org.postgresql.Driver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:postgresql://123.57.151.176:6543/joymove_qrj</value>
+		</property>
+		<property name="username">
+			<value>postgres</value>
+		</property>
+		<property name="password">
+			<value>qrj12345</value>
+		</property>
+	</bean>
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="pgDataSource" />
+		</property>
+	</bean>
+
+	<bean id="pgTxManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="pgDataSource" />
+	</bean>
+    <!--通过注解来控制事务-->
+	<tx:annotation-driven transaction-manager="pgTxManager"/>
+	<!-- postgres database conf -->
+
+
+
+
 
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
@@ -142,6 +176,8 @@
 		            expression="execution(* com.futuremove.cacheServer.service.impl.CarDynPropsServiceImpl.update(..))" />
 
 		<aop:pointcut id="pc" expression="execution(* com.joymove.service.impl.*.*(..))" />
+
+
 
 		<aop:pointcut id="retry_redis_access"
 					  expression="execution(* com.joymove.redis.*.*(..))" />

@@ -25,14 +25,7 @@
 
 	<context:component-scan base-package="com.joymove.amqp.handler.impl"/>
 
-
-
 	<context:component-scan base-package="com.futuremove.cacheServer.service.impl"/>
-
-	<context:component-scan base-package="com.futuremove.cacheServer.dao"/>
-
-
-
 
 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
 
@@ -42,11 +35,22 @@
 		   		<ref bean="mappingJacksonHttpMessageConverter" />  
 		  	</list>  
 	 	</property>  
-	</bean>   
+	</bean>
+
+	<!-- JSON format support for Exception -->
+	<bean id="methodHandlerExceptionResolver" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
+		<property name="messageConverters">
+		<list>
+				<ref bean="mappingJacksonHttpMessageConverter" />
+			</list>
+		</property>
+	</bean>
+
 	   
 	<bean name="mappingJacksonHttpMessageConverter" 
 	      class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" /> 
- 
+
+	<!--
 	<bean name="viewResolver" 
 	      class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="viewClass">
@@ -60,6 +64,7 @@
 			<value>.jsp</value>
 		</property>
 	</bean>
+	-->
 	<!--
 	<bean name="exceptionResolver" 
 	      class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
@@ -71,9 +76,11 @@
 		</property>
 	</bean>
    -->
+
+	<!--
 	<bean name="exceptionResolver" class="com.joymove.util.JOYExceptionHandler">
-		  </bean>
-	
+	</bean>
+	-->
 		
 	<mvc:interceptors>  
            <mvc:interceptor>
