@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,8 +34,10 @@ import com.joymove.service.JOYPowerBarService;
 
 @Controller("JOYPowerBarController")
 public class JOYPowerBarController extends  JOYBaseController {
+	/*
 	@Resource(name = "JOYPowerBarService")
 	private  JOYPowerBarService joyPowerBarService;
+    */
 
 	@Resource(name="jdbcTemplate")
 	private JdbcTemplate jdbcTemplate;
@@ -98,7 +101,7 @@ public class JOYPowerBarController extends  JOYBaseController {
 		 return Reobj;
 	}
 	*/
-    @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class) // 增加这个事务是为了防止两次读取不一致
+    @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class,isolation = Isolation.REPEATABLE_READ) // 增加这个事务是为了防止两次读取不一致
 	@RequestMapping(value="rent/getNearByPowerBars", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject getNearByPowerBars(HttpServletRequest req){
 		logger.trace("getNearByPowerBars method was invoked...");
