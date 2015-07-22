@@ -454,31 +454,36 @@
            <id>backend_test</id>
            <activation>
            		<activeByDefault>
-               		false
+               		true
                	</activeByDefault>
            </activation>
            <properties>
                <joy_db.name>joymove_qrj</joy_db.name>
                <quartz_db.name>quartz</quartz_db.name>
-               <server.ip>127.0.0.1</server.ip>
+               <server.ip>123.57.41.42</server.ip>
                <server.port>8082</server.port>
                <upload.dir>tomcat7</upload.dir>
-               <cloudmove.prefix>http://127.0.0.1:8081/cloudmove</cloudmove.prefix>
-               <amqp.ip>127.0.0.1</amqp.ip>
+               <cloudmove.prefix>http://123.57.41.42:8081/cloudmove</cloudmove.prefix>
+               <amqp.ip>123.57.41.42</amqp.ip>
                <amqp.exchange.name>cloudmove</amqp.exchange.name>
                <amqp.queue.name>joymove</amqp.queue.name>
                <mongo.db>cacheServer</mongo.db>
-			   <mongo.ip>127.0.0.1</mongo.ip>
-               <amqp.ip>127.0.0.1</amqp.ip>
+			   <mongo.ip>123.57.41.42</mongo.ip>
+               <amqp.ip>123.57.41.42</amqp.ip>
 			   <mysql.password>123456</mysql.password>
-			   <mysql.ip>127.0.0.1</mysql.ip>
+			   <mysql.ip>123.57.41.42</mysql.ip>
+			   <pgsql.password>qrj12345</pgsql.password>
+			   <pgsql.ip>123.57.41.42</pgsql.ip>
+			   <pgsql.port>6543</pgsql.port>
+			   <pgsql.user>postgres</pgsql.user>
+			   <pgsql.db>joymove_qrj</pgsql.db>
            </properties>
        </profile>
      <profile>
            <id>iosdev_demo</id>
            <activation>
                <activeByDefault>
-               		true
+               		false
                </activeByDefault>
            </activation>
            <properties>
@@ -495,27 +500,12 @@
 			   <mongo.ip>123.57.151.176</mongo.ip>
 			   <mysql.password>Qrj12345</mysql.password>
 			   <mysql.ip>123.57.151.176</mysql.ip>
+			   <pgsql.password>qrj12345</pgsql.password>
+			   <pgsql.ip>123.57.151.176</pgsql.ip>
+			   <pgsql.port>6543</pgsql.port>
+			   <pgsql.user>postgres</pgsql.user>
+			   <pgsql.db>joymove_qrj</pgsql.db>
            </properties>
        </profile>
-			 <profile>
-				 <id>sz_dev</id>
-				 <activation>
-					 <activeByDefault>
-						 false
-					 </activeByDefault>
-				 </activation>
-				 <properties>
-					 <joy_db.name>joymove_qrj</joy_db.name>
-					 <quartz_db.name>quartz_qrj</quartz_db.name>
-					 <server.ip>127.0.0.1</server.ip>
-					 <server.port>8082</server.port>
-					 <upload.dir>tomcat7_qrj</upload.dir>
-					 <cloudmove.prefix>http://127.0.0.1:8088/cloudmove</cloudmove.prefix>
-					 <amqp.ip>127.0.0.1</amqp.ip>
-					 <amqp.exchange.name>cloudmove</amqp.exchange.name>
-					 <amqp.queue.name>joymove</amqp.queue.name>
-					 <mongo.db>cacheServer</mongo.db>
-				 </properties>
-			 </profile>
    </profiles>
 </project>

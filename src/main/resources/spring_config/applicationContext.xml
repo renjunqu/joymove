@@ -85,13 +85,13 @@
 			<value>org.postgresql.Driver</value>
 		</property>
 		<property name="url">
-			<value>jdbc:postgresql://123.57.151.176:6543/joymove_qrj</value>
+			<value>jdbc:postgresql://${pgsql.ip}:${pgsql.port}/${pgsql.db}</value>
 		</property>
 		<property name="username">
-			<value>postgres</value>
+			<value>${pgsql.user}</value>
 		</property>
 		<property name="password">
-			<value>qrj12345</value>
+			<value>${pgsql.password}</value>
 		</property>
 	</bean>
 
