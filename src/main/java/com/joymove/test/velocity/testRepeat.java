@@ -13,10 +13,10 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.mybatis.scripting.velocity.VelocityFacade;
 
-public  class test1 {
+public  class testRepeat {
 
-    public static String ttt = "#repeat( $ids $id \",\" \" state_id IN (\" \")\" )\n" +
-            "    @{id}\n" +
+    public static String ttt = "#repeat( $ids $id  \",\" \" state_id IN (\" \")\" )\n" +
+            "    $id\n" +
             "  #end";
     public static void main(String[] args) throws  Exception{
 
@@ -26,9 +26,13 @@ public  class test1 {
         List<Integer> haha = new ArrayList<Integer>();
 
         haha.add(1);
-        _pmc.put("ids",haha);
-        context.put("_pmc",_pmc);
-        Template template = (Template)VelocityFacade.compile(test1.ttt,"haha_test");
+        haha.add(2);
+        haha.add(3);
+        //_pmc.put("ids",haha);
+
+        context.put("ids",haha);
+        Template template = (Template)VelocityFacade.compile(testRepeat.ttt,"haha_test");
+        String ttt = template.toString();
         String result = VelocityFacade.apply(template,context);
         System.out.println("result is "+result);
 

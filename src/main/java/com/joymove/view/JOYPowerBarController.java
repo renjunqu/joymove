@@ -11,8 +11,10 @@ import com.futuremove.cacheServer.utils.Gps;
 import com.joymove.entity.*;
 import com.joymove.postgres.entity.JOYPowerBar;
 import org.apache.commons.collections.iterators.EntrySetMapIterator;
+import org.apache.velocity.Template;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.mybatis.scripting.velocity.VelocityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -34,10 +36,22 @@ import com.joymove.service.JOYPowerBarService;
 
 @Controller("JOYPowerBarController")
 public class JOYPowerBarController extends  JOYBaseController {
-	/*
-	@Resource(name = "JOYPowerBarService")
-	private  JOYPowerBarService joyPowerBarService;
-    */
+
+
+	public static String queryNearyByCount = "SELECT count(id) from \"JOY_PowerBar\" " +
+			"where (location <-> ST_GeomFromText('POINT(${longitude} ${latitude})',4326)) < ${scope}/111045::float limit 10000;";
+	public static String queryNearyByBars = "SELECT id,ST_AsText(location) as location,extendinfo,desp,\"testArr\" from \"JOY_PowerBar\" " +
+			"ORDER BY location <-> ST_GeomFromText('POINT(${longitude} ${latitude})',4326) limit ${limit} offset ${start} ;";
+
+
+
+	public static Template countTemplate;
+	public static Template barTemplate;
+
+	{
+		Template countTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByCount, "queryCount");
+		Template barTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByBars, "queryBars");
+	}
 
 	@Resource(name="jdbcTemplate")
 	private JdbcTemplate jdbcTemplate;
@@ -62,45 +76,6 @@ public class JOYPowerBarController extends  JOYBaseController {
 		throw  new Exception("haha");
 	}
 
-
-
-
-/*
-	@RequestMapping(value="rent/getNearByPowerBars", method=RequestMethod.POST)
-	public  @ResponseBody JSONObject getNearByPowerBars(HttpServletRequest req){
-		 logger.trace("getNearByPowerBars method was invoked...");
-		 Map<String,Object> likeCondition = new HashMap<String, Object>();
-		 JSONObject Reobj=new JSONObject();
-		 JSONArray  pbArray  = new JSONArray();
-		
-		 Reobj.put("result", "10001");
-		 Reobj.put("powerbars", pbArray);
-		 try {
-			 Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");;
-			 likeCondition.put("userPositionX", jsonObj.get("userLongitude")==null ? 0.0: jsonObj.get("userLongitude") );
-			 likeCondition.put("userPositionY", jsonObj.get("userLatitude")==null ? 0.0: jsonObj.get("userLatitude") );
-			 likeCondition.put("scope", jsonObj.get("scope")==null ? 10 : jsonObj.get("scope") );
-			 List<JOYPowerBar> pbs = joyPowerBarService.getPowerBarByScope(likeCondition);
-			 
-			 Iterator iter = pbs.iterator();
-			 while(iter.hasNext()){
-				 JOYPowerBar pb_item  = (JOYPowerBar)iter.next();
-				 JSONObject pb_json = new JSONObject();
-				 pb_json.put("powerbarId", pb_item.id);
-				 pb_json.put("longitude",  pb_item.positionX);
-				 pb_json.put("latitude",  pb_item.positionY);
-				 pb_json.put("desp",  pb_item.desp);
-				 pbArray.add(pb_json);
-			 }
-			 Reobj.put("result", "10000");
-			 
-		 } catch(Exception e) {
-			 Reobj.put("result", "10001");
-			 logger.error(e.getStackTrace().toString());
-		 }
-		 return Reobj;
-	}
-	*/
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class,isolation = Isolation.REPEATABLE_READ) // 增加这个事务是为了防止两次读取不一致
 	@RequestMapping(value="rent/getNearByPowerBars", method=RequestMethod.POST)
 	public  @ResponseBody JSONObject getNearByPowerBars(HttpServletRequest req){
@@ -122,23 +97,38 @@ public class JOYPowerBarController extends  JOYBaseController {
 		if(limit>10000L) limit=10000L;
 		Gps userWgs84 = CoordinatesUtil.gcj02_To_Gps84(userLatitude, userLongitude);
 		//开始构建SQL
+		Map<String,Object> sqlContext = new HashMap<String,Object>();
+		sqlContext.put("longitude",userLongitude);
+		sqlContext.put("latitude",userLatitude);
+		sqlContext.put("scope",scope);
+		sqlContext.put("start",start);
+		sqlContext.put("limit",limit);
+
 		/*
 		String querySQL = "SELECT id,ST_AsText(location) as location,extendinfo,desp,\"testArr\" from \"JOY_PowerBar\" where ST_DWithin(location,ST_GeographyFromText(\'POINT("
 				+userLongitude+" "
 				+userLatitude+")\'),"+scope+");";
 		*/
+
+		/*
 		String queryCountSQL = "SELECT count(id) from \"JOY_PowerBar\" where (location <-> ST_GeomFromText(\'POINT("
 				+userLongitude+" "
 				+userLatitude+")\',4326)) < "+scope+"/111045::float limit 10000;";
+		*/
+
+		String queryCountSQL = VelocityFacade.apply(countTemplate, sqlContext);
 
 		System.out.println("queryCountSQL is "+queryCountSQL);
 		long qCount = jdbcTemplate.queryForLong(queryCountSQL);
 		if(qCount>0) {
 			Reobj.put("count",qCount);
 			if(limit>qCount) limit = qCount;
+			/*
 			String querySQL = "SELECT id,ST_AsText(location) as location,extendinfo,desp,\"testArr\" from \"JOY_PowerBar\" ORDER BY location <-> ST_GeomFromText(\'POINT("
 					+userLongitude+" "
 					+userLatitude+")\',4326) limit "+limit +" offset "+start +";";
+					*/
+			String querySQL = VelocityFacade.apply(barTemplate, sqlContext);
 			List items = jdbcTemplate.query(querySQL,
 					new JOYRowMapper(JOYPowerBar.class));
 			long sizeTop = (qCount - start)>0? (qCount - start) : 0;
@@ -149,8 +139,8 @@ public class JOYPowerBarController extends  JOYBaseController {
 			}
 			Reobj.put("result", "10000");
 		} else {
-			Reobj.put("count",0);
-			Reobj.put("result","10002");
+			Reobj.put("count", 0);
+			Reobj.put("result", "10002");
 		}
 
 
