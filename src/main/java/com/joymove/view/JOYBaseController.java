@@ -21,7 +21,8 @@ public class JOYBaseController  {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
-        exJson.put("errMsg",sw.toString());
+        exJson.put("errMsg","发生错误，请核查您的输入");//sw.toString());
+        exJson.put("errMsg.detail",sw.toString());
         return exJson;
     }
 

@@ -10,12 +10,13 @@ import java.util.*;
  * Created by qurj on 15/7/24.
  */
 public class testComposite {
+    //当为false,或者为定义的时候, if($qq) 会变成false
     public static String ttt =
-            "#if(${$qq})" +
-            "   its null" +
-            "#else" +
-            "   its not null: $qq" +
-            "#end";
+            "#if ($qq && $qq.length()>0)" +
+                    " its not null " +
+                    " #else " +
+                    " its null " +
+                    " #end ";
 
     public static void main(String[] args) throws  Exception{
 
@@ -23,8 +24,8 @@ public class testComposite {
         //Map<String,Object> haha = new HashMap<String, Object>();
         JOYPowerBar pb = new JOYPowerBar();
         pb.id = 1L;
-        //haha.put("t","qq");
-        context.put("haha",pb);
+        context.put("qq",3.2);
+        context.put("haha","sdfsdfdsf");
         Template template = (Template) VelocityFacade.compile(testComposite.ttt, "haha_test");
         String result = VelocityFacade.apply(template,context);
         System.out.println("result is \n"+result);

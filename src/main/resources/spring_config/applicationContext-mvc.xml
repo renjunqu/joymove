@@ -94,7 +94,8 @@
                 <mvc:mapping path="/reserve/*" />
                 <mvc:mapping path="/newcar/*" />
                 <mvc:mapping path="/ordermgr/*" />
-			   <mvc:mapping path="/seed/*" />
+			    <mvc:mapping path="/seed/*" />
+			    <mvc:mapping path="/pg/**" />
                 <bean class="com.joymove.interceptors.JsonTransformer">
                 </bean>
            </mvc:interceptor>

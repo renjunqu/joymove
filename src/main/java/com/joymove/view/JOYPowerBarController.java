@@ -49,8 +49,8 @@ public class JOYPowerBarController extends  JOYBaseController {
 	public static Template barTemplate;
 
 	{
-		Template countTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByCount, "queryCount");
-		Template barTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByBars, "queryBars");
+		JOYPowerBarController.countTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByCount, "queryCount");
+		JOYPowerBarController.barTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByBars, "queryBars");
 	}
 
 	@Resource(name="jdbcTemplate")
