@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.joymove.service.JOYParkService;
 import com.joymove.entity.JOYPark;
-
+import com.joymove.postgres.dao.*;
 
 
 @Controller("JOYParkController")
@@ -40,21 +40,7 @@ public class JOYParkController {
 	private  JOYParkService joyParkService;
     */
 
-	public static String queryNearyByCount = "SELECT count(id) from \"JOY_Park\" " +
-			"where (location <-> ST_GeomFromText('POINT(${longitude} ${latitude})',4326)) < ${scope}/111045::float limit 10000;";
-	public static String queryNearyByParks = "SELECT id,ST_AsText(location) as location,extendinfo,desp from \"JOY_Park\" " +
-			"ORDER BY location <-> ST_GeomFromText('POINT(${longitude} ${latitude})',4326) limit ${limit} offset ${start} ;";
 
-
-
-	public static Template countTemplate;
-	public static Template parkTemplate;
-
-	{
-		//反正是单例模式，就放在实例的初始化块中好了。
-		Template countTemplate = (Template) VelocityFacade.compile(JOYParkController.queryNearyByCount, "queryCount");
-		Template parkTemplate = (Template) VelocityFacade.compile(JOYParkController.queryNearyByParks, "queryParks");
-	}
 
 
 
@@ -92,7 +78,7 @@ public class JOYParkController {
 		sqlContext.put("scope",scope);
 		sqlContext.put("start",start);
 		sqlContext.put("limit",limit);
-		String queryCountSQL = VelocityFacade.apply(countTemplate, sqlContext);
+		String queryCountSQL = VelocityFacade.apply(JOYParkDao.countTemplate, sqlContext);
 
 		/*
 		String querySQL = "SELECT id,ST_AsText(location) as location,extendinfo,desp,\"testArr\" from \"JOY_PowerBar\" where ST_DWithin(location,ST_GeographyFromText(\'POINT("
@@ -109,7 +95,7 @@ public class JOYParkController {
 		if(qCount>0) {
 			Reobj.put("count",qCount);
 			if(limit>qCount) limit = qCount;
-			String querySQL = VelocityFacade.apply(parkTemplate, sqlContext);
+			String querySQL = VelocityFacade.apply(JOYParkDao.parkTemplate, sqlContext);
 			/*
 			String querySQL = "SELECT id,ST_AsText(location) as location,extendinfo,desp from \"JOY_Park\" ORDER BY location <-> ST_GeomFromText(\'POINT("
 					+userLongitude+" "

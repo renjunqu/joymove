@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import com.joymove.postgres.dao.*;
+
 
 /**
  * Created by qurj on 15/8/3.
@@ -30,36 +32,6 @@ import java.util.*;
 public class JOYPUserController extends JOYBaseController {
 
 
-    public static String addNewUser = " insert into \"JOY_User\" " +
-            " (\"mobileNo\",userpwd) values ('${mobileNo}','${userpwd}') ";
-
-    public static String getUserByProps = " select * from \"JOY_User\" " +
-            " #where() " +
-            " #if(${mobileNo}) and \"mobileNo\" = '${mobileNo}' #end " +
-            " #end ";
-
-    public static String updateUserProps = " update \"JOY_User\" " +
-            " #mset() " +
-            " #if(${authToken}) \"authToken\" = '${authToken}', #end " +
-            " #if(${lastActiveTime}) \"lastActiveTime\" = to_timestamp(${lastActiveTime.getTime()}/1000), #end " +
-            " #if(${userpwd}) userpwd = '${userpwd}', #end " +
-            " #end " +
-            " where id=${id} ";
-
-
-    public static Template addNewUserTemplate;
-    public static Template getUserByPropsTemplate;
-    public static Template updateUserPropsTemplate;
-
-
-    {
-        JOYPUserController.addNewUserTemplate = (Template)VelocityFacade.compile(JOYPUserController.addNewUser, "addNewUser");
-
-        JOYPUserController.getUserByPropsTemplate = (Template)
-                VelocityFacade.compile(JOYPUserController.getUserByProps,"getUserByProps");
-        JOYPUserController.updateUserPropsTemplate =
-                (Template)VelocityFacade.compile(JOYPUserController.updateUserProps,"updateUserProps");
-    }
 
 
 
@@ -91,7 +63,7 @@ public class JOYPUserController extends JOYBaseController {
         //开始构建SQL
         Map<String,Object> sqlContext = new HashMap<String,Object>();
         sqlContext.put("mobileNo",mobileNo);
-        String getCodeSQL = VelocityFacade.apply(JOYPDynamicPwsController.getPwsTemplate,sqlContext);
+        String getCodeSQL = VelocityFacade.apply(JOYDynamicPwsDao.getPwsTemplate,sqlContext);
         List codeItems = jdbcTemplate.query(getCodeSQL,
                 new JOYRowMapper(com.joymove.postgres.entity.JOYDynamicPws.class));
 
@@ -106,7 +78,7 @@ public class JOYPUserController extends JOYBaseController {
                     sqlContext.clear();
                     sqlContext.put("mobileNo", mobileNo);
                     sqlContext.put("userpwd",password);
-                    String addUserSQL = VelocityFacade.apply(addNewUserTemplate, sqlContext);
+                    String addUserSQL = VelocityFacade.apply(JOYUserDao.addNewUserTemplate, sqlContext);
                     jdbcTemplate.execute(addUserSQL);
                     jsonObject.put("result","10000");
                 } else {
@@ -132,7 +104,7 @@ public class JOYPUserController extends JOYBaseController {
             //开始构建SQL
             Map<String,Object> sqlContext = new HashMap<String,Object>();
             sqlContext.put("mobileNo",mobileNo);
-            String userGetSQL = VelocityFacade.apply(getUserByPropsTemplate, sqlContext);
+            String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
             List userItems = jdbcTemplate.query(userGetSQL,
                     new JOYRowMapper(JOYUser.class));
             if (userItems.size() > 0) {
@@ -147,7 +119,7 @@ public class JOYPUserController extends JOYBaseController {
                         System.out.println("date is "+new Date(System.currentTimeMillis()));
                         System.out.println("time is "+System.currentTimeMillis());
                         sqlContext.put("id", joyUser.id);
-                        String updateSQL = VelocityFacade.apply(JOYPUserController.updateUserPropsTemplate,sqlContext);
+                        String updateSQL = VelocityFacade.apply(JOYUserDao.updateUserPropsTemplate,sqlContext);
                         jdbcTemplate.execute(updateSQL);
                         jsonObject.put("result", "10000");
                         jsonObject.put("authToken", authToken);
@@ -183,7 +155,7 @@ public class JOYPUserController extends JOYBaseController {
             //开始构建SQL
             Map<String,Object> sqlContext = new HashMap<String,Object>();
             sqlContext.put("mobileNo",mobileNo);
-            String userGetSQL = VelocityFacade.apply(getUserByPropsTemplate, sqlContext);
+            String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
             List userItems = jdbcTemplate.query(userGetSQL,
                     new JOYRowMapper(JOYUser.class));
             if(userItems.size()==0) {
@@ -194,7 +166,7 @@ public class JOYPUserController extends JOYBaseController {
                     sqlContext.clear();
                     sqlContext.put("id",user.id);
                     sqlContext.put("userpwd",chPwd);
-                    String updateSQL = VelocityFacade.apply(updateUserPropsTemplate,sqlContext);
+                    String updateSQL = VelocityFacade.apply(JOYUserDao.updateUserPropsTemplate,sqlContext);
                     jdbcTemplate.execute(updateSQL);
                     jsonObject.put("result","10000");
                 }else{
@@ -224,7 +196,7 @@ public class JOYPUserController extends JOYBaseController {
         //开始构建SQL,获取验证码
         Map<String,Object> sqlContext = new HashMap<String,Object>();
         sqlContext.put("mobileNo",mobileNo);
-        String getCodeSQL = VelocityFacade.apply(JOYPDynamicPwsController.getPwsTemplate, sqlContext);
+        String getCodeSQL = VelocityFacade.apply(JOYDynamicPwsDao.getPwsTemplate, sqlContext);
         List codeItems = jdbcTemplate.query(getCodeSQL,
                 new JOYRowMapper(com.joymove.postgres.entity.JOYDynamicPws.class));
 
@@ -237,7 +209,7 @@ public class JOYPUserController extends JOYBaseController {
                 sqlContext.clear();
                 //先尝试获取用户
                 sqlContext.put("mobileNo",mobileNo);
-                String userGetSQL = VelocityFacade.apply(getUserByPropsTemplate, sqlContext);
+                String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
                 List userItems = jdbcTemplate.query(userGetSQL,
                         new JOYRowMapper(JOYUser.class));
                 if(userItems.size()<=0) {
@@ -247,7 +219,7 @@ public class JOYPUserController extends JOYBaseController {
                     JOYUser user = (JOYUser)userItems.get(0);
                     sqlContext.put("id",user.id);
                     sqlContext.put("userpwd",password);
-                    String updateSQL = VelocityFacade.apply(updateUserPropsTemplate,sqlContext);
+                    String updateSQL = VelocityFacade.apply(JOYUserDao.updateUserPropsTemplate,sqlContext);
                     jdbcTemplate.execute(updateSQL);
                     jsonObject.put("result","10000");
                 }
@@ -258,6 +230,7 @@ public class JOYPUserController extends JOYBaseController {
 
         return jsonObject;
     }
+
 
 
 
@@ -274,7 +247,7 @@ public class JOYPUserController extends JOYBaseController {
         //开始构建SQL,获取验证码
         Map<String,Object> sqlContext = new HashMap<String,Object>();
         sqlContext.put("mobileNo",mobileNo);
-        String userGetSQL = VelocityFacade.apply(getUserByPropsTemplate, sqlContext);
+        String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
         List userItems = jdbcTemplate.query(userGetSQL,
                 new JOYRowMapper(JOYUser.class));
         if(userItems.size()<=0) {
@@ -309,12 +282,5 @@ public class JOYPUserController extends JOYBaseController {
         }
         return jsonObject;
     }
-
-
-
-
-
-
-
 
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import com.joymove.postgres.dao.*;
 
 /**
  * Created by qurj on 15/8/3.
@@ -23,20 +24,6 @@ import java.util.*;
 @Controller("JOYPDynamicPwsController")
 public class JOYPDynamicPwsController extends  JOYBaseController  {
 
-    public static String insertPws = "insert into \"JOY_DynamicPws\" " +
-            "(\"mobileNo\",code) values ('${mobileNo}','${code}')";
-    public static String getPws = "SELECT * from \"JOY_DynamicPws\" " +
-            "where \"mobileNo\" = '${mobileNo}' order by id desc limit 1;";
-
-
-
-    public static Template insertPwsTemplate;
-    public static Template getPwsTemplate;
-
-    {
-        JOYPDynamicPwsController.insertPwsTemplate = (Template) VelocityFacade.compile(JOYPDynamicPwsController.insertPws, "insertPws");
-        JOYPDynamicPwsController.getPwsTemplate = (Template) VelocityFacade.compile(JOYPDynamicPwsController.getPws, "getPws");
-    }
 
 
 
@@ -68,7 +55,7 @@ public class JOYPDynamicPwsController extends  JOYBaseController  {
             Map<String,Object> sqlContext = new HashMap<String,Object>();
             sqlContext.put("mobileNo",mobileNo);
             sqlContext.put("code", sb.toString());
-            String insertSQL = VelocityFacade.apply(insertPwsTemplate, sqlContext);
+            String insertSQL = VelocityFacade.apply(JOYDynamicPwsDao.insertPwsTemplate, sqlContext);
             System.out.println("insertSQL is "+insertSQL);
             jdbcTemplate.execute(insertSQL);
             SmsUtils.sendRegisterCode(sb.toString(), String.valueOf(mobileNo));
@@ -93,7 +80,7 @@ public class JOYPDynamicPwsController extends  JOYBaseController  {
         //开始构建SQL
         Map<String,Object> sqlContext = new HashMap<String,Object>();
         sqlContext.put("mobileNo",mobileNo);
-        String getSQL = VelocityFacade.apply(getPwsTemplate, sqlContext);
+        String getSQL = VelocityFacade.apply(JOYDynamicPwsDao.getPwsTemplate, sqlContext);
 
         List items = jdbcTemplate.query(getSQL,
                 new JOYRowMapper(JOYDynamicPws.class));

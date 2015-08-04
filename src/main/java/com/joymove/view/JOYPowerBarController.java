@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.joymove.postgres.entity.*;
 import com.joymove.service.JOYPowerBarService;
+import com.joymove.postgres.dao.*;
 
 
 
@@ -38,20 +39,7 @@ import com.joymove.service.JOYPowerBarService;
 public class JOYPowerBarController extends  JOYBaseController {
 
 
-	public static String queryNearyByCount = "SELECT count(id) from \"JOY_PowerBar\" " +
-			"where (location <-> ST_GeomFromText('POINT(${longitude} ${latitude})',4326)) < ${scope}/111045::float limit 10000;";
-	public static String queryNearyByBars = "SELECT id,ST_AsText(location) as location,extendinfo,desp,\"testArr\" from \"JOY_PowerBar\" " +
-			"ORDER BY location <-> ST_GeomFromText('POINT(${longitude} ${latitude})',4326) limit ${limit} offset ${start} ;";
 
-
-
-	public static Template countTemplate;
-	public static Template barTemplate;
-
-	{
-		JOYPowerBarController.countTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByCount, "queryCount");
-		JOYPowerBarController.barTemplate = (Template) VelocityFacade.compile(JOYPowerBarController.queryNearyByBars, "queryBars");
-	}
 
 	@Resource(name="jdbcTemplate")
 	private JdbcTemplate jdbcTemplate;
@@ -116,7 +104,7 @@ public class JOYPowerBarController extends  JOYBaseController {
 				+userLatitude+")\',4326)) < "+scope+"/111045::float limit 10000;";
 		*/
 
-		String queryCountSQL = VelocityFacade.apply(countTemplate, sqlContext);
+		String queryCountSQL = VelocityFacade.apply(JOYPowerBarDao.countTemplate, sqlContext);
 
 		System.out.println("queryCountSQL is "+queryCountSQL);
 		long qCount = jdbcTemplate.queryForLong(queryCountSQL);
@@ -128,7 +116,7 @@ public class JOYPowerBarController extends  JOYBaseController {
 					+userLongitude+" "
 					+userLatitude+")\',4326) limit "+limit +" offset "+start +";";
 					*/
-			String querySQL = VelocityFacade.apply(barTemplate, sqlContext);
+			String querySQL = VelocityFacade.apply(JOYPowerBarDao.barTemplate, sqlContext);
 			List items = jdbcTemplate.query(querySQL,
 					new JOYRowMapper(JOYPowerBar.class));
 			long sizeTop = (qCount - start)>0? (qCount - start) : 0;
