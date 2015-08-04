@@ -1,6 +1,7 @@
 package com.joymove.view;
 
 
+import com.futuremove.cacheServer.utils.ConfigUtils;
 import com.joymove.postgres.entity.JOYUser;
 import com.joymove.postgres.entity.JOYRowMapper;
 import com.joymove.postgres.entity.JOYDynamicPws;
@@ -14,14 +15,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import com.joymove.postgres.dao.*;
+import sun.misc.BASE64Decoder;
 
 
 /**
@@ -107,7 +113,7 @@ public class JOYPUserController extends JOYBaseController {
             String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
             List userItems = jdbcTemplate.query(userGetSQL,
                     new JOYRowMapper(JOYUser.class));
-            if (userItems.size() > 0) {
+            if (userItems.size()==1) {
                     JOYUser joyUser = (JOYUser)userItems.get(0);
                     String userpwd = joyUser.userpwd; //getUserpwd();
                     if (password.equals(userpwd)) {
@@ -158,7 +164,7 @@ public class JOYPUserController extends JOYBaseController {
             String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
             List userItems = jdbcTemplate.query(userGetSQL,
                     new JOYRowMapper(JOYUser.class));
-            if(userItems.size()==0) {
+            if(userItems.size()!=1) {
                 jsonObject.put("errMsg","输入的手机号有问题");
             } else {
                 JOYUser user = (JOYUser)userItems.get(0);
@@ -212,7 +218,7 @@ public class JOYPUserController extends JOYBaseController {
                 String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
                 List userItems = jdbcTemplate.query(userGetSQL,
                         new JOYRowMapper(JOYUser.class));
-                if(userItems.size()<=0) {
+                if(userItems.size()!=1) {
                     jsonObject.put("errMsg","手机号输入错误");
                 } else {
                     sqlContext.clear();
@@ -234,7 +240,7 @@ public class JOYPUserController extends JOYBaseController {
 
 
 
-    @RequestMapping(value={"usermgr/updateInfo","usermgr/updateBiologicalInfo"}, method=RequestMethod.POST)
+    @RequestMapping(value={"/pg/usermgr/updateInfo","/pg/usermgr/updateBiologicalInfo"}, method=RequestMethod.POST)
     public @ResponseBody JSONObject updateInfo(HttpServletRequest req){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("result","10001");
@@ -250,37 +256,122 @@ public class JOYPUserController extends JOYBaseController {
         String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
         List userItems = jdbcTemplate.query(userGetSQL,
                 new JOYRowMapper(JOYUser.class));
-        if(userItems.size()<=0) {
+        if(userItems.size()!=0) {
             jsonObject.put("errMsg","手机号输入错误");
         } else {
             sqlContext.clear();
             cUser = (JOYUser)userItems.get(0);
-            if(URI.contains("updateBiologicalInfo")) {
-                String face_info = (String) jsonObj.get("face_info");
-                String voice_info = (String) jsonObj.get("voice_info");
-                com.joymove.entity.JOYUser joyUser = (com.joymove.entity.JOYUser) req.getAttribute("cUser");
-                com.joymove.entity.JOYUser userNew = new com.joymove.entity.JOYUser();
-                userNew.face_info = face_info;
-                userNew.voice_info = voice_info;
-                joyUser.mobileNo = mobileNo;
-                joyUserService.updateRecord(userNew, joyUser);
-                jsonObject.put("result", "10000");
-            } else if (URI.contains("updateInfo")) {
-                String username = (String) jsonObj.get("username");
-                String gender = (String) jsonObj.get("gender");
-                com.joymove.entity.JOYUser joyUser = (com.joymove.entity.JOYUser) req.getAttribute("cUser");
-                com.joymove.entity.JOYUser userNew = new com.joymove.entity.JOYUser();
-                String[] settingProps = {"username", "gender"};
-                if(username!=null)
-                    userNew.username = username;
-                if(gender!=null)
-                    userNew.gender = gender;
+            JSONObject extendInfo = new JSONObject();
+            if(jsonObj.get("face_info")!=null)
+                extendInfo.put("face_info",jsonObj.get("face_info"));
+            if(jsonObj.get("voice_info")!=null)
+                extendInfo.put("voice_info",jsonObj.get("voice_info"));
 
-                joyUserService.updateRecord(userNew, joyUser);
-                jsonObject.put("result", "10000");
-            }
+
+            sqlContext.put("id",cUser.id);
+            sqlContext.put("extendInfo",extendInfo.toJSONString());
+            if(jsonObj.get("username")!=null)
+                sqlContext.put("username",jsonObj.get("username"));
+            if(jsonObj.get("gender")!=null)
+                sqlContext.put("gender",jsonObj.get("gender"));
+            String updateSQL = VelocityFacade.apply(JOYUserDao.updateUserPropsTemplate, sqlContext);
+            jdbcTemplate.execute(updateSQL);
+            jsonObject.put("result", "10000");
         }
         return jsonObject;
     }
+
+    @RequestMapping(value="/pg/usermgr/updateIma",method=RequestMethod.POST)
+    public @ResponseBody JSONObject userIma(HttpServletRequest req) throws  Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("result","10001");
+        Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+        String mobileNo = (String)jsonObj.get("mobileNo");
+        String image = (String) jsonObj.get("image");
+        BASE64Decoder decode = new BASE64Decoder();
+        String imagePath = ConfigUtils.getPropValues("upload.images")+"/"+mobileNo+".jpg";
+        byte[] byteImage = decode.decodeBuffer(image);
+        OutputStream output = new BufferedOutputStream(new FileOutputStream(imagePath));
+        output.write(byteImage);
+        jsonObject.put("result","10000");
+        return jsonObject;
+    }
+
+    @RequestMapping(value="/pg/userImage/getIma",method=RequestMethod.GET)
+    public String getIma(HttpServletRequest req,HttpServletResponse res) throws  Exception {
+        String  mobileNo = (String) req.getParameter("mobileNo");
+        byte[] bt = null;
+        String imagePath = ConfigUtils.getPropValues("upload.images")+"/"+mobileNo+".jpg";
+        File file = new File(imagePath);
+        InputStream inputStream = new FileInputStream(file);
+        bt = FileCopyUtils.copyToByteArray(inputStream);
+        res.setContentType("image/jpg");
+        OutputStream os = res.getOutputStream();
+        os.write(bt);
+        os.flush();
+        os.close();
+
+        return null;
+    }
+
+    @RequestMapping(value="/pg/usermgr/checkUserMobileNo",method=RequestMethod.POST)
+    public @ResponseBody JSONObject checkUserMobileNo(HttpServletRequest req){
+        JSONObject  jsonObject = new JSONObject();
+        //if the user exists , it will be filtered by the interceptor
+        Hashtable<String, Object> jsonObj = (Hashtable<String, Object>)req.getAttribute("jsonArgs");
+        String mobileNo = (String)jsonObj.get("mobileNo");
+        //开始构建SQL,获取验证码
+        Map<String,Object> sqlContext = new HashMap<String,Object>();
+        sqlContext.put("mobileNo", mobileNo);
+        String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
+        List userItems = jdbcTemplate.query(userGetSQL,
+                new JOYRowMapper(JOYUser.class));
+        if(userItems.size()==1)
+            jsonObject.put("result", "10000");
+        else
+           jsonObject.put("result","10001");
+        return jsonObject;
+    }
+
+
+    @RequestMapping(value="/pg/usermgr/updateCommonDestination",method=RequestMethod.POST)
+    public @ResponseBody JSONObject updateCommonDestination(HttpServletRequest req){
+        JSONObject  Reobj = new JSONObject();
+        Reobj.put("result", "10001");
+
+
+        Hashtable<String,Object> jsonObj = (Hashtable<String, Object>) req.getAttribute("jsonArgs");
+
+        String mobileNo = (String)jsonObj.get("mobileNo");
+        //开始构建SQL,获取验证码
+        Map<String,Object> sqlContext = new HashMap<String,Object>();
+        sqlContext.put("mobileNo", mobileNo);
+        String userGetSQL = VelocityFacade.apply(JOYUserDao.getUserByPropsTemplate, sqlContext);
+        List userItems = jdbcTemplate.query(userGetSQL,
+                new JOYRowMapper(JOYUser.class));
+        if(userItems.size()==1) {
+            JSONObject addrJSON = new JSONObject();
+            if(jsonObj.get("home")!=null)addrJSON.put("home",jsonObj.get("home"));
+            if(jsonObj.get("corp")!=null)addrJSON.put("corp",jsonObj.get("corp"));
+            sqlContext.put("addresses", addrJSON.toJSONString());
+            String updateSQL = VelocityFacade.apply(JOYUserDao.updateUserPropsTemplate, sqlContext);
+            jdbcTemplate.execute(updateSQL);
+            Reobj.put("result", "10000");
+        }
+        else {
+            Reobj.put("result", "10001");
+            Reobj.put("errMsg","用户手机号输入错误");
+        }
+
+
+        Reobj.put("result","10000");
+        return Reobj;
+    }
+
+
+
+
+
+
 
 }
